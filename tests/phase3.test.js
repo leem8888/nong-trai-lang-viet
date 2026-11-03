@@ -146,6 +146,27 @@ test('order progress and balance survive restart',()=>{
   } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });
 
+test('order templates are bounded and a market receipt replays after leaving',()=>{
+  const db=openDatabase(':memory:');
+  try {
+    const {user,farm,move,act}=setup(db),day=marketDay(at).id;
+    move(900,445);
+    for(const order of ORDERS)act('accept_order',{orderId:order.id});
+    assert.equal(marketState(db,user.id).orders.filter(order=>order.status==='ACCEPTED').length,ORDERS.length);
+    assert.throws(()=>act('accept_order',{orderId:ORDERS[0].id}),/đã được nhận/);
+    assert.throws(()=>act('accept_order',{orderId:'forged'}),/không tồn tại/);
+    move(300,445);
+    const key=randomUUID(),intent={farmId:farm.id,action:'buy',requestId:key,itemId:'seed_mustard',quantity:1,marketId:day};
+    const first=performMarketAction(db,user.id,intent,at);
+    move(720,850,'farm');
+    const replay=performMarketAction(db,user.id,intent,at);
+    assert.equal(replay.replayed,true);
+    assert.equal(replay.transactionId,first.transactionId);
+    assert.equal(balance(db,user.id),186);
+    assert.throws(()=>performMarketAction(db,user.id,{...intent,quantity:2},at),/đã dùng/);
+  } finally {db.close();}
+});
+
 test('HTTP and socket gate market access by farm, CSRF and scene',async()=>{
   const db=openDatabase(':memory:'),{server}=createApp(db);await new Promise(resolve=>server.listen(0,resolve));
   const base=`http://127.0.0.1:${server.address().port}`;
@@ -166,6 +187,8 @@ test('HTTP and socket gate market access by farm, CSRF and scene',async()=>{
     assert.equal((await new Promise(resolve=>socket.emit('world:travel',{to:'market'},resolve))).ok,false);
     db.prepare('UPDATE player_states SET x=720,y=850 WHERE user_id=?').run(a.data.user.id);
     assert.equal((await new Promise(resolve=>socket.emit('world:travel',{to:'market'},resolve))).scene,'market');
+    db.prepare('UPDATE player_states SET x=935,y=586 WHERE user_id=?').run(a.data.user.id);
+    assert.equal((await new Promise(resolve=>socket.emit('farm:interact',{objectId:'lamp'},resolve))).ok,false);
     db.prepare('UPDATE player_states SET x=300,y=445 WHERE user_id=?').run(a.data.user.id);
     await new Promise(resolve=>setTimeout(resolve,130));
     assert.equal((await request('/market/action',{...intent,farmId:farmB.id},a.cookie,a.data.csrf)).status,400);
@@ -176,5 +199,9 @@ test('HTTP and socket gate market access by farm, CSRF and scene',async()=>{
     assert.equal((await request('/market',undefined,b.cookie)).data.balance,200);
     db.prepare('UPDATE player_states SET x=600,y=650 WHERE user_id=?').run(a.data.user.id);
     assert.equal((await new Promise(resolve=>socket.emit('world:travel',{to:'farm'},resolve))).scene,'farm');
+    const replay=await request('/market/action',intent,a.cookie,a.data.csrf);
+    assert.equal(replay.status,200);
+    assert.equal(replay.data.replayed,true);
+    assert.equal(replay.data.state.balance,186);
   } finally {for(const socket of sockets)socket.disconnect();await new Promise(resolve=>server.close(resolve));db.close();}
 });

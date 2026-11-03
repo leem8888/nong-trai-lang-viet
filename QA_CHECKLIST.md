@@ -1,44 +1,42 @@
-# QA trình duyệt — Phase 1 và Phase 2
+# Nghiệm thu Phase 1–3 — 2026-11-03
 
-Trạng thái: **chưa thực hiện** trong phiên 2026-11-03 vì công cụ browser trả danh sách rỗng. Không đánh dấu pass dựa trên kiểm thử API.
+Trạng thái: **PASS ở môi trường phát triển**. Đã kiểm tra bằng Microsoft Edge 156 headless qua Playwright, Node.js 20.19.6, SQLite tạm. `npm test`: **16 pass, 0 fail**. `npm run qa:browser`: **14 nhóm PASS, 0 FAIL**. Script browser: `tests/browser-qa.mjs`; ảnh chợ desktop và farm 390 px được tạo trong `.qa/` để kiểm tra trực quan.
 
-## Gate 0 — Phase 1
+Playwright không có trong dependency dự án nhưng có sẵn trong npm cache của máy QA. Lệnh thực tế: `$env:PLAYWRIGHT_MODULE='file:///C:/Users/tuanbna.EDS/AppData/Local/npm-cache/_npx/423231821c231c73/node_modules/playwright/index.mjs'; npm run qa:browser`. Edge được khởi chạy bằng executable hệ thống. Thử cài Playwright offline vào `.qa` trả `ENOTCACHED`; dùng bản cache có sẵn, không thêm dependency vào game.
 
-- [ ] Mở game, đăng ký hai tài khoản riêng.
-- [ ] Mỗi tài khoản tạo một farm khác tên; đăng xuất/đăng nhập lại đúng farm.
-- [ ] Đi bằng WASD/phím mũi tên; nhân vật không xuyên nhà, cây, hàng rào hoặc rìa bản đồ.
-- [ ] Camera theo nhân vật và giữ trong ranh giới khi đổi kích thước cửa sổ.
-- [ ] Tới gần bảng, cửa nhà và đèn; nhấn E hoặc nhấp để tương tác.
-- [ ] Bật đèn, tải lại trang và khởi động lại server; đèn vẫn giữ trạng thái.
-- [ ] Mất mạng rồi kết nối lại; snapshot vị trí/trạng thái được khôi phục.
-- [ ] Hai tab/tài khoản không nhìn thấy hoặc sửa farm riêng của nhau.
-- [ ] Kiểm tra console browser không có lỗi JavaScript.
+## Phase 1
+
+| Hạng mục | Kết quả | Bằng chứng |
+|---|---|---|
+| Đăng ký, đăng nhập, đăng xuất, hai farm độc lập | PASS | Browser tạo hai tài khoản, đăng xuất/đăng nhập lại đúng farm; test API chống đọc farm khác HTTP 403 |
+| Bản đồ, camera, di chuyển, collision | PASS | Edge di chuyển bằng bàn phím từ x=720 tới x≈630; đụng nhà dừng ở x≈465, không xuyên vùng x≥480; ảnh desktop/mobile và test biên map |
+| Ba tương tác | PASS | Browser mở bảng farm, cửa nhà và đổi đèn 0→1 bằng E; test reload/reconnect giữ đèn |
+| SQLite, Socket.IO, reload/restart | PASS | Browser reload; test Phase 1 kiểm tra join/leave/reconnect, snapshot, khởi tạo lại database và từ chối socket vô danh |
+| Layout, chuột/bàn phím, console | PASS | Browser nhấp ruộng và nút, dùng E/WASD; Edge không phát sinh `pageerror`; viewport 390 px có `scrollWidth=390` |
 
 ## Phase 2
 
-- [ ] Farm cũ sau migration vẫn đăng nhập được và có 4 hạt mỗi loại.
-- [ ] Đứng gần ruộng, chọn cuốc rồi nhấp một ô; ô đổi hình và không cuốc trùng.
-- [ ] Chọn một trong sáu hạt, gieo trên đất đã cuốc; số hạt trong túi giảm đúng 1.
-- [ ] Không gieo được trên đất chưa cuốc, trên ô đã có cây hoặc khi đứng quá xa.
-- [ ] Tưới đất/cây, thấy hiệu ứng nước; tưới lặp không cộng lợi ích.
-- [ ] Thấy hạt, mầm, cây đang lớn, cây trưởng thành; thông tin cây và tiến trình thay đổi.
-- [ ] Tải lại khi đang trồng; cây và túi đồ còn nguyên.
-- [ ] Đóng trình duyệt hoặc server, quay lại sau thời gian thực; cây tiến triển tương ứng.
-- [ ] Thu hoạch sớm bị từ chối; thu hoạch chín cộng đúng số nông sản và ô có thể trồng lại.
-- [ ] Hai tab thu hoạch cùng lúc không nhân đôi nông sản.
-- [ ] Khi hết toàn bộ hạt, nhận gói bổ sung một lần; nhận tiếp cùng ngày bị từ chối.
-- [ ] Thử viewport nhỏ và thao tác chạm nếu có thiết bị phù hợp.
+| Hạng mục | Kết quả | Bằng chứng |
+|---|---|---|
+| Cuốc, gieo, tưới, thu hoạch, túi đồ | PASS | Browser dùng chuột trên ô (0,0), gieo và tưới rau cải, túi đồ hiển thị hạt, thu hoạch được 2 rau cải |
+| Sáu cây, bốn giai đoạn, offline growth | PASS | Test Phase 2 gieo đủ sáu cây, xác nhận SEED/SPROUT/GROWING/MATURE và cây chín sau 3 ngày; browser tăng `planted_at` trong database thử rồi reload để thu hoạch, không dùng đồng hồ client |
+| Chống thu hoạch trùng, kho đầy, nhận hạt giới hạn | PASS | Test Phase 2 kiểm tra rollback khi kho đầy, một lần thu hoạch thành công, gói hạt tối đa một lần/ngày UTC |
+| Quyền farm, CSRF, hai tab, migration/restart | PASS | Test Phase 2 kiểm tra từ chối farm khác và CSRF, broadcast tới hai socket, giữ cây/kho qua reopen và migration v1→v3 |
 
 ## Phase 3
 
-- [ ] Farm cũ sau migration vẫn đăng nhập được, giữ hạt/cây và có ví 200 Đồng Làng đúng một lần.
-- [ ] Đi theo lối phía nam tới cổng chợ; nhấn E chuyển cảnh, camera/va chạm hoạt động và có thể về farm.
-- [ ] Đứng gần quầy Cô Mai; xem giá hạt, số dư, tổng tiền, mua hạt; ví giảm và túi đồ tăng đúng số lượng.
-- [ ] Đứng gần quầy Cô Lan; bán nông sản; ví tăng và túi đồ giảm đúng số lượng.
-- [ ] Đứng xa NPC hoặc đang ở farm thì không mua/bán được; lỗi hiển thị rõ.
-- [ ] Nhận ít nhất một đơn, kiểm tra tiến trình nguyên liệu, giao đủ hàng và nhận thưởng đúng một lần.
-- [ ] Mở lịch sử; thấy cấp tiền ban đầu, mua, bán và thưởng đơn với số dư sau giao dịch.
-- [ ] Hai tab cùng tài khoản thực hiện lại cùng request ID hoặc bấm liên tiếp không nhân đôi tiền/hàng.
-- [ ] Reload và restart server giữ ví, kho, scene và trạng thái đơn.
-- [ ] Giá mặt hàng nổi bật +15% theo ngày UTC; đổi ngày không làm hỏng giao dịch đang xem mà báo xem lại giá.
-- [ ] Kiểm tra console browser, layout desktop/mobile và vùng tương tác E/click.
+| Hạng mục | Kết quả | Bằng chứng |
+|---|---|---|
+| Farm ↔ chợ, NPC, layout | PASS | Browser chuyển bằng E qua hai cổng, mở quầy hạt/thu mua/bảng đơn; ảnh chợ desktop và farm mobile đã xem |
+| Mua/bán, ví, lịch sử | PASS | Browser ví 200→186 khi mua 1 hạt cải, hai tab mua trùng ID chỉ trừ một lần còn 172, bán 2 rau cải còn 196; lịch sử hiển thị |
+| Đơn hàng và giới hạn | PASS | Browser nhận/giao đơn `greens`; test xác nhận cả 6 mẫu chỉ nhận một lần/farm, không thưởng trùng, thiếu nguyên liệu bị từ chối |
+| Atomic/rollback, số dư âm/tràn, retry | PASS | Test Phase 3 kiểm tra thiếu tiền/hàng, kho đầy, giới hạn ví, payload sai, retry cùng ID, key khác payload bị từ chối; browser lỗi thiếu tiền giữ số dư 172 |
+| Biên nhận sau rời chợ | PASS | Test mới: giao dịch mua xong về farm, gửi lại cùng ID trả `replayed=true`, giữ nguyên số dư và transaction ID |
+| Authorization/CSRF/scene | PASS | Browser: farm khác HTTP 403, thiếu CSRF HTTP 403; test socket: ở chợ không bật được đèn farm; mua/bán cần đứng gần đúng NPC |
+| Giá chợ UTC, persistence | PASS | Test featured +15%, sai market ID bị từ chối, ví/đơn giữ qua reopen; starter v3 không chứa tài khoản thử |
+
+## Giới hạn bằng chứng
+
+- Browser QA dùng database tạm, di chuyển bằng bàn phím để kiểm tra vận tốc/va chạm và đặt vị trí thử gần các điểm tương tác để đi nhanh qua toàn bộ luồng. Chưa ghi video đi bộ liên tục qua mọi tọa độ của hai bản đồ.
+- Tăng trưởng offline được kiểm tra bằng cách lùi mốc `planted_at` ở database thử và reopen; không chờ nguyên 15 phút trong phiên QA. Logic thời gian UTC và restart có test tự động.
+- Chưa thử thiết bị cảm ứng vật lý, gián đoạn mạng thật kéo dài, hoặc triển khai production HTTPS. Đây là kiểm thử trước phát hành, không thuộc Definition of Done của Phase 1–3 trong môi trường phát triển.

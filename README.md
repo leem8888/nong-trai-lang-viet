@@ -29,6 +29,8 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 `npm test` chạy kiểm thử Phase 1–3: API, SQLite, quyền farm, Socket.IO, di chuyển, tăng trưởng offline, inventory, ví, mua/bán, đơn hàng, migration và retry. Checklist QA trình duyệt ở `QA_CHECKLIST.md`.
 
+`npm run qa:browser` chạy Playwright trên Edge thật với database tạm; cài Playwright bằng `npm install --no-save playwright` nếu máy chưa có. Có thể đặt `PLAYWRIGHT_MODULE` thành URL module Playwright đã cài và `EDGE_PATH` thành đường dẫn trình duyệt. Kịch bản tạo tài khoản thử riêng, không chạm `data/farm.sqlite`; ảnh kiểm tra được lưu trong `.qa/` và bị Git bỏ qua.
+
 ## Sao lưu
 
 `npm run backup` tạo bản sao SQLite nhất quán trong `data/backups`. Sao lưu thư mục này ra nơi lưu độc lập theo lịch vận hành. Không đặt database, backup hay `.env` trong `public`.

@@ -129,7 +129,7 @@ export function createApp(db = openDatabase()) {
     socket.on('farm:interact',(payload,cb) => {
       if (!allowed(cb)) return;
       if (!joined || !payload || payload.objectId !== 'lamp') return ack(cb,{ok:false,error:'Tương tác không hợp lệ.'});
-      const player=db.prepare('SELECT x,y FROM player_states WHERE user_id=?').get(auth.user_id);
+      const player=db.prepare('SELECT x,y,scene FROM player_states WHERE user_id=?').get(auth.user_id);
       if (!inRange(player,'lamp')) return ack(cb,{ok:false,error:'Bạn đang ở quá xa.'});
       const state=db.transaction(() => {
         db.prepare('UPDATE farm_objects SET state=1-state WHERE farm_id=? AND object_id=?').run(joined,'lamp');
