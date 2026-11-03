@@ -1,6 +1,6 @@
 # Handoff Phase 6 — 2026-11-03
 
-Trạng thái: hoàn tất ở môi trường phát triển. Branch `feature/phase-6-living-village`; commit SHA ghi trong lịch sử Git của nhánh. Baseline Phase 5: `86b185948a1599ea7158e7a01ed311f200cbb3f0`.
+Trạng thái: hoàn tất ở môi trường phát triển. Branch `feature/phase-6-living-village`; commit triển khai `5858797` (SHA đầy đủ xem `git show 5858797`). Baseline Phase 5: `86b185948a1599ea7158e7a01ed311f200cbb3f0`.
 
 ## Đã triển khai
 
