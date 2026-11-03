@@ -28,3 +28,17 @@ Trạng thái: **chưa thực hiện** trong phiên 2026-11-03 vì công cụ br
 - [ ] Hai tab thu hoạch cùng lúc không nhân đôi nông sản.
 - [ ] Khi hết toàn bộ hạt, nhận gói bổ sung một lần; nhận tiếp cùng ngày bị từ chối.
 - [ ] Thử viewport nhỏ và thao tác chạm nếu có thiết bị phù hợp.
+
+## Phase 3
+
+- [ ] Farm cũ sau migration vẫn đăng nhập được, giữ hạt/cây và có ví 200 Đồng Làng đúng một lần.
+- [ ] Đi theo lối phía nam tới cổng chợ; nhấn E chuyển cảnh, camera/va chạm hoạt động và có thể về farm.
+- [ ] Đứng gần quầy Cô Mai; xem giá hạt, số dư, tổng tiền, mua hạt; ví giảm và túi đồ tăng đúng số lượng.
+- [ ] Đứng gần quầy Cô Lan; bán nông sản; ví tăng và túi đồ giảm đúng số lượng.
+- [ ] Đứng xa NPC hoặc đang ở farm thì không mua/bán được; lỗi hiển thị rõ.
+- [ ] Nhận ít nhất một đơn, kiểm tra tiến trình nguyên liệu, giao đủ hàng và nhận thưởng đúng một lần.
+- [ ] Mở lịch sử; thấy cấp tiền ban đầu, mua, bán và thưởng đơn với số dư sau giao dịch.
+- [ ] Hai tab cùng tài khoản thực hiện lại cùng request ID hoặc bấm liên tiếp không nhân đôi tiền/hàng.
+- [ ] Reload và restart server giữ ví, kho, scene và trạng thái đơn.
+- [ ] Giá mặt hàng nổi bật +15% theo ngày UTC; đổi ngày không làm hỏng giao dịch đang xem mà báo xem lại giá.
+- [ ] Kiểm tra console browser, layout desktop/mobile và vùng tương tác E/click.

@@ -29,4 +29,19 @@ Phase 1 vẫn **partial** vì chưa có QA trình duyệt thật. Test Phase 1 �
 
 `npm ci` cài sạch trong thư mục tạm thành công: 124 package, 0 vulnerability. Trong thư mục chính, Windows giữ file native SQLite nên `npm ci` không thay được; module đã được khôi phục và test chạy lại thành công. Server chạy trên cổng 3001, health và static trả 200; cổng 3000 đang có tiến trình khác.
 
-`data/starter.sqlite` hiện chứa migration v2 và không có dữ liệu người chơi. `data/farm.sqlite` sau migration giữ 1 user/1 farm và có 6 loại hạt giống. Database chơi vẫn cục bộ. Chưa đủ bằng chứng để đánh dấu Phase 1 hoặc Phase 2 hoàn thành và chuyển Phase 3.
+`data/starter.sqlite` hiện chứa migration v3 và không có dữ liệu người chơi. `data/farm.sqlite` sau migration giữ 1 user/1 farm, 6 loại hạt và một ví; database chơi vẫn cục bộ.
+
+## Phase 3 — partial
+
+| Gói | Trạng thái | Bằng chứng |
+|---|---|---|
+| P3.0 Gate Phase 2 | Một phần | 9/9 test cũ pass, `npm ci` sạch trong thư mục tạm; browser QA chưa có |
+| P3.1 Ví và migration v3 | Đã triển khai, kiểm thử | Ví 200 Đồng Làng một lần, sổ giao dịch, receipt, migration giữ dữ liệu cũ |
+| P3.2–P3.3 Mua/bán | Đã triển khai, kiểm thử | Giá server, trừ/cộng tiền và hàng atomic, retry cùng request ID an toàn |
+| P3.4 Bản đồ chợ | Đã triển khai, chờ browser QA | Scene Canvas riêng, cổng farm/chợ, collision, kiểm tra vị trí ở server |
+| P3.5 Đơn hàng | Đã triển khai, kiểm thử | 6 mẫu, nhận/giao một lần mỗi farm, thưởng atomic |
+| P3.6 Chợ phiên | Đã triển khai, kiểm thử | Chợ mở liên tục, một nông sản +15% mỗi ngày UTC |
+| P3.7 UI/API/Socket | Đã triển khai, chờ browser QA | Quầy hạt, thu mua, bảng đơn, lịch sử; CSRF và Socket broadcast |
+| P3.8 QA/docs | Một phần | `npm test` 15/15 pass; `npm run economy:report` và health/static pass; browser QA chưa có |
+
+Trước migration v3 đã chạy backup. Database local sau migration: **1 user, 1 farm, 1 ví, 6 item, integrity ok**. Starter v3: 0 user/farm/wallet/item. Giá và phần thưởng là giả thuyết playtest. Phase 1–3 vẫn **partial** do thiếu QA trình duyệt; chưa xác nhận điều kiện sang Phase 4.

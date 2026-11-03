@@ -25,7 +25,7 @@ const connect=(base,cookie)=>new Promise((resolve,reject)=>{const socket=client(
 test('database, auth, ownership, persistence and socket access',async()=>{
   const f=await fixture();
   try {
-    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,2);
+    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,3);
     assert.equal((await request(f.base,'/health')).status,200);
     assert.equal((await request(f.base,'/farm')).status,401);
     const a=await request(f.base,'/register',{username:'farmer_a',password:'strong-pass-123'});
@@ -87,7 +87,7 @@ test('SQLite survives reopen and migration is idempotent',()=>{
     db.close(); db=null;
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT username FROM users WHERE id=?').get('u').username,'test_user');
-    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,2);
+    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,3);
   } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });
 

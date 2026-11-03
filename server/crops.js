@@ -69,10 +69,10 @@ export function performFarmAction(db, userId, payload, at = now()) {
     }
     const x=payload.x,y=payload.y;
     if (!Number.isInteger(x) || !Number.isInteger(y) || x<0 || x>=FIELD.columns || y<0 || y>=FIELD.rows) throw new Error('Ô đất không hợp lệ.');
-    const player=db.prepare('SELECT x,y FROM player_states WHERE user_id=? AND farm_id=?').get(userId,farmId);
+    const player=db.prepare('SELECT x,y,scene FROM player_states WHERE user_id=? AND farm_id=?').get(userId,farmId);
     const center=tileCenter(x,y);
     if (!validPosition(center.x,center.y)) throw new Error('Ô đất bị vật cản chiếm chỗ.');
-    if (!player || Math.hypot(player.x-center.x,player.y-center.y)>110) throw new Error('Tương tác quá xa.');
+    if (!player || player.scene!=='farm' || Math.hypot(player.x-center.x,player.y-center.y)>110) throw new Error('Tương tác quá xa.');
     const state=tileState(db,farmId,x,y), crop=activeCrop(db,farmId,x,y);
     let message='';
     if (action==='till') {

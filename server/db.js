@@ -56,6 +56,49 @@ SELECT f.id,s.item_id,4 FROM farms f CROSS JOIN (
 ) s;
 `;
 
+const migration3 = `
+ALTER TABLE player_states ADD COLUMN scene TEXT NOT NULL DEFAULT 'farm' CHECK(scene IN ('farm','market'));
+CREATE TABLE wallets (
+  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  balance INTEGER NOT NULL CHECK(balance BETWEEN 0 AND 9000000000000),
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE economy_transactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  farm_id TEXT REFERENCES farms(id) ON DELETE SET NULL,
+  kind TEXT NOT NULL CHECK(kind IN ('starter','buy','sell','order')),
+  item_id TEXT,
+  quantity INTEGER,
+  unit_price INTEGER,
+  delta INTEGER NOT NULL,
+  balance_after INTEGER NOT NULL,
+  request_key TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX economy_transactions_user_time ON economy_transactions(user_id,created_at DESC,id DESC);
+CREATE TABLE economy_request_receipts (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_key TEXT NOT NULL,
+  action TEXT NOT NULL,
+  payload_hash TEXT NOT NULL,
+  response_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY(user_id,request_key)
+);
+CREATE TABLE player_orders (
+  farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  template_id TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('ACCEPTED','COMPLETED')),
+  accepted_at INTEGER NOT NULL,
+  completed_at INTEGER,
+  PRIMARY KEY(farm_id,template_id)
+);
+INSERT INTO wallets(user_id,balance,updated_at) SELECT id,200,strftime('%s','now')*1000 FROM users;
+INSERT INTO economy_transactions(user_id,kind,delta,balance_after,created_at)
+SELECT id,'starter',200,200,strftime('%s','now')*1000 FROM users;
+`;
+
 export function openDatabase(file = process.env.DB_FILE || path.resolve('data/farm.sqlite')) {
   if (file !== ':memory:') {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -63,6 +106,7 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
     if (!fs.existsSync(file) && fs.existsSync(starter) && path.resolve(file) !== starter) fs.copyFileSync(starter,file,fs.constants.COPYFILE_EXCL);
   }
   const db = new Database(file);
+  try {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.pragma('busy_timeout = 3000');
@@ -75,5 +119,10 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
     db.exec(migration2);
     db.prepare('INSERT INTO schema_migrations VALUES (2, ?, ?)').run('phase 2 crops and inventory', Date.now());
   })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 3').get()) db.transaction(() => {
+    db.exec(migration3);
+    db.prepare('INSERT INTO schema_migrations VALUES (3, ?, ?)').run('phase 3 market and economy', Date.now());
+  })();
   return db;
+  } catch (error) { db.close(); throw error; }
 }

@@ -31,3 +31,20 @@ Sáu cây: lúa 90 phút, rau cải 15, cà chua 45, cà rốt 25, ngô 60, đ�
 Tưới tối đa **một lần cho mỗi cây**, giảm thời lượng trưởng thành 10%. Tưới đất trước khi gieo cho cùng lợi ích khi gieo; tưới tiếp không cộng dồn. Cây vẫn lớn bình thường nếu không tưới. Mọi thời điểm lấy từ server UTC và tính lại khi tải farm hoặc thu hoạch. Client chỉ dự đoán hình ảnh bằng mốc giờ server và bộ đếm đơn điệu.
 
 Mỗi farm nhận 4 hạt của từng loại khi tạo farm hoặc khi migration v2 áp dụng cho farm cũ. Khi **hết toàn bộ hạt**, người chơi có thể nhận một gói 2 hạt mỗi loại tối đa một lần mỗi ngày UTC. Đây là cơ chế thử nghiệm để không bị kẹt trước khi cửa hàng Phase 3 xuất hiện; không có tiền hay giao dịch. Túi đồ chứa hạt và nông sản, mỗi loại tối đa 999. Thu hoạch, cộng vật phẩm và chuyển đất về trạng thái đã cuốc nằm trong một transaction.
+
+## Phase 3 — Chợ quê và Đồng Làng
+
+Người chơi theo lối đi phía nam farm tới cổng chợ, đi trong bản đồ chợ và tương tác gần quầy hạt của **Cô Mai**, quầy thu mua của **Cô Lan** hoặc bảng đơn hàng. Cổng phía nam chợ đưa về farm. Chợ mở liên tục để không chặn vòng trồng → thu hoạch → bán → mua giống. Mỗi ngày UTC có một nông sản nổi bật được thu mua cao hơn 15%; giá và lịch do server quyết định.
+
+Ví của mỗi tài khoản được cấp **200 Đồng Làng** một lần. Tiền là số nguyên; ví không âm và có trần 9 nghìn tỷ. Mọi mua, bán, hoàn thành đơn và cấp tiền khởi đầu đều có sổ giao dịch. Client gửi ý định và request ID; server tính giá, kiểm tra vị trí/kho/ví rồi ghi tiền, hàng, đơn và biên nhận trong một transaction. Retry cùng ID trả lại kết quả cũ mà không xử lý lần hai.
+
+| Cây | Giá hạt | Giá bán cơ bản / đơn vị | Sản lượng | Lợi nhuận / vụ | Phút / vụ |
+|---|---:|---:|---:|---:|---:|
+| Lúa | 65 | 45 | 3 | 70 | 90 |
+| Rau cải | 14 | 12 | 2 | 10 | 15 |
+| Cà chua | 45 | 25 | 3 | 30 | 45 |
+| Cà rốt | 19 | 18 | 2 | 17 | 25 |
+| Ngô | 35 | 35 | 2 | 35 | 60 |
+| Đậu nành | 35 | 22 | 3 | 31 | 35 |
+
+Giá và sản lượng trên là **giả thuyết playtest**, chưa cân bằng cuối cùng. `npm run economy:report` tính thêm lợi nhuận theo giờ; lúa có lợi nhuận tuyệt đối cao hơn, đậu nành có lợi nhuận theo giờ cao hơn. Sáu mẫu đơn hàng NPC có thể nhận và hoàn thành **một lần mỗi farm**, không có deadline. Phần thưởng cố định cao hơn tổng giá bán cơ bản của nguyên liệu; không có farm tiền lặp vô hạn từ đơn. Gói hạt miễn phí Phase 2 vẫn là lối thoát giới hạn khi hết toàn bộ hạt, tối đa một lần mỗi ngày UTC.

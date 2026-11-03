@@ -96,12 +96,14 @@ test('migration from v1 preserves farm and starter has no user data',()=>{
       INSERT INTO schema_migrations VALUES(1,'phase 1',0);
       CREATE TABLE users(id TEXT PRIMARY KEY,username TEXT,password_hash TEXT,created_at INTEGER);
       CREATE TABLE farms(id TEXT PRIMARY KEY,owner_id TEXT,name TEXT,map_id TEXT,visibility TEXT,version INTEGER,created_at INTEGER,updated_at INTEGER);
+      CREATE TABLE player_states(user_id TEXT PRIMARY KEY,farm_id TEXT,x REAL,y REAL,direction TEXT,updated_at INTEGER);
       INSERT INTO users VALUES('u','old','hash',0);
-      INSERT INTO farms VALUES('f','u','Old farm','starter','private',1,0,0);`);
+      INSERT INTO farms VALUES('f','u','Old farm','starter','private',1,0,0);
+      INSERT INTO player_states VALUES('u','f',720,650,'down',0);`);
     old.close();
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT name FROM farms WHERE id=?').get('f').name,'Old farm');
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,2);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,3);
     assert.equal(db.prepare('SELECT count(*) n FROM inventory_items WHERE farm_id=?').get('f').n,6);
     db.close();db=null;
     db=openDatabase(file);

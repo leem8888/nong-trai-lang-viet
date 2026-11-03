@@ -7,6 +7,7 @@ import { register, login, session, issueSession, clearSession } from './auth.js'
 import { createFarm, farmFor, snapshot } from './farms.js';
 import { inRange, validMovement } from './world.js';
 import { farmingState, performFarmAction } from './crops.js';
+import { marketState, performMarketAction } from './economy.js';
 
 export function createApp(db = openDatabase()) {
   const app = express();
@@ -64,6 +65,21 @@ export function createApp(db = openDatabase()) {
       res.json({ok:true,...result});
     } catch(error) { fail(res,error); }
   });
+  const marketActions=new Map();
+  app.get('/api/market',guard,(req,res)=>{
+    const state=marketState(db,req.auth.user_id);
+    return state?res.json(state):res.status(404).json({error:'Chưa tạo nông trại.'});
+  });
+  app.post('/api/market/action',guard,csrf,(req,res)=>{
+    const key=req.auth.user_id,current=Date.now(),previous=marketActions.get(key);
+    if(previous&&current-previous.at<120&&req.body?.requestId!==previous.requestId)return res.status(429).json({error:'Thao tác quá nhanh.'});
+    marketActions.set(key,{at:current,requestId:req.body?.requestId});
+    try {
+      const result=performMarketAction(db,key,req.body);
+      io.to(`farm:${result.state.farmId}`).emit('farm:market',result.state);
+      res.json({ok:true,...result});
+    } catch(error) { fail(res,error); }
+  });
   io.use((socket,next) => {
     const auth = session(db,socket.request);
     if (!auth) return next(new Error('unauthorized'));
@@ -92,11 +108,23 @@ export function createApp(db = openDatabase()) {
     socket.on('player:move',(payload,cb) => {
       if (!allowed(cb)) return;
       if (!joined || !payload || typeof payload !== 'object') return ack(cb,{ok:false,error:'Chưa vào nông trại.'});
-      const state=db.prepare('SELECT x,y FROM player_states WHERE user_id=?').get(auth.user_id);
+      const state=db.prepare('SELECT x,y,scene FROM player_states WHERE user_id=?').get(auth.user_id);
       const current=Date.now(), elapsed=lastMove ? current-lastMove : 500;
-      if (!['up','down','left','right'].includes(payload.direction) || !validMovement(state,payload.x,payload.y,elapsed)) return ack(cb,{ok:false,error:'Vị trí không hợp lệ.',player:state});
+      if (!['up','down','left','right'].includes(payload.direction) || !validMovement(state,payload.x,payload.y,elapsed,state.scene)) return ack(cb,{ok:false,error:'Vị trí không hợp lệ.',player:state});
       db.prepare('UPDATE player_states SET x=?,y=?,direction=?,updated_at=? WHERE user_id=?').run(payload.x,payload.y,payload.direction,current,auth.user_id);
       lastMove=current; ack(cb,{ok:true});
+    });
+    socket.on('world:travel',(payload,cb)=>{
+      if(!allowed(cb))return;
+      if(!joined||!payload||typeof payload!=='object')return ack(cb,{ok:false,error:'Chưa vào nông trại.'});
+      const state=db.prepare('SELECT x,y,scene FROM player_states WHERE user_id=? AND farm_id=?').get(auth.user_id,joined);
+      const destination=state?.scene==='farm'?'market':'farm';
+      const point=state?.scene==='farm'?'farmGate':'returnGate';
+      if(!state||payload.to!==destination||!inRange(state,point))return ack(cb,{ok:false,error:'Hãy đến gần cổng để chuyển cảnh.'});
+      const spawn=destination==='market'?{x:600,y:640}:{x:720,y:850};
+      db.prepare('UPDATE player_states SET scene=?,x=?,y=?,direction=?,updated_at=? WHERE user_id=?').run(destination,spawn.x,spawn.y,'down',Date.now(),auth.user_id);
+      lastMove=Date.now();
+      ack(cb,{ok:true,scene:destination,...spawn});
     });
     socket.on('farm:interact',(payload,cb) => {
       if (!allowed(cb)) return;

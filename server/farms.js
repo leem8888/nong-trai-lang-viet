@@ -8,7 +8,7 @@ export function farmFor(db, userId) {
 export function snapshot(db, userId) {
   const farm = farmFor(db, userId);
   if (!farm) return null;
-  return { farm, player: db.prepare('SELECT x,y,direction FROM player_states WHERE user_id=?').get(userId), objects: db.prepare('SELECT object_id,state FROM farm_objects WHERE farm_id=?').all(farm.id) };
+  return { farm, player: db.prepare('SELECT x,y,direction,scene FROM player_states WHERE user_id=?').get(userId), objects: db.prepare('SELECT object_id,state FROM farm_objects WHERE farm_id=?').all(farm.id) };
 }
 export function createFarm(db, userId, name) {
   const existing = farmFor(db, userId);
@@ -20,7 +20,7 @@ export function createFarm(db, userId, name) {
     if (current) return current;
     const id = randomUUID(), time = now();
     db.prepare('INSERT INTO farms(id,owner_id,name,created_at,updated_at) VALUES (?,?,?,?,?)').run(id,userId,clean,time,time);
-    db.prepare('INSERT INTO player_states VALUES (?,?,?,?,?,?)').run(userId,id,720,650,'down',time);
+    db.prepare('INSERT INTO player_states(user_id,farm_id,x,y,direction,updated_at) VALUES (?,?,?,?,?,?)').run(userId,id,720,650,'down',time);
     db.prepare('INSERT INTO farm_objects VALUES (?,?,0)').run(id,'lamp');
     seedFarmInventory(db,id);
     return farmFor(db,userId);
