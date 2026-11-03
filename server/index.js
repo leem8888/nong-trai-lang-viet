@@ -6,6 +6,7 @@ import { openDatabase } from './db.js';
 import { register, login, session, issueSession, clearSession } from './auth.js';
 import { createFarm, farmFor, snapshot } from './farms.js';
 import { inRange, validMovement } from './world.js';
+import { farmingState, performFarmAction } from './crops.js';
 
 export function createApp(db = openDatabase()) {
   const app = express();
@@ -47,6 +48,21 @@ export function createApp(db = openDatabase()) {
   app.get('/api/farms/:id',guard,(req,res) => {
     const state = snapshot(db,req.auth.user_id);
     return state?.farm.id === req.params.id ? res.json(state) : res.status(403).json({error:'Không có quyền truy cập.'});
+  });
+  const farmActions = new Map();
+  app.get('/api/farming',guard,(req,res) => {
+    const state=farmingState(db,req.auth.user_id);
+    return state ? res.json(state) : res.status(404).json({error:'Chưa tạo nông trại.'});
+  });
+  app.post('/api/farming/action',guard,csrf,(req,res) => {
+    const key=req.auth.user_id, current=Date.now(), previous=farmActions.get(key)||0;
+    if (current-previous<120) return res.status(429).json({error:'Thao tác quá nhanh.'});
+    farmActions.set(key,current);
+    try {
+      const result=performFarmAction(db,key,req.body);
+      io.to(`farm:${result.state.farmId}`).emit('farm:farming',result.state);
+      res.json({ok:true,...result});
+    } catch(error) { fail(res,error); }
   });
   io.use((socket,next) => {
     const auth = session(db,socket.request);

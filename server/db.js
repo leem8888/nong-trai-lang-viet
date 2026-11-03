@@ -13,6 +13,49 @@ CREATE TABLE farm_permissions (farm_id TEXT NOT NULL REFERENCES farms(id) ON DEL
 CREATE INDEX farm_permissions_user ON farm_permissions(user_id);
 `;
 
+const migration2 = `
+CREATE TABLE farm_soil_tiles (
+  farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  tile_x INTEGER NOT NULL CHECK(tile_x BETWEEN 0 AND 4),
+  tile_y INTEGER NOT NULL CHECK(tile_y BETWEEN 0 AND 2),
+  state TEXT NOT NULL CHECK(state IN ('TILLED','WATERED','PLANTED')),
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY(farm_id,tile_x,tile_y)
+);
+CREATE TABLE farm_crops (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  tile_x INTEGER NOT NULL,
+  tile_y INTEGER NOT NULL,
+  crop_id TEXT NOT NULL,
+  planted_at INTEGER NOT NULL,
+  duration_ms INTEGER NOT NULL CHECK(duration_ms > 0),
+  bonus_ms INTEGER NOT NULL DEFAULT 0 CHECK(bonus_ms >= 0),
+  watered_at INTEGER,
+  harvested_at INTEGER,
+  yield_quantity INTEGER NOT NULL CHECK(yield_quantity > 0),
+  FOREIGN KEY(farm_id,tile_x,tile_y) REFERENCES farm_soil_tiles(farm_id,tile_x,tile_y) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX one_active_crop_per_tile ON farm_crops(farm_id,tile_x,tile_y) WHERE harvested_at IS NULL;
+CREATE INDEX farm_crops_farm ON farm_crops(farm_id,harvested_at);
+CREATE TABLE inventory_items (
+  farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  item_id TEXT NOT NULL,
+  quantity INTEGER NOT NULL CHECK(quantity BETWEEN 0 AND 999),
+  PRIMARY KEY(farm_id,item_id)
+);
+CREATE TABLE farm_seed_claims (
+  farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  utc_day TEXT NOT NULL,
+  PRIMARY KEY(farm_id,utc_day)
+);
+INSERT INTO inventory_items(farm_id,item_id,quantity)
+SELECT f.id,s.item_id,4 FROM farms f CROSS JOIN (
+  SELECT 'seed_rice' AS item_id UNION ALL SELECT 'seed_mustard' UNION ALL SELECT 'seed_tomato'
+  UNION ALL SELECT 'seed_carrot' UNION ALL SELECT 'seed_corn' UNION ALL SELECT 'seed_soy'
+) s;
+`;
+
 export function openDatabase(file = process.env.DB_FILE || path.resolve('data/farm.sqlite')) {
   if (file !== ':memory:') {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -27,6 +70,10 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
   if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 1').get()) db.transaction(() => {
     db.exec(migration);
     db.prepare('INSERT INTO schema_migrations VALUES (1, ?, ?)').run('phase 1', Date.now());
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 2').get()) db.transaction(() => {
+    db.exec(migration2);
+    db.prepare('INSERT INTO schema_migrations VALUES (2, ?, ?)').run('phase 2 crops and inventory', Date.now());
   })();
   return db;
 }

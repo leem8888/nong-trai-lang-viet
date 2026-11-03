@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { now } from './time.js';
+import { seedFarmInventory } from './crops.js';
 
 export function farmFor(db, userId) {
   return db.prepare('SELECT f.*, u.username AS owner_name FROM farms f JOIN users u ON u.id=f.owner_id WHERE f.owner_id=?').get(userId);
@@ -21,6 +22,7 @@ export function createFarm(db, userId, name) {
     db.prepare('INSERT INTO farms(id,owner_id,name,created_at,updated_at) VALUES (?,?,?,?,?)').run(id,userId,clean,time,time);
     db.prepare('INSERT INTO player_states VALUES (?,?,?,?,?,?)').run(userId,id,720,650,'down',time);
     db.prepare('INSERT INTO farm_objects VALUES (?,?,0)').run(id,'lamp');
+    seedFarmInventory(db,id);
     return farmFor(db,userId);
   })();
 }

@@ -20,4 +20,14 @@ Mỗi tài khoản sở hữu tối đa một farm. Farm mặc định riêng t�
 
 ## Các phase sau
 
-Lộ trình và phạm vi đã khóa trong `PROJECT_MASTER_CONTEXT.md`. Phase 2 bổ sung trồng trọt và tăng trưởng khi offline; thiết kế số liệu cây trồng sẽ được xác nhận khi triển khai Phase 2.
+Lộ trình và phạm vi đã khóa trong `PROJECT_MASTER_CONTEXT.md`. Số liệu cây trồng Phase 2 đang là giả thuyết cần chơi thử.
+
+## Phase 2 — Trồng trọt thử nghiệm
+
+Khu ruộng gồm 15 ô ở phía tây nam. Chọn cuốc (phím 1), hạt giống (2), bình tưới (3) hoặc thu hoạch (4), rồi đứng gần và nhấp ô. Đất đi theo chuỗi `EMPTY → TILLED → WATERED` hoặc `TILLED/WATERED → PLANTED → TILLED` sau thu hoạch. Tưới cây đang trồng giữ trạng thái `PLANTED` và lưu `watered_at`.
+
+Sáu cây: lúa 90 phút, rau cải 15, cà chua 45, cà rốt 25, ngô 60, đậu nành 35. Đây là **giá trị thử nghiệm**, không phải cân bằng đã duyệt. Mỗi lần gieo lưu thời lượng và sản lượng riêng; thay cấu hình về sau không đổi cây đã trồng. Các giai đoạn theo tỷ lệ thời gian: `SEED` 0–25%, `SPROUT` 25–60%, `GROWING` 60–100%, `MATURE` từ 100%. Cây trưởng thành không hỏng do vắng mặt.
+
+Tưới tối đa **một lần cho mỗi cây**, giảm thời lượng trưởng thành 10%. Tưới đất trước khi gieo cho cùng lợi ích khi gieo; tưới tiếp không cộng dồn. Cây vẫn lớn bình thường nếu không tưới. Mọi thời điểm lấy từ server UTC và tính lại khi tải farm hoặc thu hoạch. Client chỉ dự đoán hình ảnh bằng mốc giờ server và bộ đếm đơn điệu.
+
+Mỗi farm nhận 4 hạt của từng loại khi tạo farm hoặc khi migration v2 áp dụng cho farm cũ. Khi **hết toàn bộ hạt**, người chơi có thể nhận một gói 2 hạt mỗi loại tối đa một lần mỗi ngày UTC. Đây là cơ chế thử nghiệm để không bị kẹt trước khi cửa hàng Phase 3 xuất hiện; không có tiền hay giao dịch. Túi đồ chứa hạt và nông sản, mỗi loại tối đa 999. Thu hoạch, cộng vật phẩm và chuyển đất về trạng thái đã cuốc nằm trong một transaction.

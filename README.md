@@ -1,6 +1,6 @@
 # Nông Trại Làng Việt
 
-Game nông trại web 2D, Phase 1: tài khoản, farm riêng, di chuyển, tương tác và lưu trạng thái.
+Game nông trại web 2D. Phase 1 có tài khoản và farm riêng; Phase 2 thêm trồng sáu loại cây, tăng trưởng offline, thu hoạch và túi đồ.
 
 ## Yêu cầu
 
@@ -17,9 +17,13 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 `data/starter.sqlite` được lưu trong Git, chứa schema khởi đầu và **không có tài khoản, mật khẩu hay session**. Lần chạy đầu, server sao chép file này thành `data/farm.sqlite`. Dữ liệu chơi cá nhân nằm trong `data/farm.sqlite` và không tự đồng bộ qua Git. Mỗi máy/nhánh dùng cùng schema khởi đầu; dùng backup riêng nếu muốn chuyển tiến độ chơi giữa các máy.
 
+## Trồng trọt
+
+Đi tới khu ruộng ở góc tây nam. Dùng phím **1 cuốc**, **2 gieo**, **3 tưới**, **4 thu hoạch**, hoặc nhấp các nút công cụ. Chọn loại hạt trong danh sách, đứng gần ô đất rồi nhấp ô. Nút **Túi đồ** hiển thị vật phẩm thật. Khi dùng hết mọi loại hạt, nút **Nhận hạt** cấp một gói nhỏ tối đa một lần trong ngày UTC. Cây lớn theo thời gian thực kể cả khi đóng trình duyệt; thời gian trồng hiện là giá trị thử nghiệm.
+
 ## Kiểm thử
 
-`npm test` chạy kiểm thử API, SQLite, quyền farm, Socket.IO, va chạm và TimeService. Thử thủ công trên trình duyệt: tạo hai tài khoản, đặt hai farm, đi quanh bản đồ, bật đèn, tải lại và đăng nhập lại.
+`npm test` chạy kiểm thử Phase 1 và Phase 2: API, SQLite, quyền farm, Socket.IO, va chạm, TimeService, migration, tăng trưởng offline, inventory và thu hoạch trùng. Checklist QA trình duyệt ở `QA_CHECKLIST.md`.
 
 ## Sao lưu
 
@@ -27,7 +31,7 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 ## Bảo mật và giới hạn hiện tại
 
-Mật khẩu được băm bằng scrypt, phiên lưu bằng cookie HttpOnly và token CSRF; thao tác farm được xác thực server-side. Chưa có dịch vụ email nên chưa có khôi phục tài khoản tự động. Chưa có thanh toán, cây trồng, tiền hoặc giao dịch giữa người chơi. Asset Phase 1 được vẽ bằng Canvas và là hình tạm có cùng tỷ lệ; cần thay bằng bộ art gốc trước phát hành.
+Mật khẩu được băm bằng scrypt, phiên lưu bằng cookie HttpOnly và token CSRF; thao tác farm được xác thực server-side. Chưa có dịch vụ email nên chưa có khôi phục tài khoản tự động. Chưa có thanh toán, tiền hoặc giao dịch giữa người chơi. Asset Canvas hiện là hình tạm có cùng tỷ lệ; cần thay bằng bộ art gốc trước phát hành.
 
 ## Code tái sử dụng
 

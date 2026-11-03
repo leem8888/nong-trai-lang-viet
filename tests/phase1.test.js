@@ -25,7 +25,7 @@ const connect=(base,cookie)=>new Promise((resolve,reject)=>{const socket=client(
 test('database, auth, ownership, persistence and socket access',async()=>{
   const f=await fixture();
   try {
-    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,1);
+    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,2);
     assert.equal((await request(f.base,'/health')).status,200);
     assert.equal((await request(f.base,'/farm')).status,401);
     const a=await request(f.base,'/register',{username:'farmer_a',password:'strong-pass-123'});
@@ -80,15 +80,15 @@ test('movement, collision, range and time rules',()=>{
 
 test('SQLite survives reopen and migration is idempotent',()=>{
   const dir=mkdtempSync(path.join(tmpdir(),'farm-phase1-')), file=path.join(dir,'test.sqlite');
+  let db;
   try {
-    let db=openDatabase(file);
+    db=openDatabase(file);
     db.prepare('INSERT INTO users VALUES (?,?,?,?)').run('u','test_user','hash',1000);
-    db.close();
+    db.close(); db=null;
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT username FROM users WHERE id=?').get('u').username,'test_user');
-    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,1);
-    db.close();
-  } finally {rmSync(dir,{recursive:true,force:true});}
+    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,2);
+  } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });
 
 test('unauthenticated socket is rejected',async()=>{
