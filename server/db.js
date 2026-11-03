@@ -132,6 +132,18 @@ UPDATE player_states SET x=990,y=780 WHERE scene='farm' AND x BETWEEN 996 AND 13
 UPDATE player_states SET x=1010,y=425 WHERE scene='farm' AND x BETWEEN 1036 AND 1294 AND y BETWEEN 346 AND 504;
 `;
 
+const migration5 = `
+CREATE TABLE farm_buildings (id INTEGER PRIMARY KEY AUTOINCREMENT, farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE, definition_id TEXT NOT NULL, tile_x INTEGER NOT NULL, tile_y INTEGER NOT NULL, rotation INTEGER NOT NULL CHECK(rotation IN (0,1,2,3)), state TEXT NOT NULL DEFAULT 'PLACED' CHECK(state='PLACED'), created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
+CREATE INDEX farm_buildings_farm ON farm_buildings(farm_id);
+CREATE TABLE farm_decorations (id INTEGER PRIMARY KEY AUTOINCREMENT, farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE, definition_id TEXT NOT NULL, tile_x INTEGER NOT NULL, tile_y INTEGER NOT NULL, rotation INTEGER NOT NULL CHECK(rotation IN (0,1,2,3)), created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
+CREATE INDEX farm_decorations_farm ON farm_decorations(farm_id);
+CREATE TABLE farm_expansions (farm_id TEXT PRIMARY KEY REFERENCES farms(id) ON DELETE CASCADE, level INTEGER NOT NULL DEFAULT 0 CHECK(level BETWEEN 0 AND 2), updated_at INTEGER NOT NULL);
+INSERT INTO farm_expansions(farm_id,level,updated_at) SELECT id,0,strftime('%s','now')*1000 FROM farms;
+CREATE TABLE crafting_jobs (id INTEGER PRIMARY KEY AUTOINCREMENT, farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE, building_id INTEGER NOT NULL REFERENCES farm_buildings(id) ON DELETE RESTRICT, recipe_id TEXT NOT NULL, recipe_version INTEGER NOT NULL, output_item TEXT NOT NULL, output_quantity INTEGER NOT NULL CHECK(output_quantity BETWEEN 1 AND 999), quantity INTEGER NOT NULL CHECK(quantity BETWEEN 1 AND 20), started_at INTEGER NOT NULL, duration_ms INTEGER NOT NULL CHECK(duration_ms>0), status TEXT NOT NULL CHECK(status IN ('PROCESSING','READY','CLAIMED')), claimed_at INTEGER);
+CREATE INDEX crafting_jobs_building ON crafting_jobs(building_id,status);
+CREATE TABLE phase5_receipts (user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, request_key TEXT NOT NULL, action TEXT NOT NULL, payload_hash TEXT NOT NULL, response_json TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(user_id,request_key));
+`;
+
 export function openDatabase(file = process.env.DB_FILE || path.resolve('data/farm.sqlite')) {
   if (file !== ':memory:') {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -159,6 +171,10 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
   if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 4').get()) db.transaction(() => {
     db.exec(migration4);
     db.prepare('INSERT INTO schema_migrations VALUES (4, ?, ?)').run('phase 4 VAC', Date.now());
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 5').get()) db.transaction(() => {
+    db.exec(migration5);
+    db.prepare('INSERT INTO schema_migrations VALUES (5, ?, ?)').run('phase 5 crafting and construction', Date.now());
   })();
   return db;
   } catch (error) { db.close(); throw error; }

@@ -31,11 +31,21 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 ## Kiểm thử
 
-`npm test` chạy kiểm thử Phase 1–4: API, SQLite, quyền farm, Socket.IO, offline growth, inventory, kinh tế, VAC, migration và retry. Checklist QA trình duyệt ở `QA_CHECKLIST.md`.
+`npm test` chạy kiểm thử Phase 1–5: API, SQLite, quyền farm, Socket.IO, offline growth, inventory, kinh tế, VAC, crafting, xây dựng, migration và retry. Checklist QA trình duyệt ở `QA_CHECKLIST.md`.
 
 `npm run qa:browser` chạy Playwright trên Edge thật với database tạm; cài Playwright bằng `npm install --no-save playwright` nếu máy chưa có. Có thể đặt `PLAYWRIGHT_MODULE` thành URL module Playwright đã cài và `EDGE_PATH` thành đường dẫn trình duyệt. Kịch bản tạo tài khoản thử riêng, không chạm `data/farm.sqlite`; ảnh kiểm tra được lưu trong `.qa/` và bị Git bỏ qua.
 
 `npm run qa:vac` chạy luồng browser Phase 4 trên Edge, cũng dùng SQLite tạm. Script tăng tốc chờ cá/gà bằng cách lùi timestamp trong database thử sau khi tương tác thật; không thay đổi giờ máy hoặc dữ liệu chơi.
+
+## Phase 5 — chế biến, xây dựng và mở đất
+
+Ở farm, dùng **Chế biến** để xem 6 công thức và hàng đợi. Đứng gần cối xay, bếp quê hoặc giàn phơi để bắt đầu mẻ; nguyên liệu trừ ngay, thành phẩm nhận sau khi đồng hồ server hoàn thành, kể cả khi offline. Công trình có lần lượt 1/2/1 chỗ chế biến. Kho đầy thì mẻ vẫn chờ nhận.
+
+**Xây dựng** hoặc phím **B** mở danh sách 3 công trình. Chọn vật, đến gần vị trí, rê chuột để xem vùng chiếm rồi nhấp để đặt; **R** xoay, **Esc** hủy. Công trình đầu tiên trả Đồng Làng, cất vào túi rồi đặt lại không trả thêm. Chỉ di chuyển/cất khi đã nhận hết mẻ. **Trang trí** có 15 loại; mua tại quầy Cô Mai, chọn tại farm rồi đặt/di chuyển/cất tương tự. Vật trong túi và vật đã đặt là hai trạng thái loại trừ nhau.
+
+**Mở đất** có hai cấp, giá thử nghiệm 180 rồi 280 Đồng Làng. Ranh giới tối trên Canvas là khu chưa mở khóa; mở đất chỉ cho phép đặt vật trên khu đó, không đổi kích thước map hay di chuyển ao/chuồng. Server xác nhận vị trí, va chạm, lối đi, tiền, kho và quyền sở hữu; màu preview là gợi ý.
+
+`npm run qa:phase5` chạy kịch bản Edge/Playwright trên SQLite tạm. `npm run economy:phase5` in biên lợi nhuận từng công thức. `node scripts/phase5-migration-check.mjs <bản-sao-sqlite>` kiểm tra giữ dữ liệu khi nâng lên v5. File `data/starter.sqlite` trong Git là schema v5 rỗng; dữ liệu chơi và backup riêng không vào Git.
 
 ## Sao lưu
 

@@ -25,6 +25,7 @@ export function createFarm(db, userId, name) {
     seedFarmInventory(db,id);
     db.prepare('INSERT INTO farm_ponds VALUES (?)').run(id);
     db.prepare('INSERT INTO farm_coops VALUES (?)').run(id);
+    db.prepare('INSERT INTO farm_expansions(farm_id,level,updated_at) VALUES (?,?,?)').run(id,0,time);
     return farmFor(db,userId);
   })();
 }

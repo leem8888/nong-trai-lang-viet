@@ -1,6 +1,7 @@
 import { CollisionSystem } from '../public/js/systems/CollisionSystem.js';
 import { MARKET_WORLD, MARKET_POINTS, FARM_GATE } from '../public/js/shared/marketMap.js';
 import { VAC_POINTS } from '../public/js/shared/vac.js';
+import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from '../public/js/shared/phase5.js';
 
 export const world = {
   width: 1440, height: 1024, margin: { left: 0, right: 0, top: 0, bottom: 0 },
@@ -16,11 +17,16 @@ export const world = {
 };
 const collision = new CollisionSystem(world);
 const marketCollision = new CollisionSystem(MARKET_WORLD);
-export function validPosition(x,y,scene='farm') { return Number.isFinite(x) && Number.isFinite(y) && !(scene==='market'?marketCollision:collision).blocked(x,y); }
-export function validMovement(from,x,y,elapsedMs,scene='farm') {
-  if (!validPosition(x,y,scene) || Math.hypot(x-from.x,y-from.y) > 180*Math.min(Math.max(elapsedMs,0)/1000,.5)+12) return false;
+export function validPosition(x,y,scene='farm',db=null,farmId=null) {
+  if(!Number.isFinite(x)||!Number.isFinite(y)||(scene==='market'?marketCollision:collision).blocked(x,y))return false;
+  if(scene!=='farm'||!db||!farmId)return true;
+  const rows=[...db.prepare('SELECT definition_id,tile_x,tile_y,rotation FROM farm_buildings WHERE farm_id=?').all(farmId).map(o=>({...o,def:BUILDINGS[o.definition_id]})),...db.prepare('SELECT definition_id,tile_x,tile_y,rotation FROM farm_decorations WHERE farm_id=?').all(farmId).filter(o=>DECORATIONS[o.definition_id]?.blocking).map(o=>({...o,def:DECORATIONS[o.definition_id]}))];
+  return !rows.some(o=>{const size=footprint(o.def,o.rotation),left=o.tile_x*TILE_SIZE,top=o.tile_y*TILE_SIZE;return x>=left-14&&x<=left+size.w*TILE_SIZE+14&&y>=top-14&&y<=top+size.h*TILE_SIZE+14;});
+}
+export function validMovement(from,x,y,elapsedMs,scene='farm',db=null,farmId=null) {
+  if (!validPosition(x,y,scene,db,farmId) || Math.hypot(x-from.x,y-from.y) > 180*Math.min(Math.max(elapsedMs,0)/1000,.5)+12) return false;
   const steps=Math.max(1,Math.ceil(Math.hypot(x-from.x,y-from.y)/7));
-  for(let i=1;i<=steps;i++) if(!validPosition(from.x+(x-from.x)*i/steps,from.y+(y-from.y)*i/steps,scene)) return false;
+  for(let i=1;i<=steps;i++) if(!validPosition(from.x+(x-from.x)*i/steps,from.y+(y-from.y)*i/steps,scene,db,farmId)) return false;
   return true;
 }
 export const interactions = { board: { x: 343, y: 700 }, door: { x: 712, y: 520 }, lamp: { x: 935, y: 586 }, farmGate: FARM_GATE, ...VAC_POINTS };

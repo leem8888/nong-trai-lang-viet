@@ -9,6 +9,7 @@ import { inRange, validMovement } from './world.js';
 import { farmingState, performFarmAction } from './crops.js';
 import { marketState, performMarketAction } from './economy.js';
 import { vacState, performVacAction } from './vac.js';
+import { phase5State, performPhase5Action } from './phase5.js';
 
 export function createApp(db = openDatabase()) {
   const app = express();
@@ -96,6 +97,14 @@ export function createApp(db = openDatabase()) {
       res.json({ok:true,...result});
     }catch(error){fail(res,error);}
   });
+  const phase5Actions=new Map();
+  app.get('/api/phase5',guard,(req,res)=>{const state=phase5State(db,req.auth.user_id);return state?res.json(state):res.status(404).json({error:'Chưa tạo nông trại.'});});
+  app.post('/api/phase5/action',guard,csrf,(req,res)=>{
+    const key=req.auth.user_id,current=Date.now(),previous=phase5Actions.get(key);
+    if(previous&&current-previous.at<100&&req.body?.requestId!==previous.requestId&&!(typeof req.body?.requestId==='string'&&db.prepare('SELECT 1 FROM phase5_receipts WHERE user_id=? AND request_key=?').get(key,req.body.requestId)))return res.status(429).json({error:'Thao tác quá nhanh.'});
+    phase5Actions.set(key,{at:current,requestId:req.body?.requestId});
+    try{const result=performPhase5Action(db,req.auth.user_id,req.body);io.to(`farm:${result.state.farmId}`).emit('farm:phase5',result.state);res.json({ok:true,...result});}catch(error){fail(res,error);}
+  });
   io.use((socket,next) => {
     const auth = session(db,socket.request);
     if (!auth) return next(new Error('unauthorized'));
@@ -126,7 +135,7 @@ export function createApp(db = openDatabase()) {
       if (!joined || !payload || typeof payload !== 'object') return ack(cb,{ok:false,error:'Chưa vào nông trại.'});
       const state=db.prepare('SELECT x,y,scene FROM player_states WHERE user_id=?').get(auth.user_id);
       const current=Date.now(), elapsed=lastMove ? current-lastMove : 500;
-      if (!['up','down','left','right'].includes(payload.direction) || !validMovement(state,payload.x,payload.y,elapsed,state.scene)) return ack(cb,{ok:false,error:'Vị trí không hợp lệ.',player:state});
+      if (!['up','down','left','right'].includes(payload.direction) || !validMovement(state,payload.x,payload.y,elapsed,state.scene,db,joined)) return ack(cb,{ok:false,error:'Vị trí không hợp lệ.',player:state});
       db.prepare('UPDATE player_states SET x=?,y=?,direction=?,updated_at=? WHERE user_id=?').run(payload.x,payload.y,payload.direction,current,auth.user_id);
       lastMove=current; ack(cb,{ok:true});
     });

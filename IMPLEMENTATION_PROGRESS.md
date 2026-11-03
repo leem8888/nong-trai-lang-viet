@@ -1,5 +1,22 @@
 # Tiến độ triển khai
 
+## Phase 5 — complete ở môi trường phát triển
+
+Gate 0: Phase 1–4 `npm test` 23/23, Edge 14/14, backup trước migration. Sau triển khai: `npm test` **29/29**, `npm run qa:browser` **14/14**, `npm run qa:vac` **5/5**, `npm run qa:phase5` **13/13** trên Edge; `npm run economy:phase5` chạy được. Migration v4→v5 trên bản sao giữ dữ liệu và integrity/FK `ok`; `starter.sqlite` v5 rỗng. Chi tiết ở `QA_CHECKLIST.md`.
+
+| Gói | Trạng thái | Bằng chứng |
+|---|---|---|
+| P5.0 Review/backup | Hoàn thành | Backup `farm-2026-11-03T08-13-53-958Z.sqlite`, Gate 0 test 23/23 |
+| P5.1 Migration/registry | Hoàn thành | v5 append-only, 6 recipe, 3 building, 15 decoration, 2 cấp đất; bản sao v4 giữ toàn bộ bảng cũ |
+| P5.2–P5.3 Crafting | Hoàn thành | Offline job, 1/2/1 slot, snapshot thời gian/sản lượng, claim một lần, kho đầy giữ READY; test và Edge |
+| P5.4 Placement | Hoàn thành | Xoay/đặt/di chuyển/cất công trình; server kiểm tra va chạm, vùng đất, đường thiết yếu, vị trí người; Edge và test |
+| P5.5 Decoration | Hoàn thành | Chợ bán 15 loại; đặt/di chuyển/cất đồng bộ inventory, Edge và test |
+| P5.6 Expansion | Hoàn thành | Cấp 1 giá 180, cấp 2 giá 280; giao dịch atomic/idempotent, reload/restart giữ trạng thái |
+| P5.7 Kinh tế/Canvas/UI | Hoàn thành ở mức art tạm | Chợ bán 6 thành phẩm, cấu hình giá server, Canvas ghost/ranh giới/hoạt họa đơn giản, bảng chế biến/xây/trang trí/mở đất |
+| P5.8–P5.9 Security/QA/docs | Hoàn thành ở development | Auth/CSRF/scene/range/receipt/rollback, 29 unit/integration và 32 nhóm browser tổng; tài liệu và handoff cập nhật |
+
+Các giá trị tiền, thời lượng, asset là giả thuyết playtest. Edge headless đo khoảng 60 FPS với 100 decoration; chưa đo trên thiết bị yếu hoặc nhiều trăm vật và chưa thử thiết bị cảm ứng vật lý. Đây là việc trước phát hành, không thuộc cổng Phase 5 hiện tại. Master context không thay đổi.
+
 ## Phase 4 — complete ở môi trường phát triển
 
 Gate 0: test 16/16, browser Edge 14/14; đã backup SQLite trước migration. Sau triển khai: `npm test` **23/23**, `npm run qa:browser` **14/14**, `npm run qa:vac` **5/5**. Migration v4 an toàn trên bản sao dữ liệu v3; `data/starter.sqlite` v4 không có user; database chơi v4 integrity `ok`. Chi tiết ở `QA_CHECKLIST.md` và `HANDOFF.md`.

@@ -1,4 +1,4 @@
-# Nghiệm thu Phase 1–4 — 2026-11-03
+# Nghiệm thu Phase 1–5 — 2026-11-03
 
 Trạng thái: **PASS ở môi trường phát triển**. Đã kiểm tra bằng Microsoft Edge 156 headless qua Playwright, Node.js 20.19.6, SQLite tạm. Sau Phase 4: `npm test` **23 pass, 0 fail**; `npm run qa:browser` **14 nhóm PASS**; `npm run qa:vac` **5 nhóm PASS**. Script browser và ảnh kiểm tra ở `tests/browser-qa.mjs`, `tests/browser-vac-qa.mjs` và `.qa/`.
 
@@ -55,3 +55,19 @@ Playwright không có trong dependency dự án nhưng có sẵn trong npm cache
 | Canvas/UI/layout/console | PASS | Xem ảnh `vac-pond.png`, `vac-coop.png`, `vac-mobile.png`; E và nút chuột hoạt động; 390 px không tràn ngang; không có `pageerror` |
 
 Browser Phase 4 dùng SQLite tạm và đặt nhân vật gần điểm tương tác để rút ngắn di chuyển; kịch bản vẫn thực hiện chuyển cảnh bằng E. Cá/gà/trứng được tăng tốc bằng cách lùi timestamp **trong database thử** rồi reload, không chờ 90–150 phút thật. Đã kiểm tra browser Edge headless, chưa kiểm tra thiết bị cảm ứng vật lý hoặc production network.
+## Phase 5 — nghiệm thu môi trường phát triển (2026-11-03)
+
+Trạng thái: **PASS các kịch bản đã chạy**. Node 20.19.6, Microsoft Edge headless qua Playwright, SQLite tạm; `npm test` **29/29**, `npm run qa:browser` **14/14**, `npm run qa:vac` **5/5**, `npm run qa:phase5` **13/13**. Browser Phase 5 tạo hai tài khoản, hai tab; không có `pageerror`. Test tăng tốc chín lúa và hoàn thành mẻ bằng cách lùi timestamp **chỉ trong SQLite thử**; không chờ 90 phút thực.
+
+| Nhóm | Kết quả | Bằng chứng |
+|---|---|---|
+| Lúa → gạo → chợ | PASS | Edge cuốc/gieo/gặt lúa bằng chuột, xây cối và xoay bằng R, bắt đầu mẻ, reload sau offline, nhận gạo, bán tại NPC |
+| Công thức và công trình | PASS | Test service chạy đủ 6 recipe với đầu vào thật Phase 2/4, 3 công trình, slot 1/2/1, thời lượng snapshot, claim sớm/trùng/kho đầy, move/store khi rảnh |
+| Trang trí | PASS | Chợ mua đèn, Canvas đặt/di chuyển/cất; inventory 1→0→1. Registry có 15 loại và test ownership/không nhân đôi |
+| Mở đất | PASS | Browser UI cấp 1 và HTTP cấp 2, mua trùng ID không trừ thêm; test sai thứ tự/thiếu tiền/giá giả; reload và restart giữ cấp 2 |
+| Vị trí/collision | PASS | Server chặn nhà, ao, chuồng, ruộng, vật đã đặt, vùng khóa và người đứng tại ô; flood fill giữ lối đến cổng, ruộng, ao, chuồng; movement dùng collision vật đặt |
+| Quyền, CSRF, rollback | PASS | Browser CSRF 403, tài khoản khác bị từ chối, scene chợ không sửa farm, receipt replay; test atomic tiền/kho/job, ID giả, rotation sai |
+| Migration v5 | PASS | Backup trước migration `data/backups/farm-2026-11-03T08-13-53-958Z.sqlite`; copy nhất quán v4→v5 giữ 1 user/1 farm/15 soil/16 crop/7 inventory/1 wallet, integrity và FK `ok`, mở lại không chạy migration lần hai. `starter.sqlite` v5 rỗng. DB cục bộ sau nâng v5 vẫn giữ các dòng và integrity `ok` |
+| Layout, FPS và restart | PASS | Đã xem `.qa/phase5-farm.png` và `.qa/phase5-mobile.png` (390 px), mouse/keyboard, không `pageerror`; browser restart HTTP server cùng SQLite giữ công trình, vật phẩm và đất; 100 decoration đạt khoảng 60 FPS trong Edge headless tại máy QA |
+
+Giới hạn: art Canvas là hình tạm; chưa kiểm thử máy cảm ứng vật lý/production HTTPS. Browser test dùng thao tác điều hướng nhanh bằng cập nhật vị trí trong SQLite thử; đường đi/collision nền được regression Phase 1 kiểm tra. FPS khoảng 60 chỉ là phép đo 1,2 giây với 100 đường gạch trên máy QA, chưa chứng minh hiệu năng trên thiết bị yếu hoặc nhiều trăm vật; giá, thời gian và biên lợi nhuận cần playtest người thật. Preview là chỉ báo cục bộ; quyết định đặt cuối cùng thuộc server.

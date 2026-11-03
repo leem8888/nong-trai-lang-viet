@@ -1,4 +1,31 @@
-# Handoff — Phase 4 VAC
+# Handoff — Phase 5 chế biến và xây dựng
+
+Cập nhật 2026-11-03. **Phase 5 complete ở môi trường phát triển**, Phase 1–4 vẫn đạt regression. `PROJECT_MASTER_CONTEXT.md` là tài liệu thiết kế cố định và chưa sửa. Phần Phase 4 bên dưới là lịch sử bàn giao.
+
+## Phase 5 đã làm
+
+- `server/db.js` migration v5 thêm `farm_buildings`, `farm_decorations`, `farm_expansions`, `crafting_jobs`, `phase5_receipts`; `farm_objects` Phase 1 tiếp tục chỉ lưu đèn. `public/js/shared/phase5.js` chứa 6 recipe, 3 building, 15 decoration, 2 cấp đất, item và giá. `server/phase5.js` thực hiện action trong transaction và receipt có hash payload; `server/world.js` dùng vật thể đặt để chặn di chuyển.
+- `public/js/phase5.js` và `public/js/main.js` thêm bảng chế biến/xây/trang trí/mở đất, preview Canvas, xoay R, cất vào kho và đặt lại, công trình hoạt họa đơn giản. `server/marketConfig.js` bán thành phẩm và trang trí qua ví/kho/ledger Phase 3. API `GET /api/phase5`, `POST /api/phase5/action` yêu cầu auth, CSRF, farm owner; Socket `farm:phase5` đồng bộ tab.
+- Job lưu thời gian và output snapshot; hoàn thành theo UTC server, không timer riêng. Kho đầy khi claim giữ job; công trình có job chưa nhận không thể cất/di chuyển. Cất công trình rảnh chuyển thành item trong túi, đặt lại không trả tiền lần hai. Hai cấp mở đất chỉ mở quyền đặt vật, không chặn người đi qua vùng chưa mở.
+
+## Dữ liệu và migration
+
+- Trước v5 đã backup database chơi qua `npm run backup` tại `data/backups/farm-2026-11-03T08-13-53-958Z.sqlite` (backup nhất quán ở schema v4). Kiểm thử v4→v5 trên **bản sao**: trước/sau 1 user, 1 farm, 15 soil, 16 crop, 7 inventory, 1 wallet; integrity và foreign keys `ok`, reopen không chạy lại migration. Sau đó `npm run backup` nâng DB cục bộ lên v5 và tạo backup `farm-2026-11-03T09-08-09-418Z.sqlite`. Đọc SQLite đang chạy phải qua SQLite backup để có cả WAL; copy riêng file `.sqlite` có thể nhìn thấy schema cũ.
+- `data/starter.sqlite` tracked đã ở v5, **0 user/farm** và integrity `ok`. Không commit `data/farm.sqlite`, backup hoặc dữ liệu chơi thật.
+
+## Kiểm thử thực tế
+
+- Gate 0: `npm test` 23/23; Edge `npm run qa:browser` 14/14 trước code.
+- Sau code: `npm test` **29/29**; Edge `npm run qa:browser` **14/14**, `npm run qa:vac` **5/5**, `npm run qa:phase5` **13/13**. Kịch bản mới trồng/gặt lúa bằng chuột, xây/di chuyển/cất cối, chế biến offline, nhận/bán gạo, mua/đặt/di chuyển/cất đèn, mở đất 1–2, hai tab/tài khoản, CSRF, replay, restart server, mobile 390 px và console không có `pageerror`.
+- `node scripts/phase5-migration-check.mjs <sqlite>` kiểm tra migration trên bản sao; `npm run economy:phase5` báo margin thử nghiệm 6 công thức lần lượt +20/+20/+16/+20/+13/+22 Đồng so với bán nguyên liệu trực tiếp.
+
+## Lỗi đã sửa, giới hạn và bước tiếp
+
+- Test cũ dùng số migration cố định 4 gây fail hợp lệ khi thêm v5; đã cập nhật kỳ vọng lên 5, không bỏ test. Giá bán thành phẩm ban đầu cho biên lợi nhuận quá lớn; đã giảm còn mức thử nghiệm trên. Xây lại công trình từng cất nay tiêu thụ vật trong túi thay vì thu phí lần hai. Placement kiểm tra thêm người đứng trên ô và đường đi thiết yếu.
+- Chưa thử thiết bị cảm ứng vật lý hoặc HTTPS production. Đo khoảng 60 FPS với 100 decoration trên Edge headless tại máy QA, chưa đo thiết bị yếu/nhiều trăm vật. Asset hiện là Canvas placeholder; giá và thời gian cần playtest. Job đã nhận của công trình bị cất được xóa khỏi bảng job để bảo toàn foreign key; không có lịch sử job dài hạn trong UI. Những điểm này không chặn nghiệm thu Phase 5 ở development nhưng cần lưu ý trước phát hành.
+- Nếu bắt đầu Phase 6, đọc lại master context, GDD, progress, handoff, checklist và prompt Phase6. Không suy từ tài liệu thiết kế rằng chức năng đã có; xác nhận bằng repo/tests. Không mở rộng Phase 6 trong đợt này.
+
+## Handoff Phase 4 (lịch sử)
 
 Cập nhật 2026-11-03. Phase 1–4: **complete ở môi trường phát triển** theo Definition of Done tương ứng. `PROJECT_MASTER_CONTEXT.md` là bản thiết kế cố định, không sửa trong Phase 4. File này và `IMPLEMENTATION_PROGRESS.md` ghi trạng thái code thực tế.
 

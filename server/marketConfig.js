@@ -1,4 +1,5 @@
 import { CROPS, CROP_IDS } from '../public/js/shared/crops.js';
+import { DECORATIONS, PHASE5_ITEMS, PROCESSED_PRICES } from '../public/js/shared/phase5.js';
 
 // Trial prices for playtesting; all money is integer Đồng Làng.
 export const START_BALANCE = 200;
@@ -31,5 +32,7 @@ export function marketCatalog(at) {
   const day=marketDay(at);
   return [...CROP_IDS.map(id=>({ cropId:id, name:CROPS[id].name, seedItem:CROPS[id].seed, produceItem:CROPS[id].produce,
     buyPrice:SEED_PRICES[id], sellPrice:id===day.featured?Math.floor(SELL_PRICES[id]*115/100):SELL_PRICES[id],
-    baseSellPrice:SELL_PRICES[id], featured:id===day.featured, priceVersion:1 })),...VAC_PRICES.map(row=>({...row,featured:false,priceVersion:1}))];
+    baseSellPrice:SELL_PRICES[id], featured:id===day.featured, priceVersion:1 })),...VAC_PRICES.map(row=>({...row,featured:false,priceVersion:1})),
+    ...Object.entries(PROCESSED_PRICES).map(([produceItem,sellPrice])=>({name:PHASE5_ITEMS[produceItem].name,produceItem,sellPrice,featured:false,priceVersion:1})),
+    ...Object.entries(DECORATIONS).map(([id,d])=>({name:d.name,seedItem:`decor_${id}`,buyPrice:d.cost,featured:false,priceVersion:1}))];
 }
