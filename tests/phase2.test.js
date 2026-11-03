@@ -103,7 +103,7 @@ test('migration from v1 preserves farm and starter has no user data',()=>{
     old.close();
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT name FROM farms WHERE id=?').get('f').name,'Old farm');
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,3);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,4);
     assert.equal(db.prepare('SELECT count(*) n FROM inventory_items WHERE farm_id=?').get('f').n,6);
     db.close();db=null;
     db=openDatabase(file);

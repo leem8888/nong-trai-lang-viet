@@ -1,5 +1,20 @@
 # Tiến độ triển khai
 
+## Phase 4 — complete ở môi trường phát triển
+
+Gate 0: test 16/16, browser Edge 14/14; đã backup SQLite trước migration. Sau triển khai: `npm test` **23/23**, `npm run qa:browser` **14/14**, `npm run qa:vac` **5/5**. Migration v4 an toàn trên bản sao dữ liệu v3; `data/starter.sqlite` v4 không có user; database chơi v4 integrity `ok`. Chi tiết ở `QA_CHECKLIST.md` và `HANDOFF.md`.
+
+| Gói | Trạng thái | Bằng chứng |
+|---|---|---|
+| P4.0 Preflight | Hoàn thành | Commit nền `9b3d8d1`, tests/browser Gate 0, backup trước migration |
+| P4.1 Schema/registry | Hoàn thành | Migration v4, 8 item VAC, 2 loại cá, gà và 3 công thức; copy v3→v4 giữ user/farm/crop/kho/ví/đơn |
+| P4.2 Ao cá | Hoàn thành | 6 chỗ, thả/cho ăn/thu hoạch, offline, rollback/idempotency; browser + test |
+| P4.3 Chuồng gà | Hoàn thành | 4 chỗ, trưởng thành offline, mỗi chu kỳ 3 trứng, nhặt/cho ăn lại; browser + test |
+| P4.4 Vòng tài nguyên | Hoàn thành | Đậu nành→thức ăn cá, ngô/lúa→thức ăn gà, transaction atomic |
+| P4.5 Kinh tế | Hoàn thành | Chợ mua con giống/thức ăn và bán cá/trứng qua wallet/ledger cũ; báo cáo lợi nhuận thử nghiệm |
+| P4.6 Canvas/UI | Hoàn thành ở mức art tạm | Bờ ao/gợn nước/cá, chuồng/gà/trứng, hai bảng VAC, HUD; ảnh Edge desktop/mobile đã xem |
+| P4.7–P4.8 Security/QA/docs | Hoàn thành | Ownership, scene/range, CSRF, hai socket, retry, 23/23 test và 19/19 nhóm browser tổng |
+
 Cập nhật: 2026-11-03. Tài liệu này ghi tình trạng code thực tế; `PROJECT_MASTER_CONTEXT.md` là bản thiết kế cố định.
 
 | Gói | Trạng thái | Bằng chứng |
@@ -29,7 +44,7 @@ Phase 1 **complete ở môi trường phát triển**: đạt Definition of Done
 
 `npm ci` cài sạch trong thư mục tạm ở đợt Phase 2: 124 package, 0 vulnerability. Kiểm thử nghiệm thu hiện dùng database và cổng tạm do script tạo; không tác động dữ liệu chơi.
 
-`data/starter.sqlite` hiện chứa migration v3 và không có dữ liệu người chơi. `data/farm.sqlite` sau migration giữ 1 user/1 farm, 6 loại hạt và một ví; database chơi vẫn cục bộ.
+Ghi chú lịch sử Phase 2: starter ở thời điểm đó là v3; **hiện đã là v4**. Database chơi vẫn cục bộ và bị Git bỏ qua.
 
 ## Phase 3 — complete
 
@@ -44,4 +59,4 @@ Phase 1 **complete ở môi trường phát triển**: đạt Definition of Done
 | P3.7 UI/API/Socket | Hoàn thành | Browser mua/bán/giao đơn, hai tab cùng tài khoản đồng bộ ví; CSRF/ownership bị từ chối |
 | P3.8 QA/docs | Hoàn thành | `npm test` 16/16; `npm run qa:browser` 14/14; receipt rời chợ, giới hạn đơn, lỗi scene được kiểm tra |
 
-Trước migration v3 đã chạy backup. Database local sau migration: **1 user, 1 farm, 1 ví, 6 item, integrity ok**. Starter v3: 0 user/farm/wallet/item. Giá và phần thưởng là giả thuyết playtest. Phase 1–3 **đạt Definition of Done ở môi trường phát triển** ngày 2026-11-03; đủ điều kiện bắt đầu Phase 4. QA trên thiết bị cảm ứng thật, mạng gián đoạn dài và HTTPS production chưa thực hiện, không phải điều kiện DoD của ba phase này.
+Trước migration v3 đã chạy backup; Phase 1–3 đạt Definition of Done ở môi trường phát triển ngày 2026-11-03. Những số liệu Phase 3 là lịch sử trước Phase 4. Hiện Phase 1–4 đã nghiệm thu ở môi trường phát triển; có thể bắt đầu Phase 5 theo yêu cầu riêng. QA trên thiết bị cảm ứng thật và HTTPS production vẫn chưa thực hiện.

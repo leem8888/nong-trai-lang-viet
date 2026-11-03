@@ -1,6 +1,6 @@
 # Nông Trại Làng Việt
 
-Game nông trại web 2D. Phase 1 có tài khoản và farm riêng; Phase 2 thêm trồng sáu loại cây; Phase 3 thêm chợ NPC, Đồng Làng và đơn hàng.
+Game nông trại web 2D. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm ao cá, chuồng gà và vòng thức ăn VAC.
 
 ## Yêu cầu
 
@@ -25,11 +25,17 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 Đi theo lối phía nam farm tới biển **Chợ quê** và nhấn **E** để vào chợ. Đến gần quầy hạt, quầy thu mua hoặc bảng đơn rồi nhấn **E**. Chọn vật phẩm và số lượng để mua/bán, hoặc nhận và giao đơn hàng. Nút **Lịch sử** cạnh số dư cho xem các giao dịch. Cổng phía nam chợ đưa về farm. Chợ luôn mở; một loại nông sản được thu mua cao hơn 15% theo ngày UTC. Giá, tiền và vật phẩm được xác nhận ở server. Dùng `npm run economy:report` để xem bảng lợi nhuận thử nghiệm.
 
+## Ao cá và chuồng gà
+
+Ở farm, tới ao phía đông nam hoặc chuồng gà phía đông bắc, nhấn **E** hoặc nhấp điểm tương tác. Mua cá giống, gà con và thức ăn tại quầy Cô Mai ở chợ; thả cá/thêm gà trong bảng VAC. Đổi đậu nành thành thức ăn cá, ngô hoặc lúa thành thức ăn gà ngay tại bảng tương ứng. Cá và gà lớn theo thời gian thật khi offline. Cho cá ăn một lần để rút ngắn thời gian; cho gà trưởng thành ăn để mở tối đa ba chu kỳ trứng, rồi nhặt trứng. Cá và trứng vào túi đồ và bán cho Cô Lan. Số liệu hiện là giá trị playtest.
+
 ## Kiểm thử
 
-`npm test` chạy kiểm thử Phase 1–3: API, SQLite, quyền farm, Socket.IO, di chuyển, tăng trưởng offline, inventory, ví, mua/bán, đơn hàng, migration và retry. Checklist QA trình duyệt ở `QA_CHECKLIST.md`.
+`npm test` chạy kiểm thử Phase 1–4: API, SQLite, quyền farm, Socket.IO, offline growth, inventory, kinh tế, VAC, migration và retry. Checklist QA trình duyệt ở `QA_CHECKLIST.md`.
 
 `npm run qa:browser` chạy Playwright trên Edge thật với database tạm; cài Playwright bằng `npm install --no-save playwright` nếu máy chưa có. Có thể đặt `PLAYWRIGHT_MODULE` thành URL module Playwright đã cài và `EDGE_PATH` thành đường dẫn trình duyệt. Kịch bản tạo tài khoản thử riêng, không chạm `data/farm.sqlite`; ảnh kiểm tra được lưu trong `.qa/` và bị Git bỏ qua.
+
+`npm run qa:vac` chạy luồng browser Phase 4 trên Edge, cũng dùng SQLite tạm. Script tăng tốc chờ cá/gà bằng cách lùi timestamp trong database thử sau khi tương tác thật; không thay đổi giờ máy hoặc dữ liệu chơi.
 
 ## Sao lưu
 

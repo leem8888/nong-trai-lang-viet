@@ -83,7 +83,7 @@ export function performMarketAction(db,userId,payload,at=now()) {
       if(!Number.isSafeInteger(amount)||amount<=0)throw new Error('Giá không hợp lệ.');
       if(payload.action==='buy') {
         debit(db,userId,amount,at); addItem(db,farmId,payload.itemId,payload.quantity);
-        message=`Đã mua ${payload.quantity} ${offer.name.toLowerCase()} giống.`;
+        message=`Đã mua ${payload.quantity} ${offer.name.toLowerCase()}${offer.cropId?' giống':''}.`;
       } else {
         spendItem(db,farmId,payload.itemId,payload.quantity); credit(db,userId,amount,at);
         message=`Đã bán ${payload.quantity} ${offer.name.toLowerCase()}.`;

@@ -1,3 +1,4 @@
+import { VAC_ITEMS } from './vac.js';
 // Phase 2 trial values. Existing plantings retain their duration snapshot.
 export const CROPS = Object.freeze({
   rice: { name: 'Lúa', seed: 'seed_rice', produce: 'rice', durationMs: 90 * 60000, yield: 3, color: '#d3b94d', shape: 'stalk', description: 'Lúa nước của làng.' },
@@ -8,13 +9,13 @@ export const CROPS = Object.freeze({
   soy: { name: 'Đậu nành', seed: 'seed_soy', produce: 'soy', durationMs: 35 * 60000, yield: 3, color: '#a9bd6a', shape: 'pod', description: 'Hạt đậu giàu dinh dưỡng.' }
 });
 export const CROP_IDS = Object.keys(CROPS);
-export const ITEMS = Object.freeze(Object.fromEntries(CROP_IDS.flatMap(id => {
+export const ITEMS = Object.freeze({...Object.fromEntries(CROP_IDS.flatMap(id => {
   const crop = CROPS[id];
   return [
     [crop.seed, { name: `Hạt ${crop.name.toLowerCase()}`, category: 'seed', stackLimit: 999, description: `Gieo ${crop.name.toLowerCase()} trên đất đã cuốc.`, color: crop.color }],
     [crop.produce, { name: crop.name, category: 'produce', stackLimit: 999, description: crop.description, color: crop.color }]
   ];
-})));
+})),...VAC_ITEMS});
 export const FIELD = Object.freeze({ x: 105, y: 730, columns: 5, rows: 3, stepX: 82, stepY: 55, width: 70, height: 42 });
 export const tileRect = (x, y) => ({ x: FIELD.x + x * FIELD.stepX, y: FIELD.y + y * FIELD.stepY, w: FIELD.width, h: FIELD.height });
 export const tileCenter = (x, y) => ({ x: FIELD.x + x * FIELD.stepX + FIELD.width / 2, y: FIELD.y + y * FIELD.stepY + FIELD.height / 2 });

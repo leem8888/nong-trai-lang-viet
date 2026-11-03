@@ -48,3 +48,19 @@ Ví của mỗi tài khoản được cấp **200 Đồng Làng** một lần. T
 | Đậu nành | 35 | 22 | 3 | 31 | 35 |
 
 Giá và sản lượng trên là **giả thuyết playtest**, chưa cân bằng cuối cùng. `npm run economy:report` tính thêm lợi nhuận theo giờ; lúa có lợi nhuận tuyệt đối cao hơn, đậu nành có lợi nhuận theo giờ cao hơn. Sáu mẫu đơn hàng NPC có thể nhận và hoàn thành **một lần mỗi farm**, không có deadline. Phần thưởng cố định cao hơn tổng giá bán cơ bản của nguyên liệu; không có farm tiền lặp vô hạn từ đơn. Gói hạt miễn phí Phase 2 vẫn là lối thoát giới hạn khi hết toàn bộ hạt, tối đa một lần mỗi ngày UTC.
+
+## Phase 4 — Vườn, ao, chuồng
+
+Mỗi farm có một ao ở phía đông nam và một chuồng gà ở phía đông bắc, dùng lại vùng đất đã dự trù; 15 ô ruộng và trạng thái cũ không đổi. Đứng gần ao hoặc chuồng và nhấn E/nhấp để mở bảng. NPC chợ bán cá giống, gà con và thức ăn; thu mua cá và trứng. Các giá dưới đây là **giả thuyết playtest**.
+
+| Vật nuôi | Chi phí giống | Thời gian lớn | Sản lượng | Giá bán/đơn vị | Sức chứa |
+|---|---:|---:|---:|---:|---:|
+| Cá rô phi | 30 | 90 phút | 2 cá | 32 | Ao tối đa 6 cá |
+| Cá chép | 55 | 150 phút | 2 cá | 45 | Ao tối đa 6 cá |
+| Gà con | 70 | 120 phút | Trứng theo chu kỳ | 23 | Chuồng tối đa 4 gà |
+
+Cá lớn theo thời gian UTC server, kể cả khi vắng mặt và không chết vì thiếu thức ăn. Mỗi con cá được cho ăn **một lần**, tốn 1 thức ăn cá (mua 8 Đồng), giảm 10% thời lượng nuôi nhưng không đặt mốc hoàn thành trước thời điểm cho ăn. Thu hoạch mỗi con cho sản lượng snapshot của lúc thả; ao trống để thả lứa tiếp.
+
+Gà lớn sau 120 phút UTC dù không cho ăn. Gà trưởng thành cần 1 thức ăn gà (mua 8 Đồng) để bắt đầu chu kỳ trứng: mỗi 45 phút có 1 trứng, tối đa **3 trứng chờ mỗi con** dù offline nhiều ngày. Sau khi đủ ba trứng và nhặt hết, có thể cho ăn lại. Không có timer riêng cho từng con; server tính số trứng từ mốc cho ăn và số đã nhặt. Gà không chết khi người chơi vắng mặt.
+
+Liên kết VAC: 1 đậu nành → 2 thức ăn cá; 1 ngô hoặc 1 lúa → 2 thức ăn gà. Chuyển đổi là thao tác tức thời tại ao/chuồng, dùng inventory Phase 2 và transaction SQLite; không phải hệ crafting Phase 5. Mua/bán dùng ví và sổ giao dịch Phase 3; thao tác VAC có sổ sự kiện và receipt riêng để retry an toàn. `npm run economy:report` so sánh lợi nhuận cây, cá và chu kỳ trứng. Với giá thử nghiệm, một gà con cần khoảng hai chu kỳ trứng để hoàn vốn.

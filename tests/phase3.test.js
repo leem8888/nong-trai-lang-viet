@@ -43,7 +43,7 @@ test('wallet starter grant, limits and trial economy balance',()=>{
     assert.equal(marketDay(day.endAt-1).id,day.id);
     assert.notEqual(marketDay(day.endAt).id,day.id);
     assert.equal(catalog.filter(row=>row.featured).length,1);
-    assert.ok(catalog.every(row=>row.sellPrice>=row.baseSellPrice&&row.sellPrice<=Math.floor(row.baseSellPrice*1.15)));
+    assert.ok(catalog.filter(row=>row.cropId).every(row=>row.sellPrice>=row.baseSellPrice&&row.sellPrice<=Math.floor(row.baseSellPrice*1.15)));
     const rows=Object.keys(CROPS).map(id=>{const profit=CROPS[id].yield*SELL_PRICES[id]-SEED_PRICES[id];return {id,profit,hourly:profit/(CROPS[id].durationMs/3600000)};});
     assert.ok(rows.every(row=>row.profit>0));
     assert.notEqual(rows.toSorted((a,b)=>b.profit-a.profit)[0].id,rows.toSorted((a,b)=>b.hourly-a.hourly)[0].id);
@@ -126,7 +126,7 @@ test('migration from Phase 2 preserves inventory, wallet and scene after reopen'
     assert.equal(db.prepare('SELECT balance FROM wallets WHERE user_id=?').get('u').balance,200);
     assert.equal(db.prepare('SELECT scene FROM player_states WHERE user_id=?').get('u').scene,'farm');
     db.close();db=null;db=openDatabase(file);
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,3);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,4);
     assert.equal(db.prepare('SELECT balance FROM wallets WHERE user_id=?').get('u').balance,200);
   } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });

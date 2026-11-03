@@ -1,6 +1,6 @@
-# Nghiệm thu Phase 1–3 — 2026-11-03
+# Nghiệm thu Phase 1–4 — 2026-11-03
 
-Trạng thái: **PASS ở môi trường phát triển**. Đã kiểm tra bằng Microsoft Edge 156 headless qua Playwright, Node.js 20.19.6, SQLite tạm. `npm test`: **16 pass, 0 fail**. `npm run qa:browser`: **14 nhóm PASS, 0 FAIL**. Script browser: `tests/browser-qa.mjs`; ảnh chợ desktop và farm 390 px được tạo trong `.qa/` để kiểm tra trực quan.
+Trạng thái: **PASS ở môi trường phát triển**. Đã kiểm tra bằng Microsoft Edge 156 headless qua Playwright, Node.js 20.19.6, SQLite tạm. Sau Phase 4: `npm test` **23 pass, 0 fail**; `npm run qa:browser` **14 nhóm PASS**; `npm run qa:vac` **5 nhóm PASS**. Script browser và ảnh kiểm tra ở `tests/browser-qa.mjs`, `tests/browser-vac-qa.mjs` và `.qa/`.
 
 Playwright không có trong dependency dự án nhưng có sẵn trong npm cache của máy QA. Lệnh thực tế: `$env:PLAYWRIGHT_MODULE='file:///C:/Users/tuanbna.EDS/AppData/Local/npm-cache/_npx/423231821c231c73/node_modules/playwright/index.mjs'; npm run qa:browser`. Edge được khởi chạy bằng executable hệ thống. Thử cài Playwright offline vào `.qa` trả `ENOTCACHED`; dùng bản cache có sẵn, không thêm dependency vào game.
 
@@ -40,3 +40,18 @@ Playwright không có trong dependency dự án nhưng có sẵn trong npm cache
 - Browser QA dùng database tạm, di chuyển bằng bàn phím để kiểm tra vận tốc/va chạm và đặt vị trí thử gần các điểm tương tác để đi nhanh qua toàn bộ luồng. Chưa ghi video đi bộ liên tục qua mọi tọa độ của hai bản đồ.
 - Tăng trưởng offline được kiểm tra bằng cách lùi mốc `planted_at` ở database thử và reopen; không chờ nguyên 15 phút trong phiên QA. Logic thời gian UTC và restart có test tự động.
 - Chưa thử thiết bị cảm ứng vật lý, gián đoạn mạng thật kéo dài, hoặc triển khai production HTTPS. Đây là kiểm thử trước phát hành, không thuộc Definition of Done của Phase 1–3 trong môi trường phát triển.
+
+## Phase 4 — VAC
+
+| Hạng mục | Kết quả | Bằng chứng |
+|---|---|---|
+| Gate Phase 1–3 | PASS | Test cũ 16/16 và Edge browser 14/14 trước thay đổi; regression vẫn pass sau VAC |
+| Ao cá | PASS | Browser mua cá rô phi giống, thả/cho ăn, reload sau mốc offline thử, thu hoạch 2 cá; test cả cá chép, sức chứa 6, non/đủ tuổi, thu hoạch trùng và kho đầy |
+| Chuồng gà | PASS | Browser mua gà, thêm chuồng, lớn offline, cho ăn, nhặt 3 trứng; test sức chứa 4, trứng tối đa 3/con, nhặt trùng/kho đầy |
+| Vòng tài nguyên | PASS | Browser đổi đậu nành→thức ăn cá, ngô→thức ăn gà; test lúa→thức ăn gà và thiếu nguyên liệu/rollback |
+| Chợ và kinh tế | PASS | Browser mua giống/thức ăn: ví 200→84; bán 2 cá + 3 trứng: ví 84→217; test dùng chung wallet/ledger, thiếu tiền, retry |
+| Quyền và idempotency | PASS | Test HTTP CSRF, cross-account, sai scene, hai socket nhận broadcast và hai request cùng ID chỉ thả một cá |
+| Offline/restart/migration | PASS | Test UTC clock injection, 5 phút/2 giờ/nhiều ngày, trần trứng, reopen; sao chép backup v3 có dữ liệu rồi nâng lên v4: user 1, farm 1, crop 1, inventory 6, ví 200, order 0 giữ nguyên; thêm 1 ao và 1 chuồng, integrity `ok` |
+| Canvas/UI/layout/console | PASS | Xem ảnh `vac-pond.png`, `vac-coop.png`, `vac-mobile.png`; E và nút chuột hoạt động; 390 px không tràn ngang; không có `pageerror` |
+
+Browser Phase 4 dùng SQLite tạm và đặt nhân vật gần điểm tương tác để rút ngắn di chuyển; kịch bản vẫn thực hiện chuyển cảnh bằng E. Cá/gà/trứng được tăng tốc bằng cách lùi timestamp **trong database thử** rồi reload, không chờ 90–150 phút thật. Đã kiểm tra browser Edge headless, chưa kiểm tra thiết bị cảm ứng vật lý hoặc production network.

@@ -58,7 +58,7 @@ export class FarmingUI {
   }
   showInventory() {
     if(!this.state)return;
-    const rows=this.state.inventory.filter(item=>item.quantity>0).map(item=>`<li><span style="color:${item.color}">◆</span> ${item.name}: <b>${item.quantity}</b><small>${item.description}</small></li>`).join('');
+    const rows=this.state.inventory.filter(item=>item.quantity>0).map(item=>`<li><span style="color:${item.color}">${item.icon||'◆'}</span> ${item.name}: <b>${item.quantity}</b><small>${item.description}</small></li>`).join('');
     this.openPanel(`<h2>Túi đồ</h2><ul class="inventory-list">${rows||'<li>Chưa có vật phẩm.</li>'}</ul><p>Chọn loại hạt ở thanh công cụ trước khi gieo.</p>`);
   }
   draw(ctx) {

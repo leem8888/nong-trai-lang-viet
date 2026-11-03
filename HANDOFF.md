@@ -1,30 +1,33 @@
-# Handoff — nghiệm thu Phase 1–3
+# Handoff — Phase 4 VAC
 
-Cập nhật 2026-11-03. Phase 1, 2, 3: **complete ở môi trường phát triển**, đạt Definition of Done tương ứng. Có thể bắt đầu Phase 4 sau khi đọc `PROJECT_MASTER_CONTEXT.md`, `GDD.md`, `IMPLEMENTATION_PROGRESS.md` và tài liệu này. Không sửa `PROJECT_MASTER_CONTEXT.md`; đó là thiết kế cố định.
+Cập nhật 2026-11-03. Phase 1–4: **complete ở môi trường phát triển** theo Definition of Done tương ứng. `PROJECT_MASTER_CONTEXT.md` là bản thiết kế cố định, không sửa trong Phase 4. File này và `IMPLEMENTATION_PROGRESS.md` ghi trạng thái code thực tế.
 
-## Tình trạng code
+## Chức năng hiện có
 
-- Phase 1: auth/session/CSRF, farm riêng, Canvas 2D, di chuyển/va chạm/camera, bảng/cửa/đèn, Socket.IO, SQLite v1.
-- Phase 2: 15 ô đất, 6 cây, tưới, 4 giai đoạn, thời gian server UTC kể cả offline, inventory, thu hoạch atomic, SQLite v2.
-- Phase 3: ví Đồng Làng, chợ Canvas, quầy hạt/thu mua, 6 đơn hàng một lần/farm, giá featured theo ngày UTC, transaction ledger, idempotency receipt, SQLite v3.
-- Source chính: `server/index.js`, `server/db.js`, `server/crops.js`, `server/economy.js`, `public/js/main.js`, `public/js/farming.js`, `public/js/market.js`.
-- `data/starter.sqlite` version 3, không chứa user/farm/session/wallet. `data/farm.sqlite` là dữ liệu chơi cục bộ và bị Git bỏ qua. Đã backup trước migration v3 ở đợt trước.
+- Phase 1–3: tài khoản/farm riêng, Canvas, di chuyển/collision, trồng 6 cây offline, inventory, chợ NPC, ví Đồng Làng, 6 đơn hàng, SQLite v1–v3. Regression vẫn pass.
+- Phase 4: một ao và một chuồng cho mỗi farm; cá rô phi/cá chép, gà con/trứng, thức ăn cá/gà, đổi đậu nành/ngô/lúa thành thức ăn, offline growth, thu hoạch và bán tại chợ. Số liệu và quy tắc cụ thể ở `GDD.md`.
+- Source: `server/vac.js`, `server/db.js`, `server/index.js`, `server/marketConfig.js`, `public/js/vac.js`, `public/js/shared/vac.js`, cùng modules inventory/market cũ. API `GET /api/vac`, `POST /api/vac/action` yêu cầu auth/CSRF. Socket `farm:vac` đồng bộ hai tab.
+- Mọi VAC mutation kiểm tra farm owner, scene, khoảng cách, payload, kho/sức chứa và request ID; transaction SQLite ghi vật phẩm, entity, sự kiện và receipt cùng lúc. Mua/bán tiếp tục dùng ví/ledger Phase 3.
+
+## Migration và dữ liệu
+
+- Trước migration v4 đã backup `data/farm.sqlite` tại `data/backups/farm-2026-11-03T07-37-18-951Z.sqlite`. Migration append-only thêm `farm_ponds`, `farm_coops`, `pond_fish`, `coop_chickens`, `vac_events`, `vac_request_receipts`; farm cũ nhận đúng một ao/chuồng. `createFarm` tạo ao/chuồng cho farm mới.
+- `data/starter.sqlite` đã lên schema v4, **0 user/farm/wallet**; integrity `ok`. Database chơi cục bộ đã lên v4, integrity `ok`; không đưa dữ liệu người chơi lên Git.
+- Thử migration trên **bản sao** backup v3 có dữ liệu: trước/sau đều 1 user, 1 farm, 1 crop, 6 dòng inventory, ví 200, 0 order; sau upgrade có 1 ao và 1 chuồng, integrity `ok`. Database chơi trực tiếp có thể thay đổi do người dùng chơi tiếp; không so sánh số lượng trực tiếp với backup để suy ra mất dữ liệu.
 
 ## Bằng chứng nghiệm thu
 
-- `npm test` trên Node.js 20.19.6: **16 pass, 0 fail**. Bao gồm migration/restart, offline growth, sáu cây, atomic/rollback, kho/ví giới hạn, hai socket, CSRF/ownership, idempotency, sáu mẫu đơn, và biên nhận giao dịch sau khi rời chợ.
-- `npm run qa:browser` với Playwright và Edge 156 headless: **14 nhóm PASS, 0 FAIL**. Hai tài khoản/farm, đăng nhập lại, WASD, collision nhà, ba tương tác E, chuột cuốc/gieo/tưới/gặt, túi đồ, farm↔chợ, mua/bán, giao đơn, hai tab mua cùng ID chỉ trừ một lần, lịch sử, thiếu tiền, CSRF/ownership, console và mobile layout.
-- Browser QA dùng SQLite tạm; ảnh chợ desktop và farm 390 px đã được xem. Không có `pageerror`; viewport 390 px có `scrollWidth=390`. Chi tiết từng nhóm và giới hạn ở `QA_CHECKLIST.md`.
-- Trên máy nghiệm thu, Playwright không thuộc dependency nhưng có bản trong npm cache. Đặt `PLAYWRIGHT_MODULE` tới module đó rồi chạy `npm run qa:browser`; hoặc cài Playwright tạm bằng `npm install --no-save playwright`. Edge path mặc định có thể đổi qua `EDGE_PATH`.
-- Browser QA tăng tốc thời gian chờ cây bằng cách lùi `planted_at` trong database thử, sau đó reload; các bài test tự động xác nhận mốc UTC và cây chín sau nhiều ngày. Test restart/reopen dùng database tạm, không dừng server chơi của người dùng.
+- Gate 0 trước code: `npm test` **16/16**, `npm run qa:browser` **14/14** trên Edge 156 headless. Backup được tạo trước mở database v4.
+- Sau code: `npm test` **23/23**; Phase 4 test ao/chuồng, 5 phút/2 giờ/nhiều ngày, restart, rollback kho đầy, trần trứng, conversion, kinh tế, migration, quyền/CSRF, hai socket và retry đồng thời.
+- `npm run qa:browser` regression Phase 1–3 **14/14**; `npm run qa:vac` Phase 4 **5/5**, dùng Playwright với Edge và SQLite tạm. Browser hoàn thành mua giống/thức ăn → thả cá/thêm gà → đổi nông sản/cho ăn → thu hoạch cá/nhặt trứng → bán ở chợ → về farm; ví thử 200→84→217. Ảnh desktop/mobile trong `.qa/` đã xem, không có `pageerror`, viewport 390 px không tràn ngang.
+- `npm run economy:report` in giá trị playtest: cá rô phi lãi 26 Đồng/81 phút với thức ăn mua, cá chép 27/135 phút, chu kỳ 3 trứng lãi 61 Đồng/135 phút sau chi phí thức ăn; gà con 70 Đồng cần khoảng 2 chu kỳ trứng để hoàn vốn.
+- Browser QA tăng tốc thời gian bằng cách lùi timestamp trên database **thử** rồi reload; không chờ 90–150 phút thật. Unit tests dùng clock injection. Chi tiết PASS/giới hạn ở `QA_CHECKLIST.md`.
 
-## Lỗi đã sửa trong đợt nghiệm thu
+## Lỗi đã sửa và giới hạn
 
-- `farm:interact` trước đây chỉ đọc tọa độ, nên người chơi ở scene chợ có thể gửi socket event bật đèn farm nếu tọa độ gần đèn. Server giờ đọc cả `scene` và dùng `inRange` theo scene. Test regression ở `tests/phase3.test.js`.
-- Bổ sung test giới hạn sáu đơn, replay receipt sau khi rời chợ, và kịch bản browser có thể chạy lại ở `tests/browser-qa.mjs`.
+- Rate limit của market/VAC trước đây có thể chặn replay của receipt hợp lệ nếu xen vào request khác trong 120 ms. `server/index.js` nay cho receipt đã lưu đi qua, service vẫn xác minh payload hash.
+- Chưa thử thiết bị cảm ứng vật lý, mạng production hoặc HTTPS public. Canvas dùng art tạm. Giá, thời gian và sản lượng vẫn là giả thuyết cần playtest; đây không phải điều kiện chặn bắt đầu Phase 5.
 
-## Giới hạn và bước tiếp
+## Bước tiếp
 
-- Chưa chạy trên thiết bị cảm ứng vật lý, mạng chập chờn kéo dài hoặc môi trường production HTTPS. Cần kiểm tra riêng trước phát hành public; không chặn bắt đầu Phase 4.
-- Giá và thời gian cây là giả thuyết playtest; art Canvas còn tạm. Không coi các số liệu này là cân bằng cuối cùng.
-- Phase 4 chỉ nên bắt đầu sau khi đọc master context và xác định đúng phạm vi VAC; không mở rộng sang processing/construction hoặc social của phase sau.
+Nếu người dùng yêu cầu Phase 5, đọc lại `PROJECT_MASTER_CONTEXT.md`, `GDD.md`, `IMPLEMENTATION_PROGRESS.md`, `HANDOFF.md`, `QA_CHECKLIST.md` và Phase5 spec trước khi code. Phase 5 mới được làm rice mill, crafting và construction; không lặp lại hệ đổi thức ăn VAC thành crafting engine.

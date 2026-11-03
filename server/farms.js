@@ -23,6 +23,8 @@ export function createFarm(db, userId, name) {
     db.prepare('INSERT INTO player_states(user_id,farm_id,x,y,direction,updated_at) VALUES (?,?,?,?,?,?)').run(userId,id,720,650,'down',time);
     db.prepare('INSERT INTO farm_objects VALUES (?,?,0)').run(id,'lamp');
     seedFarmInventory(db,id);
+    db.prepare('INSERT INTO farm_ponds VALUES (?)').run(id);
+    db.prepare('INSERT INTO farm_coops VALUES (?)').run(id);
     return farmFor(db,userId);
   })();
 }

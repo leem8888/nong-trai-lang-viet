@@ -99,6 +99,39 @@ INSERT INTO economy_transactions(user_id,kind,delta,balance_after,created_at)
 SELECT id,'starter',200,200,strftime('%s','now')*1000 FROM users;
 `;
 
+const migration4 = `
+CREATE TABLE farm_ponds (farm_id TEXT PRIMARY KEY REFERENCES farms(id) ON DELETE CASCADE);
+CREATE TABLE farm_coops (farm_id TEXT PRIMARY KEY REFERENCES farms(id) ON DELETE CASCADE);
+CREATE TABLE pond_fish (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, farm_id TEXT NOT NULL REFERENCES farm_ponds(farm_id) ON DELETE CASCADE,
+  fish_id TEXT NOT NULL CHECK(fish_id IN ('tilapia','carp')),
+  stocked_at INTEGER NOT NULL, ready_at INTEGER NOT NULL, duration_ms INTEGER NOT NULL CHECK(duration_ms>0),
+  yield_quantity INTEGER NOT NULL CHECK(yield_quantity>0), fed_at INTEGER, harvested_at INTEGER
+);
+CREATE INDEX pond_fish_active ON pond_fish(farm_id,harvested_at);
+CREATE TABLE coop_chickens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, farm_id TEXT NOT NULL REFERENCES farm_coops(farm_id) ON DELETE CASCADE,
+  added_at INTEGER NOT NULL, ready_at INTEGER NOT NULL, growth_ms INTEGER NOT NULL CHECK(growth_ms>0),
+  egg_ms INTEGER NOT NULL CHECK(egg_ms>0), max_eggs INTEGER NOT NULL CHECK(max_eggs BETWEEN 1 AND 9),
+  feed_started_at INTEGER, eggs_claimed INTEGER NOT NULL DEFAULT 0 CHECK(eggs_claimed>=0)
+);
+CREATE INDEX coop_chickens_farm ON coop_chickens(farm_id);
+CREATE TABLE vac_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  action TEXT NOT NULL, item_id TEXT, quantity INTEGER, entity_id INTEGER, request_key TEXT NOT NULL,
+  created_at INTEGER NOT NULL, UNIQUE(farm_id,request_key)
+);
+CREATE TABLE vac_request_receipts (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_key TEXT NOT NULL, action TEXT NOT NULL, payload_hash TEXT NOT NULL,
+  response_json TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(user_id,request_key)
+);
+INSERT INTO farm_ponds SELECT id FROM farms;
+INSERT INTO farm_coops SELECT id FROM farms;
+UPDATE player_states SET x=990,y=780 WHERE scene='farm' AND x BETWEEN 996 AND 1304 AND y BETWEEN 696 AND 869;
+UPDATE player_states SET x=1010,y=425 WHERE scene='farm' AND x BETWEEN 1036 AND 1294 AND y BETWEEN 346 AND 504;
+`;
+
 export function openDatabase(file = process.env.DB_FILE || path.resolve('data/farm.sqlite')) {
   if (file !== ':memory:') {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -122,6 +155,10 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
   if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 3').get()) db.transaction(() => {
     db.exec(migration3);
     db.prepare('INSERT INTO schema_migrations VALUES (3, ?, ?)').run('phase 3 market and economy', Date.now());
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 4').get()) db.transaction(() => {
+    db.exec(migration4);
+    db.prepare('INSERT INTO schema_migrations VALUES (4, ?, ?)').run('phase 4 VAC', Date.now());
   })();
   return db;
   } catch (error) { db.close(); throw error; }

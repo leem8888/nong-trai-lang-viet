@@ -8,6 +8,7 @@ import { createFarm, farmFor, snapshot } from './farms.js';
 import { inRange, validMovement } from './world.js';
 import { farmingState, performFarmAction } from './crops.js';
 import { marketState, performMarketAction } from './economy.js';
+import { vacState, performVacAction } from './vac.js';
 
 export function createApp(db = openDatabase()) {
   const app = express();
@@ -72,13 +73,28 @@ export function createApp(db = openDatabase()) {
   });
   app.post('/api/market/action',guard,csrf,(req,res)=>{
     const key=req.auth.user_id,current=Date.now(),previous=marketActions.get(key);
-    if(previous&&current-previous.at<120&&req.body?.requestId!==previous.requestId)return res.status(429).json({error:'Thao tác quá nhanh.'});
+    if(previous&&current-previous.at<120&&req.body?.requestId!==previous.requestId&&!(typeof req.body?.requestId==='string'&&db.prepare('SELECT 1 FROM economy_request_receipts WHERE user_id=? AND request_key=?').get(key,req.body.requestId)))return res.status(429).json({error:'Thao tác quá nhanh.'});
     marketActions.set(key,{at:current,requestId:req.body?.requestId});
     try {
       const result=performMarketAction(db,key,req.body);
       io.to(`farm:${result.state.farmId}`).emit('farm:market',result.state);
       res.json({ok:true,...result});
     } catch(error) { fail(res,error); }
+  });
+  const vacActions=new Map();
+  app.get('/api/vac',guard,(req,res)=>{
+    const state=vacState(db,req.auth.user_id);
+    return state?res.json(state):res.status(404).json({error:'Chưa tạo nông trại.'});
+  });
+  app.post('/api/vac/action',guard,csrf,(req,res)=>{
+    const key=req.auth.user_id,current=Date.now(),previous=vacActions.get(key);
+    if(previous&&current-previous.at<120&&req.body?.requestId!==previous.requestId&&!(typeof req.body?.requestId==='string'&&db.prepare('SELECT 1 FROM vac_request_receipts WHERE user_id=? AND request_key=?').get(key,req.body.requestId)))return res.status(429).json({error:'Thao tác quá nhanh.'});
+    vacActions.set(key,{at:current,requestId:req.body?.requestId});
+    try{
+      const result=performVacAction(db,key,req.body);
+      io.to(`farm:${result.state.farmId}`).emit('farm:vac',result.state);
+      res.json({ok:true,...result});
+    }catch(error){fail(res,error);}
   });
   io.use((socket,next) => {
     const auth = session(db,socket.request);

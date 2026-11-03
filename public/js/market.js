@@ -23,13 +23,13 @@ export class MarketUI {
     if(!this.state)return;
     const state=this.state,fmt=n=>n.toLocaleString('vi-VN');
     if(this.current==='shop'||this.current==='buyer'){
-      const buy=this.current==='shop',offers=state.catalog.map(row=>({id:buy?row.seedItem:row.produceItem,name:row.name,price:buy?row.buyPrice:row.sellPrice,
+      const buy=this.current==='shop',offers=state.catalog.filter(row=>buy?row.seedItem&&row.buyPrice:row.produceItem&&row.sellPrice).map(row=>({id:buy?row.seedItem:row.produceItem,name:row.name,price:buy?row.buyPrice:row.sellPrice,
         owned:state.inventory.find(item=>item.id===(buy?row.seedItem:row.produceItem))?.quantity||0}));
       const options=offers.map(row=>`<option value="${row.id}">${escapeHtml(row.name)} · ${fmt(row.price)} Đồng${buy?'':` · có ${row.owned}`}</option>`).join('');
-      this.openPanel(`<h2>${buy?'Cô Mai · hạt giống':'Cô Lan · thu mua'}</h2><p>Ví: <b>${fmt(state.balance)} Đồng Làng</b></p>
-        <form data-market-form="${buy?'buy':'sell'}"><label>${buy?'Loại hạt':'Nông sản'}<select name="itemId">${options}</select></label>
+      this.openPanel(`<h2>${buy?'Cô Mai · giống và thức ăn':'Cô Lan · thu mua'}</h2><p>Ví: <b>${fmt(state.balance)} Đồng Làng</b></p>
+        <form data-market-form="${buy?'buy':'sell'}"><label>${buy?'Mặt hàng':'Nông sản'}<select name="itemId">${options}</select></label>
         <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label><p class="market-total">Tổng: 0 Đồng</p>
-        <button type="submit">${buy?'Mua hạt':'Bán nông sản'}</button></form><p class="hint">Giá được máy chủ xác nhận khi giao dịch.</p>`);
+        <button type="submit">${buy?'Mua hàng':'Bán nông sản'}</button></form><p class="hint">Giá được máy chủ xác nhận khi giao dịch.</p>`);
       this.updateTotal(document.querySelector('[data-market-form]'));return;
     }
     if(this.current==='orders'){
