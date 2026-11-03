@@ -14,7 +14,11 @@ CREATE INDEX farm_permissions_user ON farm_permissions(user_id);
 `;
 
 export function openDatabase(file = process.env.DB_FILE || path.resolve('data/farm.sqlite')) {
-  if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
+  if (file !== ':memory:') {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    const starter = path.resolve('data/starter.sqlite');
+    if (!fs.existsSync(file) && fs.existsSync(starter) && path.resolve(file) !== starter) fs.copyFileSync(starter,file,fs.constants.COPYFILE_EXCL);
+  }
   const db = new Database(file);
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');

@@ -8,6 +8,7 @@ Phase 1 — **partial**. Bản game và backend đã có thể khởi động; t
 
 - Auth, cookie session, CSRF, farm ownership, API: `server/auth.js`, `server/farms.js`, `server/index.js`.
 - Migration SQLite và backup: `server/db.js`, `server/backup.js`.
+- Database khởi đầu được version hóa: `data/starter.sqlite`; lần chạy đầu sao chép thành `data/farm.sqlite`.
 - Server time UTC: `server/time.js`.
 - Canvas map, player, camera, di chuyển, va chạm và ba tương tác: `public/js/main.js`, các module trong `public/js`.
 - Socket room owner-only, snapshot, vị trí và trạng thái đèn: `server/index.js`.
@@ -15,6 +16,8 @@ Phase 1 — **partial**. Bản game và backend đã có thể khởi động; t
 ## Schema
 
 Migration v1 tạo `users`, `auth_sessions`, `farms`, `farm_objects`, `player_states`, `farm_permissions`, `schema_migrations`. Migration là append-only; khi sửa schema hãy thêm version mới.
+
+`data/starter.sqlite` không chứa user/session/farm; `data/farm.sqlite` là dữ liệu chơi cục bộ, không đưa lên Git. Khi tạo migration mới, cần cập nhật starter DB và kiểm tra migration từ database cũ.
 
 ## Kiểm thử
 

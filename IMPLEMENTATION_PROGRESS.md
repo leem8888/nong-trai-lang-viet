@@ -13,3 +13,5 @@ Cập nhật: 2026-11-03. Tài liệu này ghi tình trạng code thực tế; `
 | P1.7 UI và QA | Một phần | UI tiếng Việt, loading/error cơ bản; chưa QA trên trình duyệt thật |
 
 Lần chạy `npm test` gần nhất: 4/4 test pass trên Node.js v20.19.6. Kiểm tra cú pháp JavaScript, health endpoint và backup đều thành công. `npm install --package-lock-only` đã tạo lockfile đầy đủ qua registry; test ban đầu dùng dependency đã cài của `san-may`. Phase 1 chưa thể đánh dấu hoàn thành toàn bộ trước QA trình duyệt và rà soát bảo mật sâu hơn.
+
+Database dùng chung trên Git: `data/starter.sqlite` chứa migration v1 và không có dữ liệu người chơi. Database đang chơi là `data/farm.sqlite`, được giữ cục bộ.
