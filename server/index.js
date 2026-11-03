@@ -10,8 +10,11 @@ import { farmingState, performFarmAction } from './crops.js';
 import { marketState, performMarketAction } from './economy.js';
 import { vacState, performVacAction } from './vac.js';
 import { phase5State, performPhase5Action } from './phase5.js';
+import {worldConfig} from './livingWorld.js';
+import {villageState,performNpcInteraction} from './village.js';
+import {questState,performQuestAction} from './quests.js';
 
-export function createApp(db = openDatabase()) {
+export function createApp(db = openDatabase(),{worldNow=Date.now,questNow=Date.now,worldSettings=worldConfig()}={}) {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '8kb' }));
@@ -64,6 +67,7 @@ export function createApp(db = openDatabase()) {
     try {
       const result=performFarmAction(db,key,req.body);
       io.to(`farm:${result.state.farmId}`).emit('farm:farming',result.state);
+      io.to(`farm:${result.state.farmId}`).emit('farm:quests',questState(db,key));
       res.json({ok:true,...result});
     } catch(error) { fail(res,error); }
   });
@@ -105,6 +109,13 @@ export function createApp(db = openDatabase()) {
     phase5Actions.set(key,{at:current,requestId:req.body?.requestId});
     try{const result=performPhase5Action(db,req.auth.user_id,req.body);io.to(`farm:${result.state.farmId}`).emit('farm:phase5',result.state);res.json({ok:true,...result});}catch(error){fail(res,error);}
   });
+  const villageActions=new Map();
+  app.get('/api/village',guard,(req,res)=>{const state=villageState(db,req.auth.user_id,worldNow(),questNow(),worldSettings);return state?res.json(state):res.status(404).json({error:'Chưa tạo nông trại.'});});
+  const villageLimit=(req,res,next)=>{const key=req.auth.user_id,at=Date.now(),last=villageActions.get(key)||0;
+    if(at-last<100&&!(typeof req.body?.requestId==='string'&&db.prepare('SELECT 1 FROM quest_request_receipts WHERE user_id=? AND request_key=?').get(key,req.body.requestId)))return res.status(429).json({error:'Thao tác quá nhanh.'});
+    villageActions.set(key,at);next();};
+  app.post('/api/village/interact',guard,csrf,villageLimit,(req,res)=>{try{const result=performNpcInteraction(db,req.auth.user_id,req.body,worldNow(),questNow(),worldSettings);io.to(`farm:${result.state.farmId}`).emit('farm:quests',result.state.quests);res.json({ok:true,...result});}catch(error){fail(res,error);}});
+  app.post('/api/village/quest',guard,csrf,villageLimit,(req,res)=>{try{const result=performQuestAction(db,req.auth.user_id,req.body,questNow(),worldSettings,worldNow());io.to(`farm:${result.state.farmId}`).emit('farm:quests',result.state);io.to(`farm:${result.state.farmId}`).emit('farm:market',marketState(db,req.auth.user_id));res.json({ok:true,...result});}catch(error){fail(res,error);}});
   io.use((socket,next) => {
     const auth = session(db,socket.request);
     if (!auth) return next(new Error('unauthorized'));

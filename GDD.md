@@ -1,5 +1,9 @@
 # Nông Trại Làng Việt — GDD
 
+## Phase 6 — Làng Việt sống động
+
+Bốn NPC (Bác Tư, Cô Lan, Ông Ba, Bé Na) xuất hiện theo lịch sáng/trưa/chiều/tối với hội thoại theo nhiệm vụ và mùa. Tuyến “Một ngày ở làng” gồm năm nhiệm vụ tuần tự: gặp Bác Tư, thu hoạch, giao nông sản cho Cô Lan, nghe Ông Ba, giúp Bé Na. Hai việc phụ thu hoạch và trò chuyện Cô Lan làm mới theo ngày UTC, chỉ một phần thưởng mỗi loại/ngày. Tiến trình và thưởng được server xác nhận, ví/kho/audit cập nhật nguyên tử. Ngày thế giới 24 phút thực, ba trạng thái thời tiết theo slot 8 phút, bốn mùa theo chu kỳ 7 ngày thực mỗi mùa. Mọi thay đổi thời tiết/mùa chỉ là hình ảnh và lời thoại; cơ chế offline và kinh tế Phase 1–5 giữ nguyên.
+
 Phiên bản thiết kế: 0.1, Phase 1. Quyết định sản phẩm được duyệt nằm trong `PROJECT_MASTER_CONTEXT.md`; tài liệu này mô tả chi tiết có thể phát triển tiếp.
 
 ## Trải nghiệm mục tiêu

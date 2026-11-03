@@ -1,5 +1,9 @@
 # Nghiệm thu Phase 1–5 — 2026-11-03
 
+## Phase 6 — 2026-11-03
+
+PASS ở môi trường phát triển: `npm test` 34/34; Edge `qa:phase6` 12/12, `qa:browser` 14/14, `qa:vac` 5/5, `qa:phase5` 13/13. Bốn NPC, năm main + hai side quests, đồng hồ/ngày đêm, thời tiết/mùa, auth/CSRF/ownership/replay, migration dữ liệu v5→v6 và mobile/console đã kiểm tra. Bằng chứng chi tiết và giới hạn ở `PHASE6_TEST_REPORT.md`. Thiết bị cảm ứng vật lý và chạy tải dài hạn: NOT VERIFIED.
+
 Trạng thái: **PASS ở môi trường phát triển**. Đã kiểm tra bằng Microsoft Edge 156 headless qua Playwright, Node.js 20.19.6, SQLite tạm. Sau Phase 4: `npm test` **23 pass, 0 fail**; `npm run qa:browser` **14 nhóm PASS**; `npm run qa:vac` **5 nhóm PASS**. Script browser và ảnh kiểm tra ở `tests/browser-qa.mjs`, `tests/browser-vac-qa.mjs` và `.qa/`.
 
 Playwright không có trong dependency dự án nhưng có sẵn trong npm cache của máy QA. Lệnh thực tế: `$env:PLAYWRIGHT_MODULE='file:///C:/Users/tuanbna.EDS/AppData/Local/npm-cache/_npx/423231821c231c73/node_modules/playwright/index.mjs'; npm run qa:browser`. Edge được khởi chạy bằng executable hệ thống. Thử cài Playwright offline vào `.qa` trả `ENOTCACHED`; dùng bản cache có sẵn, không thêm dependency vào game.

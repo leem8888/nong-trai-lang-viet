@@ -1,6 +1,7 @@
 import { CROPS, CROP_IDS, ITEMS, FIELD, tileCenter, cropProgress } from '../public/js/shared/crops.js';
 import { now } from './time.js';
 import { validPosition } from './world.js';
+import { recordQuestEvent } from './quests.js';
 
 const seedIds = CROP_IDS.map(id => CROPS[id].seed);
 
@@ -103,6 +104,7 @@ export function performFarmAction(db, userId, payload, at = now()) {
       const changed=db.prepare('UPDATE farm_crops SET harvested_at=? WHERE id=? AND harvested_at IS NULL').run(at,crop.id);
       if (!changed.changes) throw new Error('Cây đã được thu hoạch.');
       addItem(db,farmId,CROPS[crop.crop_id].produce,crop.yield_quantity);
+      recordQuestEvent(db,userId,'harvest',at);
       db.prepare('UPDATE farm_soil_tiles SET state=?,updated_at=? WHERE farm_id=? AND tile_x=? AND tile_y=?').run('TILLED',at,farmId,x,y);
       message=`Thu hoạch ${crop.yield_quantity} ${CROPS[crop.crop_id].name.toLowerCase()}.`;
     }

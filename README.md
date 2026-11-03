@@ -1,6 +1,8 @@
 # Nông Trại Làng Việt
 
-Game nông trại web 2D. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm ao cá, chuồng gà và vòng thức ăn VAC.
+Game nông trại web 2D. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm VAC, Phase 5 thêm chế biến/xây dựng, Phase 6 thêm NPC, nhiệm vụ và nhịp sống làng.
+
+Phase 6: nút **Nhiệm vụ** mở tuyến “Một ngày ở làng” gồm 5 nhiệm vụ chính và 2 nhiệm vụ phụ làm mới mỗi ngày UTC. Đến gần Bác Tư, Cô Lan, Ông Ba hoặc Bé Na rồi nhấn **E** hay nhấp NPC để trò chuyện. HUD hiển thị giờ thế giới, thời tiết và mùa; nút **Giảm hiệu ứng** tắt mưa động. Một ngày thế giới dài 24 phút thực; thời tiết đổi theo slot 8 phút, mỗi mùa dài 7 ngày thực. Các hiệu ứng này chỉ đổi cảnh và lời thoại, không đổi tốc độ cây/VAC/chế biến. Xem `PHASE6_TEST_REPORT.md` để chạy kiểm thử.
 
 ## Yêu cầu
 

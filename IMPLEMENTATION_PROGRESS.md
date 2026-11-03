@@ -1,5 +1,9 @@
 # Tiến độ triển khai
 
+## Phase 6 — complete ở môi trường phát triển
+
+Gate 0: Phase 5 baseline `86b1859`, `npm test` 29/29, backup SQLite v5 bằng backup API. Triển khai bốn NPC có lịch/hội thoại, năm main quest, hai side quest UTC, đồng hồ thế giới 24 phút/ngày, ba thời tiết và bốn mùa chỉ ảnh hưởng hình ảnh/lời thoại. Migration v6 giữ nguyên dữ liệu cũ. `npm test` 34/34; Edge `qa:phase6` 12/12, `qa:browser` 14/14, `qa:vac` 5/5, `qa:phase5` 13/13. Xem `PHASE6_TEST_REPORT.md` và `PHASE6_HANDOFF.md`. Chưa kiểm tra thiết bị cảm ứng vật lý hoặc tải dài hạn; không có Phase 7.
+
 ## Phase 5 — complete ở môi trường phát triển
 
 Gate 0: Phase 1–4 `npm test` 23/23, Edge 14/14, backup trước migration. Sau triển khai: `npm test` **29/29**, `npm run qa:browser` **14/14**, `npm run qa:vac` **5/5**, `npm run qa:phase5` **13/13** trên Edge; `npm run economy:phase5` chạy được. Migration v4→v5 trên bản sao giữ dữ liệu và integrity/FK `ok`; `starter.sqlite` v5 rỗng. Chi tiết ở `QA_CHECKLIST.md`.

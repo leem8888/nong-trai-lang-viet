@@ -144,6 +144,41 @@ CREATE INDEX crafting_jobs_building ON crafting_jobs(building_id,status);
 CREATE TABLE phase5_receipts (user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, request_key TEXT NOT NULL, action TEXT NOT NULL, payload_hash TEXT NOT NULL, response_json TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(user_id,request_key));
 `;
 
+const migration6 = `
+CREATE TABLE player_quests (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  quest_id TEXT NOT NULL,
+  day_key TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('ACTIVE','COMPLETED','CLAIMED')),
+  progress INTEGER NOT NULL DEFAULT 0 CHECK(progress BETWEEN 0 AND 100),
+  updated_at INTEGER NOT NULL,
+  claimed_at INTEGER,
+  PRIMARY KEY(user_id,quest_id,day_key)
+);
+CREATE INDEX player_quests_user_status ON player_quests(user_id,status);
+CREATE TABLE quest_request_receipts (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_key TEXT NOT NULL,
+  action TEXT NOT NULL,
+  payload_hash TEXT NOT NULL,
+  response_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY(user_id,request_key)
+);
+CREATE TABLE quest_reward_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  quest_id TEXT NOT NULL,
+  day_key TEXT NOT NULL,
+  amount INTEGER NOT NULL CHECK(amount>0),
+  balance_after INTEGER NOT NULL,
+  request_key TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(user_id,quest_id,day_key)
+);
+`;
+
 export function openDatabase(file = process.env.DB_FILE || path.resolve('data/farm.sqlite')) {
   if (file !== ':memory:') {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -175,6 +210,10 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
   if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 5').get()) db.transaction(() => {
     db.exec(migration5);
     db.prepare('INSERT INTO schema_migrations VALUES (5, ?, ?)').run('phase 5 crafting and construction', Date.now());
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 6').get()) db.transaction(() => {
+    db.exec(migration6);
+    db.prepare('INSERT INTO schema_migrations VALUES (6, ?, ?)').run('phase 6 living village', Date.now());
   })();
   return db;
   } catch (error) { db.close(); throw error; }
