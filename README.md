@@ -1,6 +1,6 @@
 # Nông Trại Làng Việt
 
-Game nông trại web 2D. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm VAC, Phase 5 thêm chế biến/xây dựng, Phase 6 thêm NPC, nhiệm vụ và nhịp sống làng.
+Game nông trại web 2.5D isometric đang được hoàn thiện. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm VAC, Phase 5 thêm chế biến/xây dựng, Phase 6 thêm NPC, nhiệm vụ và nhịp sống làng. Xem `ISOMETRIC_REMAKE_PROGRESS.md` trước khi đánh giá trạng thái nghiệm thu đồ họa.
 
 Phase 7 trên nhánh `feature/phase-7-social-farms`: nút **Thăm farm** cho tìm nông trại mở cửa hoặc cần duyệt. Chủ đặt quyền `Riêng tư`, `Cần duyệt` hoặc `Công khai`, xem yêu cầu, mời người chơi bằng tên tài khoản và mời khách rời đi. Khách được đi dạo, vẫy tay và về farm mình; không được sửa ruộng, kho, ví, công trình hay nhận thưởng lúc đang thăm. Mỗi farm tối đa 8 khách hiện diện. `npm run qa:phase7` chạy Edge/Playwright với 3 tài khoản và SQLite tạm; xem `PHASE7_TEST_REPORT.md` và `PHASE7_API_CONTRACT.md`.
 
@@ -23,7 +23,7 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 ## Trồng trọt
 
-Đi tới khu ruộng ở góc tây nam. Dùng phím **1 cuốc**, **2 gieo**, **3 tưới**, **4 thu hoạch**, hoặc nhấp các nút công cụ. Chọn loại hạt trong danh sách, đứng gần ô đất rồi nhấp ô. Nút **Túi đồ** hiển thị vật phẩm thật. Khi dùng hết mọi loại hạt, nút **Nhận hạt** cấp một gói nhỏ tối đa một lần trong ngày UTC. Cây lớn theo thời gian thực kể cả khi đóng trình duyệt; thời gian trồng hiện là giá trị thử nghiệm.
+Đi tới khu ruộng ở góc tây nam, chạm hoặc nhấp một ô để xem thao tác hợp lệ. Chọn **Cuốc**, **Gieo** (chọn giống trong menu), **Tưới** hoặc **Thu hoạch** theo trạng thái ô. Sau khi chọn thao tác, chạm một ô để làm ngay; giữ và kéo qua nhiều ô để làm liên tiếp. Trên điện thoại, giữ khoảng 0,38 giây trước khi kéo. **Esc** hoặc **Hủy** thoát chế độ thao tác. Phím **1–4** vẫn chọn nhanh thao tác. Dock nhỏ dưới màn hình mở **Túi đồ**, **Nhiệm vụ**, **Xây dựng**, **Bạn bè**; nút **Nông trại** mở thêm chế biến, trang trí, mở đất và nhận hạt khi hết. Server vẫn kiểm quyền, khoảng cách, hạt giống và trạng thái từng ô. Cây lớn theo thời gian thực kể cả khi đóng trình duyệt.
 
 ## Chợ quê
 
@@ -31,7 +31,7 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 ## Ao cá và chuồng gà
 
-Ở farm, tới ao phía đông nam hoặc chuồng gà phía đông bắc, nhấn **E** hoặc nhấp điểm tương tác. Mua cá giống, gà con và thức ăn tại quầy Cô Mai ở chợ; thả cá/thêm gà trong bảng VAC. Đổi đậu nành thành thức ăn cá, ngô hoặc lúa thành thức ăn gà ngay tại bảng tương ứng. Cá và gà lớn theo thời gian thật khi offline. Cho cá ăn một lần để rút ngắn thời gian; cho gà trưởng thành ăn để mở tối đa ba chu kỳ trứng, rồi nhặt trứng. Cá và trứng vào túi đồ và bán cho Cô Lan. Số liệu hiện là giá trị playtest.
+Ở farm, tới ao phía đông nam hoặc chuồng gà phía đông bắc, chạm/nhấp vật thể để xem menu ngữ cảnh; **E** vẫn mở bảng VAC khi đứng gần. Menu cho phép xem, cho ăn và thu hoạch khi hợp lệ. Mua cá giống, gà con và thức ăn tại quầy Cô Mai ở chợ; thả cá/thêm gà trong bảng VAC. Đổi đậu nành thành thức ăn cá, ngô hoặc lúa thành thức ăn gà ngay tại bảng tương ứng. Cá và gà lớn theo thời gian thật khi offline. Cá và trứng vào túi đồ và bán cho Cô Lan. Số liệu hiện là giá trị playtest.
 
 ## Kiểm thử
 
@@ -47,7 +47,7 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 **Xây dựng** hoặc phím **B** mở danh sách 3 công trình. Chọn vật, đến gần vị trí, rê chuột để xem vùng chiếm rồi nhấp để đặt; **R** xoay, **Esc** hủy. Công trình đầu tiên trả Đồng Làng, cất vào túi rồi đặt lại không trả thêm. Chỉ di chuyển/cất khi đã nhận hết mẻ. **Trang trí** có 15 loại; mua tại quầy Cô Mai, chọn tại farm rồi đặt/di chuyển/cất tương tự. Vật trong túi và vật đã đặt là hai trạng thái loại trừ nhau.
 
-**Mở đất** có hai cấp, giá thử nghiệm 180 rồi 280 Đồng Làng. Ranh giới tối trên Canvas là khu chưa mở khóa; mở đất chỉ cho phép đặt vật trên khu đó, không đổi kích thước map hay di chuyển ao/chuồng. Server xác nhận vị trí, va chạm, lối đi, tiền, kho và quyền sở hữu; màu preview là gợi ý.
+**Mở đất** có hai cấp, giá thử nghiệm 180 rồi 280 Đồng Làng. Vùng phủ màu nhẹ trên Canvas là khu chưa mở khóa; mở đất chỉ cho phép đặt vật trên khu đó, không đổi kích thước map hay di chuyển ao/chuồng. Server xác nhận vị trí, va chạm, lối đi, tiền, kho và quyền sở hữu; màu preview là gợi ý.
 
 `npm run qa:phase5` chạy kịch bản Edge/Playwright trên SQLite tạm. `npm run economy:phase5` in biên lợi nhuận từng công thức. `node scripts/phase5-migration-check.mjs <bản-sao-sqlite>` kiểm tra giữ dữ liệu khi nâng lên v5. File `data/starter.sqlite` trong Git là schema v5 rỗng; dữ liệu chơi và backup riêng không vào Git.
 
@@ -57,7 +57,7 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 ## Bảo mật và giới hạn hiện tại
 
-Mật khẩu được băm bằng scrypt, phiên lưu bằng cookie HttpOnly và token CSRF; thao tác farm được xác thực server-side. Chưa có dịch vụ email nên chưa có khôi phục tài khoản tự động. Chưa có thanh toán, tiền hoặc giao dịch giữa người chơi. Asset Canvas hiện là hình tạm có cùng tỷ lệ; cần thay bằng bộ art gốc trước phát hành.
+Mật khẩu được băm bằng scrypt, phiên lưu bằng cookie HttpOnly và token CSRF; thao tác farm được xác thực server-side. Chưa có dịch vụ email nên chưa có khôi phục tài khoản tự động. Chưa có thanh toán, tiền hoặc giao dịch giữa người chơi. Nhà, ruộng, ao, chuồng, NPC và công trình chính đã dùng art gốc; catalogue trang trí và một số hiệu ứng Canvas vẫn cần hoàn thiện trước khi đánh dấu remake COMPLETE.
 
 ## Code tái sử dụng
 

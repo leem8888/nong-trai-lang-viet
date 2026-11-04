@@ -6,6 +6,7 @@ import { createApp } from '../server/index.js';
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const label = process.argv[2] || 'baseline';
+const dpr=Number(process.env.PHASE8_DPR||1);
 const dir = mkdtempSync(path.join(tmpdir(), 'farm-p8-visual-'));
 const db = openDatabase(path.join(dir, 'qa.sqlite'));
 const { server, io } = createApp(db);
@@ -16,8 +17,8 @@ let browser;
 try {
   browser = await chromium.launch({headless:true, executablePath:process.env.EDGE_PATH || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
   const results=[];
-  for (const [name,width,height] of [['desktop',1366,768],['mobile',390,844],...(label==='baseline'?[]:[['wide',1920,1080],['small',360,800],['tablet',768,1024]])]) {
-    const context=await browser.newContext({viewport:{width,height}, reducedMotion:'reduce'});
+  for (const [name,width,height] of [['desktop',1366,768],['mobile',390,844],...(label==='baseline'?[]:[['wide',1920,1080],['laptop',1280,720],['small',360,800],['tablet',768,1024]])]) {
+    const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:dpr,reducedMotion:'reduce'});
     const page=await context.newPage();
     await page.goto(url); await page.screenshot({path:`.qa/phase8-${label}-${name}-login.png`});
     await page.locator('#registerTab').click();
@@ -48,7 +49,7 @@ try {
       if(overflow>1)throw Error(`Horizontal overflow at 125% zoom: ${name}, ${overflow}px`);
     }
     const metrics=await page.evaluate(async()=>{const samples=[];let last=performance.now();for(let i=0;i<120;i++){await new Promise(requestAnimationFrame);const now=performance.now();samples.push(now-last);last=now;}samples.sort((a,b)=>a-b);return {medianFrameMs:samples[60],p95FrameMs:samples[114],medianFps:1000/samples[60],width:document.documentElement.scrollWidth};});
-    results.push({name,width,height,...metrics}); await context.close();
+    results.push({name,width,height,dpr,...metrics}); await context.close();
   }
   writeFileSync(`.qa/phase8-${label}-metrics.json`,JSON.stringify(results,null,2));
   console.log(JSON.stringify(results,null,2));

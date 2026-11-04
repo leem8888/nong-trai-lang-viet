@@ -19,6 +19,6 @@ try{
   if(after.innerWidth===before.innerWidth&&after.devicePixelRatio===before.devicePixelRatio)throw Error('Edge headless did not apply browser zoom shortcut');
   assert.ok(after.scrollWidth<=after.innerWidth+1);
   await page.locator('#menuButton').click();assert.ok(await page.locator('#closePanel').isVisible());await page.locator('#closePanel').click();
-  await page.locator('#inventoryButton').click();assert.ok(await page.locator('#closePanel').isVisible());await page.locator('#closePanel').click();
+  await page.locator('#farmUtilityButton').click();await page.locator('#inventoryButton').click();assert.ok(await page.locator('#closePanel').isVisible());await page.locator('#closePanel').click();
   console.log('PASS browser zoom and core panels');
 }finally{await browser?.close();await new Promise(resolve=>io.close(resolve));if(server.listening)await new Promise(resolve=>server.close(resolve));db.close();rmSync(dir,{recursive:true,force:true,maxRetries:10,retryDelay:100});}

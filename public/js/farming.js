@@ -62,7 +62,7 @@ export class FarmingUI {
   showInventory() {
     if(!this.state)return;
     const rows=this.state.inventory.filter(item=>item.quantity>0).map(item=>`<li><span style="color:${item.color}">${item.icon||'◆'}</span> ${item.name}: <b>${item.quantity}</b><small>${item.description}</small></li>`).join('');
-    this.openPanel(`<h2>Túi đồ</h2><ul class="inventory-list">${rows||'<li>Chưa có vật phẩm. Hãy cuốc đất, nhận hạt miễn phí nếu đã hết, rồi gieo và thu hoạch.</li>'}</ul><p>Chọn loại hạt ở thanh công cụ trước khi gieo. Khi có nông sản, đến Chợ Quê để bán.</p>`);
+    this.openPanel(`<h2>Túi đồ</h2><ul class="inventory-list">${rows||'<li>Chưa có vật phẩm. Hãy cuốc đất, nhận hạt miễn phí nếu đã hết, rồi gieo và thu hoạch.</li>'}</ul><p>Chạm ô đã cuốc để chọn hạt giống và gieo. Khi có nông sản, đến Chợ Quê để bán.</p>`);
   }
   draw(ctx) {
     if(!this.state)return;
@@ -75,9 +75,10 @@ export class FarmingUI {
       if(tile.state==='EMPTY'){ctx.fillStyle='#9b7853';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*18,r.y+13+i%2*9,9,2);}
       else {ctx.strokeStyle=tile.state==='WATERED'?'#678d91':'#9d7651';for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(r.x+5,r.y+11+i*9);ctx.lineTo(r.x+r.w-5,r.y+11+i*9);ctx.stroke();}}
       if(tile.state==='WATERED'||tile.crop?.wateredAt){ctx.fillStyle='#6aa4b2';ctx.fillRect(r.x+4,r.y+4,8,3);ctx.fillRect(r.x+r.w-13,r.y+r.h-8,6,3);}
-      if(tile.crop) this.drawCrop(ctx,r,tile.crop,time);
+      if(tile.crop&&!this.isometric) this.drawCrop(ctx,r,tile.crop,time);
     }
     const mark=this.hover||this.selected;
+    if(this.preview?.size){ctx.save();ctx.fillStyle='#e8cf7470';ctx.strokeStyle='#fff2a8';ctx.lineWidth=2;for(const tile of this.preview.values()){const r=tileRect(tile.x,tile.y);ctx.fillRect(r.x+2,r.y+2,r.w-4,r.h-4);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);}ctx.restore();}
     if(mark){const r=tileRect(mark.x,mark.y);ctx.strokeStyle='#fff1a2';ctx.lineWidth=3;ctx.strokeRect(r.x+1.5,r.y+1.5,r.w-3,r.h-3);ctx.lineWidth=1;}
     this.updateInfo();
   }

@@ -1,9 +1,9 @@
 const steps = [
   ['Chào mừng về vườn', 'Đi bằng WASD, phím mũi tên hoặc nút tròn trên điện thoại. Hãy nhìn khu ruộng bên trái sân.'],
-  ['Cuốc đất', 'Chọn Cuốc rồi chạm một ô ruộng. Ô sẽ đổi thành đất đã cuốc.'],
-  ['Gieo hạt', 'Chọn Gieo, chọn hạt giống rồi chạm ô vừa cuốc. Nếu hết hạt, bấm Nhận hạt.'],
-  ['Tưới và chờ lớn', 'Chọn Tưới rồi chạm ô đã gieo. Chạm ô ruộng để xem thời gian còn lại; cây lớn cả khi bạn rời game.'],
-  ['Thu hoạch và đi chợ', 'Khi cây chín, chọn Gặt. Mở Túi đồ để xem thành quả; đi tới bảng Chợ Quê dưới sân để mua bán.']
+  ['Cuốc đất', 'Chạm ô đất trống, chọn Cuốc đất. Chạm thêm một ô để làm ngay, hoặc giữ và kéo qua nhiều ô.'],
+  ['Gieo hạt', 'Chạm ô đã cuốc, chọn loại hạt rồi chọn Gieo hạt. Mở ☰ Nông trại để nhận hạt khi hết.'],
+  ['Tưới và chờ lớn', 'Chạm ô đã gieo để chọn Tưới và xem thời gian còn lại. Cây lớn cả khi bạn rời game.'],
+  ['Thu hoạch và đi chợ', 'Khi cây chín, chạm ô và chọn Thu hoạch. Mở ☰ Nông trại để xem Túi đồ; đi tới Chợ Quê dưới sân để mua bán.']
 ];
 
 export function createOnboarding(userId) {

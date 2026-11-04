@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { openDatabase } from '../server/db.js';
 import { createApp } from '../server/index.js';
+import { Camera } from '../public/js/core/Camera.js';
 import { addItem } from '../server/crops.js';
 
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
@@ -27,6 +28,7 @@ async function createUser(context,name){
   await page.locator('#create:not(.hidden)').waitFor();
   await page.locator('[name=name]').fill(`Farm ${name}`);await page.locator('#farmForm button').click();
   await page.locator('#game:not(.hidden)').waitFor();await page.locator('#status').getByText('Đã kết nối').waitFor();
+  if(await page.locator('#onboarding').isVisible())await page.locator('#onboardingSkip').click();
   return {page,errors};
 }
 async function position(page,name,x,y,scene='farm'){
@@ -34,6 +36,7 @@ async function position(page,name,x,y,scene='farm'){
   db.prepare('UPDATE player_states SET x=?,y=?,scene=? WHERE user_id=(SELECT id FROM users WHERE username=?)').run(x,y,scene,name);
   await page.goto(url);await page.locator('#game:not(.hidden)').waitFor();await page.locator('#status').getByText('Đã kết nối').waitFor();
 }
+async function clickSoil(page){const camera=new Camera({width:1440,height:1024});camera.isometric=true;camera.resize(800,600);camera.snap(180,810);const point=camera.toScreen(140,750);await page.mouse.click(point.x,point.y);}
 try{
   browser=await chromium.launch({headless:true,executablePath});
   const a=await browser.newContext({viewport:{width:1280,height:800}}), b=await browser.newContext({viewport:{width:1280,height:800}});
@@ -52,19 +55,19 @@ try{
     await run('two tabs same account',async()=>{const tab=await a.newPage();await tab.goto(url);await tab.locator('#game:not(.hidden)').waitFor();assert.equal(await tab.locator('#farmName').textContent(),await pa.page.locator('#farmName').textContent());await tab.close();});
     await run('planting by mouse, inventory, offline growth and harvest',async()=>{
       await pa.page.setViewportSize({width:800,height:600});await position(pa.page,ua,180,810);
-      await pa.page.locator('[data-tool=till]').click();await pa.page.mouse.click(126,353);await pa.page.waitForTimeout(250);
+      await clickSoil(pa.page);await pa.page.locator('[data-context-action=till]').click();await clickSoil(pa.page);await pa.page.waitForTimeout(250);
       let state=await pa.page.evaluate(async()=>await(await fetch('/api/farming')).json());assert.equal(state.tiles.find(t=>t.x===0&&t.y===0).state,'TILLED');
-      await pa.page.locator('[data-tool=plant]').click();await pa.page.mouse.click(126,353);await pa.page.waitForTimeout(250);
+      await pa.page.keyboard.press('Escape');await clickSoil(pa.page);await pa.page.locator('[data-context-action=plant]').click();await clickSoil(pa.page);await pa.page.waitForTimeout(250);
       state=await pa.page.evaluate(async()=>await(await fetch('/api/farming')).json());assert.equal(state.tiles.find(t=>t.x===0&&t.y===0).crop.cropId,'mustard');
-      await pa.page.locator('[data-tool=water]').click();await pa.page.mouse.click(126,353);await pa.page.waitForTimeout(250);
+      await pa.page.keyboard.press('Escape');await clickSoil(pa.page);await pa.page.locator('[data-context-action=water]').click();await clickSoil(pa.page);await pa.page.waitForTimeout(250);
       state=await pa.page.evaluate(async()=>await(await fetch('/api/farming')).json());assert.ok(state.tiles.find(t=>t.x===0&&t.y===0).crop.wateredAt);
-      await pa.page.locator('#inventoryButton').click();assert.match(await pa.page.locator('#panel').textContent(),/Hạt rau cải/);await pa.page.locator('#closePanel').click();
+      await pa.page.locator('#farmUtilityButton').click();await pa.page.locator('#inventoryButton').click();assert.match(await pa.page.locator('#panel').textContent(),/Hạt rau cải/);await pa.page.locator('#closePanel').click();
       await pa.page.goto('about:blank');db.prepare('UPDATE farm_crops SET planted_at=planted_at-? WHERE farm_id=(SELECT id FROM farms WHERE owner_id=(SELECT id FROM users WHERE username=?)) AND tile_x=0 AND tile_y=0').run(20*60000,ua);
-      await pa.page.goto(url);await pa.page.locator('#game:not(.hidden)').waitFor();await pa.page.locator('[data-tool=harvest]').click();await pa.page.mouse.click(126,353);await pa.page.waitForTimeout(300);
+      await pa.page.goto(url);await pa.page.locator('#farmUtilityButton').waitFor();await clickSoil(pa.page);await pa.page.locator('[data-context-action=harvest]').click();await clickSoil(pa.page);await pa.page.waitForTimeout(300);
       state=await pa.page.evaluate(async()=>await(await fetch('/api/farming')).json());assert.equal(state.inventory.find(i=>i.id==='mustard').quantity,2);return 'tile (0,0), mustard ×2';
     });
     await run('farm to market and buy seeds',async()=>{
-      await position(pa.page,ua,720,850);await pa.page.keyboard.press('e');await pa.page.locator('#marketHud:not(.hidden)').waitFor();
+      await position(pa.page,ua,720,850);await pa.page.keyboard.press('e');await pa.page.locator('#marketHud:not(.hidden)').waitFor();await pa.page.screenshot({path:'.qa/isometric-market-world.png'});
       await position(pa.page,ua,300,445,'market');await pa.page.keyboard.press('e');await pa.page.locator('[data-market-form=buy]').waitFor();
       await pa.page.screenshot({path:'.qa/market.png'});
       await pa.page.locator('[data-market-form=buy] select').selectOption('seed_mustard');await pa.page.locator('[data-market-form=buy] button').click();

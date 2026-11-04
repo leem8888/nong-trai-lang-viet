@@ -5,3 +5,5 @@ import './phase4.test.js';
 import './phase5.test.js';
 import './phase6.test.js';
 import './phase7.test.js';
+import './contextual.test.js';
+import './isometric.test.js';

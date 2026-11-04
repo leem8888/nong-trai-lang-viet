@@ -4,7 +4,7 @@ try { settings = JSON.parse(localStorage.getItem(key) || '{}'); } catch { settin
 let context, unlocked = false, lastCue = 0;
 window.addEventListener('pointerdown', () => { unlocked = true; }, {once:true});
 window.addEventListener('keydown', () => { unlocked = true; }, {once:true});
-export const audioSettings = { muted: settings.muted ?? true, volume: settings.volume ?? 0.3 };
+export const audioSettings = { muted: settings.muted ?? false, volume: settings.volume ?? 0.3 };
 export function saveAudio() { localStorage.setItem(key, JSON.stringify(audioSettings)); }
 export function cue(kind = 'ok') {
   if (!unlocked || audioSettings.muted || performance.now() - lastCue < 150) return;

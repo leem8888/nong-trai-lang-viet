@@ -27,13 +27,13 @@ try{
   await page.screenshot({path:'.qa/phase8-journey-spawn.png'});
   await page.locator('#onboardingSkip').click();await page.keyboard.down('a');await page.waitForTimeout(2750);await page.keyboard.up('a');await page.keyboard.down('s');await page.waitForTimeout(520);await page.keyboard.up('s');await page.waitForTimeout(800);
   const position=(await get(page,'/farm')).player;mark('move with keyboard',`${Math.round(position.x)},${Math.round(position.y)}`);
-  await page.locator('[data-tool=till]').click();await page.mouse.click(126,554);await page.waitForTimeout(350);
+  await page.mouse.click(126,554);await page.locator('[data-context-action=till]').click();await page.mouse.click(126,554);await page.waitForTimeout(350);
   let farm=await get(page,'/farming');assert.equal(farm.tiles.find(t=>t.x===0&&t.y===0).state,'TILLED');mark('till soil');
-  await page.locator('[data-tool=plant]').click();await page.mouse.click(126,554);await page.waitForTimeout(350);
+  await page.keyboard.press('Escape');await page.mouse.click(126,554);await page.locator('[data-context-action=plant]').click();await page.mouse.click(126,554);await page.waitForTimeout(350);
   farm=await get(page,'/farming');assert.equal(farm.tiles.find(t=>t.x===0&&t.y===0).crop.cropId,'mustard');mark('plant seed');
-  await page.locator('[data-tool=water]').click();await page.mouse.click(126,554);await page.waitForTimeout(350);
+  await page.keyboard.press('Escape');await page.mouse.click(126,554);await page.locator('[data-context-action=water]').click();await page.mouse.click(126,554);await page.waitForTimeout(350);
   farm=await get(page,'/farming');assert.ok(farm.tiles.find(t=>t.x===0&&t.y===0).crop.wateredAt);mark('water crop');
-  await page.locator('#inventoryButton').click();assert.ok(await page.locator('#panel').isVisible());await page.keyboard.press('Escape');mark('inspect and close inventory');
+  await page.locator('#farmUtilityButton').click();await page.locator('#inventoryButton').click();assert.ok(await page.locator('#panel').isVisible());await page.keyboard.press('Escape');mark('inspect and close inventory');
   await page.locator('#questsButton').click();await page.locator('#panel:not(.hidden)').waitFor();await page.locator('#closePanel').click();mark('inspect quests');
   await page.locator('#menuButton').click();await page.locator('#replayTutorial').click();assert.ok(await page.locator('#onboarding').isVisible());await page.locator('#onboardingSkip').click();mark('replay and skip help');
   await page.screenshot({path:'.qa/phase8-journey-farm.png'});

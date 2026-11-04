@@ -93,3 +93,7 @@ Trước migration v3 đã chạy backup; Phase 1–3 đạt Definition of Done 
 
 Đã thêm hướng dẫn đầu game có thể bỏ qua/xem lại, phản hồi đang xử lý cho trồng trọt và đăng nhập, menu cùng bố cục mobile, nhân vật local dễ đọc hơn, âm thanh xác nhận tùy chọn (mặc định tắt). Baseline và QA thực tế: xem `PHASE8_BASELINE.md`, `PHASE8_QA_REPORT.md`. Server/gameplay/SQLite không đổi. Các bộ test hiện tại qua, nhưng P8.2–P8.8 còn việc bắt buộc; **chưa hoàn thành Phase 8 và chưa commit**.
 
+# Contextual UX + isometric remake (2026-11-04)
+
+Nhánh `feature/contextual-interaction-ux` đang làm, **chưa hoàn thành Definition of Done và chưa commit**. Menu ngữ cảnh, kéo nhiều ô, UI đồng bộ, phép chiếu isometric farm/chợ và sprite gốc đã triển khai; 40 test tự động và các regression browser Phase 1–7 đang PASS. Hành trình hai tài khoản 20 phút đã PASS. Kiểm tra zoom browser thật, occlusion toàn bộ vật thể, art trang trí và benchmark dài hạn còn mở. Trạng thái chi tiết: `ISOMETRIC_REMAKE_PROGRESS.md` và `ISOMETRIC_REMAKE_QA_REPORT.md`. Các mục bên dưới là lịch sử phase trước.
+

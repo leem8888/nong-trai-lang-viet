@@ -1,0 +1,97 @@
+﻿{
+  "version": 2,
+  "packaging": "Generated original PNG artwork was converted to local WebP at quality 0.88 in Edge; transparent pixels are retained. Browser-ready WebP assets total 5.3 MB versus 26.4 MB of the source PNGs.",
+  "assets": [
+    {
+      "path": "/assets/village-welcome.webp",
+      "role": "Login and farm creation background",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game asset was used"
+    },
+    {
+      "path": "/assets/ui-icons.svg",
+      "role": "Bottom dock icons",
+      "source": "Original SVG paths authored in this repository on 2026-11-04",
+      "license": "Project-owned original work"
+    },
+    {
+      "path": "/assets/farmhouse.webp",
+      "role": "Isometric farmhouse sprite",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/lotus-pond.webp",
+      "role": "Isometric fish pond sprite",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/chicken-coop.webp",
+      "role": "Isometric chicken coop sprite",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/mango-tree.webp",
+      "role": "Isometric tree sprite",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/seed-stall.webp",
+      "role": "Isometric market stall sprite",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/village-npcs.webp",
+      "role": "Four distinct village NPC sprites",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/rice-stages.webp",
+      "role": "Young crop stage sprites",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/mature-crops.webp",
+      "role": "Five mature crop sprites (mustard, rice, carrot, tomato, corn)",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/soy-crop.webp",
+      "role": "Mature soybean sprite",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/production-buildings.webp",
+      "role": "Isometric mill, kitchen and drying rack sprites",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/farm-animals.webp",
+      "role": "Chicken and carp sprites for VAC motion",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/farmer-walk.webp",
+      "role": "Four-direction four-frame player and visitor walk cycle",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/farmer-actions.webp",
+      "role": "Hoe, sow, water and harvest action poses",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
+      "license": "Project use under the applicable OpenAI output terms"
+    }
+  ]
+}
+
