@@ -9,8 +9,7 @@ export function sceneryLayers(scene,art,upright,reduced,placed=[]){
     if(placed.some(r=>x>r.x-60&&x<r.x+r.w+60&&y>r.y-60&&y<r.y+r.h+60))return;
     layers.push({y:depth(x,y),draw:ctx=>upright(ctx,x+Math.sin(t+x)*sway,y,art[key],w,h)});
   };
-  const trees=scene==='market'?[[95,170,225],[1070,160,240],[105,700,185],[1090,700,185]]:[[180,180,225],[355,160,200],[1240,175,250],[180,440,165],[1330,570,175],[560,910,140]];
-  for(const [x,y,w] of trees)add(x,y,'tree',w,w,1.3);
+  // Trees are authored in villageScenery with distinct species.
   const gardens=scene==='market'?[[130,300],[1080,335],[340,680],[875,685]]:[[400,488],[515,505],[940,505],[1190,590],[100,690],[435,920],[1255,885]];
   for(const [x,y] of gardens)add(x,y,'garden',130,47,.4);
   for(const [x,y] of scene==='market'?[[1050,600],[175,410]]:[[930,520],[320,480]])add(x,y,'props',115,80);

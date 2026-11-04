@@ -8,3 +8,4 @@ import './phase7.test.js';
 import './contextual.test.js';
 import './isometric.test.js';
 import './adminSeed.test.js';
+import './villageLife.test.js';

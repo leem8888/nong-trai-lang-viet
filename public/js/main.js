@@ -1,3 +1,5 @@
+import {drawLife,villageScenery} from './villageScenery.js';
+import {findPath} from './systems/Pathfinding.js';
 import {depth,sceneryLayers,paintLayers,drawNightLights,decorationLayers,drawDecorationGround} from './scenery.js';
 ﻿import { GameLoop } from './core/GameLoop.js';
 import { Camera } from './core/Camera.js';
@@ -14,7 +16,7 @@ import { VillageUI } from './village.js';
 import { SocialUI } from './social.js';
 import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from './shared/phase5.js';
 import { VAC_POINTS } from './shared/vac.js';
-import { MARKET_WORLD, MARKET_POINTS, FARM_GATE } from './shared/marketMap.js';
+import { MARKET_WORLD, MARKET_POINTS, FARM_GATE, VILLAGE_PLACES } from './shared/marketMap.js';
 import { createOnboarding } from './onboarding.js';
 import { audioSettings, saveAudio, cue } from './audio.js';
 import { ContextualInteraction } from './contextual.js';
@@ -26,16 +28,17 @@ const farmWorld={width:1440,height:1024,margin:{left:0,right:0,top:0,bottom:0},o
 {x:480,y:265,w:460,h:220},{x:50,y:75,w:1340,h:15},{x:50,y:920,w:1340,h:15},{x:50,y:75,w:15,h:860},{x:1375,y:75,w:15,h:860},
 {x:520,y:720,w:45,h:35},{x:1060,y:610,w:40,h:35},{x:215,y:460,w:70,h:25},{x:700,y:514,w:25,h:15},{x:925,y:575,w:20,h:20},
 {x:1010,y:710,w:280,h:145},{x:1050,y:360,w:230,h:130}]};
-const art = Object.fromEntries([['decorations','decorations-v9.webp'],['farmGround','farm-ground-v9.svg'],['marketGround','market-ground-v9.svg'],['garden','garden-v9.webp'],['props','rural-props-v9.webp'],['bird','bird-v9.svg'],['butterfly','butterfly-v9.svg'],['seedV9','market-seed-v9.webp'],['buyerV9','market-buyer-v9.webp'],['ordersV9','market-orders-v9.webp'],['house','farmhouse.webp'],['pond','lotus-pond.webp'],['coop','chicken-coop.webp'],['walk','farmer-walk.webp'],['actions','farmer-actions.webp'],['tree','mango-tree.webp'],['stall','seed-stall.webp'],['npcs','village-npcs.webp'],['stages','rice-stages.webp'],['crops','mature-crops.webp'],['soy','soy-crop.webp'],['production','production-buildings.webp'],['animals','farm-animals.webp']].map(([key,file])=>{const image=new Image();image.file=file;image.onerror=()=>{image.failed=true;console.warn(`Không tải được asset ${file}`);};return [key,image];}));
-async function loadArt(keys){keys=[...new Set([...keys,...(keys.includes('stall')?['marketGround','seedV9','buyerV9','ordersV9']:['farmGround','decorations']),'garden','props','butterfly','tree','bird'])];await Promise.all(keys.map(async key=>{const image=art[key];if(!image.src)image.src=`/assets/${image.file}`;try{await image.decode();if(!image.bitmapPromise&&!(['walk','actions','npcs','stages','crops','production','animals'].includes(key))){image.bitmapPromise=(async()=>{const ground=key.endsWith('Ground')||key==='decorations',width=ground?image.naturalWidth:Math.min(image.naturalWidth,1024);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=Math.round(image.naturalHeight*width/image.naturalWidth);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.bitmap=await createImageBitmap(canvas);})().catch(()=>{});}if(image.bitmapPromise)await image.bitmapPromise;}catch{image.failed=true;}}));}
+const art = Object.fromEntries([['villageLife','village-life-v10.webp'],['surroundings','surroundings-v10.svg'],['marketLifeGround','market-life-ground-v10.svg'],['decorations','decorations-v9.webp'],['farmGround','farm-ground-v9.svg'],['marketGround','market-ground-v9.svg'],['garden','garden-v9.webp'],['props','rural-props-v9.webp'],['bird','bird-v9.svg'],['butterfly','butterfly-v9.svg'],['seedV9','market-seed-v9.webp'],['buyerV9','market-buyer-v9.webp'],['ordersV9','market-orders-v9.webp'],['house','farmhouse.webp'],['pond','lotus-pond.webp'],['coop','chicken-coop.webp'],['walk','farmer-walk.webp'],['actions','farmer-actions.webp'],['tree','mango-tree.webp'],['stall','seed-stall.webp'],['npcs','village-npcs.webp'],['stages','rice-stages.webp'],['crops','mature-crops.webp'],['soy','soy-crop.webp'],['production','production-buildings.webp'],['animals','farm-animals.webp']].map(([key,file])=>{const image=new Image();image.file=file;image.onerror=()=>{image.failed=true;console.warn(`Không tải được asset ${file}`);};return [key,image];}));
+async function loadArt(keys){keys=[...new Set([...keys,...(keys.includes('stall')?['marketLifeGround','seedV9','buyerV9','ordersV9']:['farmGround','decorations']),'garden','props','butterfly','tree','bird','villageLife','surroundings'])];await Promise.all(keys.map(async key=>{const image=art[key];if(!image.src)image.src=`/assets/${image.file}`;try{await image.decode();if(!image.bitmapPromise&&!(['walk','actions','npcs','stages','crops','production','animals'].includes(key))){image.bitmapPromise=(async()=>{const ground=key.endsWith('Ground')||key==='decorations'||key==='villageLife'||key==='surroundings',width=key==='surroundings'?1600:ground?image.naturalWidth:Math.min(image.naturalWidth,1024);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=Math.round(image.naturalHeight*width/image.naturalWidth);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.bitmap=await createImageBitmap(canvas);})().catch(()=>{});}if(image.bitmapPromise)await image.bitmapPromise;}catch{image.failed=true;}}));}
 function upright(ctx,x,y,image,width,height,source,mirror=false){if(!image.naturalWidth&&!image.failed)return;ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);if(mirror)ctx.scale(-1,1);if(image.failed){ctx.fillStyle='#78543d';ctx.fillRect(-width/2,-height,width,height);ctx.strokeStyle='#f1d89f';ctx.strokeRect(-width/2,-height,width,height);}else if(source)ctx.drawImage(image.bitmap||image,...source.map((v,i)=>image.bitmap?v*(i%2?image.bitmap.height/image.naturalHeight:image.bitmap.width/image.naturalWidth):v),-width/2,-height,width,height);else ctx.drawImage(image.bitmap||image,-width/2,-height,width,height);ctx.restore();}
 const objects={board:{x:343,y:700,label:'Bảng thông tin'},door:{x:712,y:520,label:'Cửa nhà'},lamp:{x:935,y:586,label:'Đèn sân'},farmGate:{...FARM_GATE,label:'Ra chợ làng'},...VAC_POINTS};
-async function api(url,options={}) { const response=await fetch('/api'+url,{...options,headers:{'content-type':'application/json','x-csrf-token':csrf,...options.headers}}); const data=await response.json(); if(!response.ok) throw Error(data.error); return data; }
+async function api(url,options={}) { const response=await fetch('/api'+url,{...options,headers:{'content-type':'application/json','x-csrf-token':csrf,...options.headers}}); const data=await response.json(); if(!response.ok) throw Object.assign(Error(data.error),{status:response.status}); return data; }
 let errorTimer,noticeTimer;
 let actionEffect=null;
 function showError(message){cue('error');$('error').textContent=message;$('error').classList.remove('hidden');clearTimeout(errorTimer);errorTimer=setTimeout(()=>$('error').classList.add('hidden'),4500);}
 function showNotice(message,kind='ok'){cue(kind);if(['till','plant','water','harvest','stock_fish','feed_fish','harvest_fish','add_chicken','feed_chicken','collect_eggs','start','claim','place_building','place_decoration'].includes(kind))actionEffect={kind,at:performance.now()};$('notice').textContent=message;$('notice').classList.remove('hidden');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('notice').classList.add('hidden'),2800);}
-function screen(id){for(const name of ['welcome','create','game'])$(name).classList.toggle('hidden',name!==id);}
+function screen(id){for(const name of ['welcome','create','game','loading'])$(name).classList.toggle('hidden',name!==id);}
+function loadingFailure(){screen('loading');$('loadingMessage').textContent='Không thể tải nông trại. Hãy kiểm tra kết nối rồi thử lại.';$('loadingRetry').classList.remove('hidden');}
 let panelOpener=null;
 let onboarding=null;
 function panel(html){contextual?.cancel();if($('panel').classList.contains('hidden'))panelOpener=document.activeElement;$('panelContent').innerHTML=html;$('panel').classList.remove('hidden');if(input)input.active=false;$('closePanel').focus();}
@@ -47,8 +50,8 @@ window.addEventListener('keydown',event=>{if($('panel').classList.contains('hidd
 document.addEventListener('pointerdown',event=>{if(!$('panel').classList.contains('hidden')&&!$('panel').contains(event.target))closePanel();},{capture:true});
 let mode='login';
 for(const name of ['login','register'])$(name+'Tab').onclick=()=>{mode=name;for(const tab of ['login','register'])$(tab+'Tab').setAttribute('aria-selected',String(tab===name));$('authSubmit').textContent=name==='login'?'Đăng nhập':'Đăng ký';$('authForm').elements.password.autocomplete=name==='login'?'current-password':'new-password';};
-$('authForm').onsubmit=async e=>{e.preventDefault();const button=$('authSubmit');if(button.disabled)return;button.disabled=true;const label=button.textContent;button.textContent='Đang xử lý…';try{const data=await api('/'+mode,{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});csrf=data.csrf;await enter(data.farm);}catch(error){showError(error.message);}finally{button.disabled=false;button.textContent=label;}};
-$('farmForm').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button');if(button.disabled)return;button.disabled=true;button.textContent='Đang tạo…';try{const data=await api('/farms',{method:'POST',body:JSON.stringify({name:new FormData(e.target).get('name')})});await enter(data.farm);}catch(error){showError(error.message);}finally{button.disabled=false;button.textContent='Bắt đầu làm vườn';}};
+$('authForm').onsubmit=async e=>{e.preventDefault();const button=$('authSubmit');if(button.disabled)return;button.disabled=true;const label=button.textContent;button.textContent='Đang xử lý…';try{const data=await api('/'+mode,{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});csrf=data.csrf;await enter(data.farm);}catch(error){if(!$('loading').classList.contains('hidden'))loadingFailure();else showError(error.message);}finally{button.disabled=false;button.textContent=label;}};
+$('farmForm').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button');if(button.disabled)return;button.disabled=true;button.textContent='Đang tạo…';try{const data=await api('/farms',{method:'POST',body:JSON.stringify({name:new FormData(e.target).get('name')})});await enter(data.farm);}catch(error){if(!$('loading').classList.contains('hidden'))loadingFailure();else showError(error.message);}finally{button.disabled=false;button.textContent='Bắt đầu làm vườn';}};
 $('menuButton').onclick=()=>panel(`<h2>Menu</h2><p>Trạng thái được lưu trên máy chủ.</p><div class="menu-actions"><button data-menu="historyButton">Lịch sử</button><button data-menu="questsButton">Nhiệm vụ</button><button data-menu="effectsButton">Hiệu ứng</button><button data-menu="socialButton">Thăm farm</button><button id="replayTutorial">Xem hướng dẫn</button><button id="logout">Đăng xuất</button></div><label class="audio-row"><input id="audioMute" type="checkbox" ${audioSettings.muted?'':'checked'}> Bật âm thanh</label><label>Âm lượng <input id="audioVolume" type="range" min="0" max="1" step="0.05" value="${audioSettings.volume}"></label>`);
 $('panel').addEventListener('click',async e=>{if(e.target.dataset.menu){closePanel();$(e.target.dataset.menu)?.click();}if(e.target.id==='replayTutorial'){closePanel();onboarding?.start(true);}if(e.target.id==='logout'){try{await api('/logout',{method:'POST'});}catch{} socket?.disconnect();loop?.stop();location.reload();}});
 $('panel').addEventListener('input',e=>{if(e.target.id==='audioMute')audioSettings.muted=!e.target.checked;if(e.target.id==='audioVolume')audioSettings.volume=Number(e.target.value);saveAudio();});
@@ -64,16 +67,19 @@ if(id==='door')panel('<h2>Ngôi nhà mái ngói</h2><p>Một gian nhà ấm cún
 if(id==='lamp')socket.emit('farm:interact',{objectId:'lamp'},result=>{if(!result.ok)showError(result.error);});}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function applyScene(next,x,y,direction='down'){
-contextual?.sceneChanged();scene=next;const world=scene==='market'?MARKET_WORLD:farmWorld;
+contextual?.sceneChanged();if(phase5Ui)phase5Ui.mode=null;scene=next;const world=scene==='market'?MARKET_WORLD:farmWorld;
 void loadArt(scene==='market'?['stall','walk','npcs']:['house','pond','coop','walk','npcs','tree','stages','crops','soy','production','animals','actions']);
 collision=new CollisionSystem(world);camera.isometric=true;camera.setWorld(world);camera.resize(innerWidth,innerHeight);player.place(x,y,direction);camera.snap(x,y);input?.clear();
 syncPhase5Collision();
-$('farmHud').classList.toggle('hidden',scene==='market');$('marketHud').classList.toggle('hidden',scene!=='market');
+$('farmHud').classList.toggle('hidden',scene==='market');$('villagePlaces')?.classList.toggle('hidden',scene!=='market');$('marketHud').classList.toggle('hidden',scene!=='market');
 $('help').textContent=visiting?'WASD / mũi tên: đi dạo · Chỉ chủ farm được thao tác.':scene==='market'?'Đến gần quầy, bảng đơn hoặc cổng rồi nhấn E.':'WASD / mũi tên: đi · E: tương tác · 1–4: công cụ · Nhấp ô ruộng để dùng';
 if(visiting)$('farmHud').classList.add('hidden');
 if(!visiting&&scene==='farm')$('help').textContent='Chạm ô đất để thao tác. Chọn công cụ rồi giữ và kéo để làm nhiều ô.';
 }
-function travel(to){if(visiting)return showError('Hãy về nông trại của bạn trước.');if(!socket?.connected){showError('Mất kết nối với server.');return;}socket.emit('world:travel',{to},async result=>{
+let traveling=false,travelAt=0;
+function walkTo(point){const path=findPath(collision,player,point);if(!path){showError('Lối đi đang bị chắn. Hãy chọn lối khác.');return;}contextual?.cancel();input.setPath(path);}
+function autoTravel(){if(visiting||traveling||!socket?.connected||performance.now()-travelAt<1800||!$('panel').classList.contains('hidden'))return;const gate=scene==='farm'?FARM_GATE:MARKET_POINTS.returnGate;if(Math.hypot(player.x-gate.x,player.y-gate.y)<=26)travel(scene==='farm'?'market':'farm');}
+function travel(to){if(traveling)return;if(visiting)return showError('Hãy về nông trại của bạn trước.');if(!socket?.connected){showError('Mất kết nối với server.');return;}traveling=true;travelAt=performance.now();socket.timeout(6000).emit('world:travel',{to},async (error,result)=>{traveling=false;if(error){showError('Không thể chuyển cảnh. Hãy thử lại.');return;}
 if(!result.ok){showError(result.error);return;}applyScene(result.scene,result.x,result.y);try{marketUi.setState(await api('/market'));}catch(error){showError(error.message);}
 });}
 function applyVisitSnapshot(s){
@@ -85,9 +91,10 @@ function applyMembers(members){const ids=new Set();for(const m of members){if(m.
 function visitFarm(result){visiting=result.farm;closePanel();applyScene('farm',result.player.x,result.player.y,result.player.direction);applyVisitSnapshot(result.snapshot);applyMembers(result.members);$('farmName').textContent=result.farm.name;$('visitLabel').textContent=`Đang thăm nông trại của ${result.farm.ownerName}`;$('visitBanner').classList.remove('hidden');for(const id of ['balance','historyButton','questsButton'])$(id).classList.add('hidden');showNotice('Đã vào nông trại. Bạn có thể đi dạo và chào hỏi.');}
 async function returnHome(sendLeave=true){if(sendLeave&&socket?.connected)await new Promise(resolve=>socket.emit('social:leave',{},resolve));visiting=null;remoteMembers.clear();$('visitBanner').classList.add('hidden');for(const id of ['balance','historyButton','questsButton'])$(id).classList.remove('hidden');$('farmName').textContent=farm.name;closePanel();try{const state=await api('/farm');applyScene(state.player.scene||'farm',state.player.x,state.player.y,state.player.direction);lamp=state.objects.find(o=>o.object_id==='lamp')?.state||0;farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch(error){showError(error.message);}}
 function drawRemote(ctx){for(const m of remoteMembers.values()){m.drawX+=(m.x-m.drawX)*.25;m.drawY+=(m.y-m.drawY)*.25;const moving=Math.hypot(m.x-m.drawX,m.y-m.drawY)>1;drawAvatar(ctx,m.drawX,m.drawY,m.direction,moving?Math.sin(performance.now()/90)*4:0,m.name,m.role==='owner'?'#9b633e':'#567462');if(m.emote&&Date.now()-m.emote.at<2600){ctx.font='24px system-ui';ctx.textAlign='center';ctx.fillText({wave:'👋',hello:'🌾',thanks:'🙏',happy:'😊'}[m.emote.name],m.drawX,m.drawY-85);ctx.textAlign='start';}}}
-async function enter(existing){if(!existing){screen('create');return;}farm=existing;const state=await api('/farm');lamp=state.objects.find(o=>o.object_id==='lamp')?.state||0;
-$('farmName').textContent=farm.name;const me=await api('/me');selfId=me.user.id;$('userName').textContent=me.user.username;await loadArt((state.player.scene||'farm')==='market'?['stall','walk','npcs']:['house','pond','coop','walk','npcs','tree','stages','crops','soy']);screen('game');
+async function enter(existing){if(!existing){screen('create');return;}screen('loading');farm=existing;const state=await api('/farm');lamp=state.objects.find(o=>o.object_id==='lamp')?.state||0;
+$('farmName').textContent=farm.name;const me=await api('/me');selfId=me.user.id;$('userName').textContent=me.user.username;await loadArt((state.player.scene||'farm')==='market'?['stall','walk','npcs']:['house','pond','coop','walk','npcs','tree','stages','crops','soy']);
 onboarding=createOnboarding(selfId);
+const places=document.createElement('nav');places.id='villagePlaces';places.setAttribute('aria-label','Khu vực làng');for(const place of Object.values(VILLAGE_PLACES)){const button=document.createElement('button');button.textContent=place.label;button.onclick=()=>{closePanel();walkTo(place);};places.append(button);}document.getElementById('game').append(places);
 const canvas=$('canvas'),ctx=canvas.getContext('2d');player=new Player();player.place(state.player.x,state.player.y,state.player.direction);scene=state.player.scene||'farm';camera=new Camera(scene==='market'?MARKET_WORLD:farmWorld);camera.snap(player.x,player.y);
 camera.isometric=true;camera.snap(player.x,player.y);
 farming=new FarmingUI(api,showError,showNotice,panel);farming.setState(await api('/farming'));
@@ -119,7 +126,7 @@ contextual=new ContextualInteraction({canvas,camera,farming,vac:vacUi,phase5:pha
 input.onManual=()=>{if(contextual?.mode==='contextMenuOpen')contextual.cancel();};
 applyScene(scene,player.x,player.y,player.direction);
 if(Date.now()-new Date(farm.created_at).getTime()<10*60*1000)onboarding.start();
-input.onPoint=(point,event)=>{if(scene==='farm'&&phase5Ui?.mode)return visiting?true:phase5Ui.point(point);if(contextual.down(point,event))return true;if(visiting)return false;const entry=Object.entries(nearbyObjects()).find(([,o])=>Math.hypot(point.x-o.x,point.y-o.y)<38);if(entry){interact(entry[0]);return true;}return false;};
+input.onPoint=(point,event)=>{if(!visiting){const gate=scene==='farm'?FARM_GATE:MARKET_POINTS.returnGate;if(Math.hypot(point.x-gate.x,point.y-gate.y)<65){walkTo(gate);return true;}}if(scene==='farm'&&phase5Ui?.mode)return visiting?true:phase5Ui.point(point);if(contextual.down(point,event))return true;if(visiting)return false;const entry=Object.entries(nearbyObjects()).find(([,o])=>Math.hypot(point.x-o.x,point.y-o.y)<38);if(entry){interact(entry[0]);return true;}return false;};
 canvas.addEventListener('pointermove',e=>{const point=camera.toWorld(e.clientX,e.clientY);farming.hover=scene==='farm'&&!phase5Ui?.mode?tileAt(point.x,point.y):null;if(phase5Ui)phase5Ui.hover=point;});canvas.addEventListener('pointerleave',()=>{farming.hover=null;});
 function resize(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(innerWidth*dpr);canvas.height=Math.round(innerHeight*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);camera.resize(innerWidth,innerHeight);}addEventListener('resize',resize);resize();
 socket=io({withCredentials:true});socialUi.setSocket(socket);
@@ -139,8 +146,9 @@ socket.on('social:revoked',m=>{showError(m.reason);returnHome();});
 socket.on('social:replaced',()=>{if(visiting){showError('Phiên khác đã vào nông trại.');returnHome(false);}});
 socket.on('farm:object',o=>{if(!visiting&&o.objectId==='lamp')lamp=o.state;});socket.on('farm:farming',state=>{if(!visiting)farming.setState(state);});socket.on('farm:market',state=>{if(!visiting)marketUi.setState(state);});socket.on('farm:vac',state=>{if(!visiting)vacUi.setState(state);});socket.on('farm:phase5',state=>{if(!visiting)phase5Ui.setState(state);});socket.on('farm:quests',state=>{if(!visiting&&villageUi?.state){villageUi.state.quests=state;villageUi.updateHud();}});
 setInterval(async()=>{if(document.visibilityState==='visible'&&!visiting)try{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch{}},30000);
-let saveAt=0,hudAt=0,moveSeq=0;loop=new GameLoop((dt)=>{input.active=$('panel').classList.contains('hidden');player.update(dt,input.vector(player),collision);camera.update(player,dt);const near=nearest();$('prompt').style.display=near?'block':'none';if(near)$('prompt').textContent=`E · ${near.label}`;const time=performance.now();if(time-hudAt>1000){hudAt=time;villageUi.updateHud();}if(socket.connected&&time-saveAt>180){saveAt=time;socket.emit('player:move',{x:player.x,y:player.y,direction:player.direction,seq:++moveSeq},r=>{if(r&&!r.ok&&r.player)player.place(r.player.x,r.player.y);});}},()=>draw(ctx));loop.start();clientReady=true;if(socket.connected&&joinedReady)$('status').textContent='Đã kết nối';}
+let saveAt=0,hudAt=0,moveSeq=0;loop=new GameLoop((dt)=>{input.active=$('panel').classList.contains('hidden');player.update(dt,input.vector(player),collision);camera.update(player,dt);autoTravel();const near=nearest();$('prompt').style.display=near?'block':'none';if(near)$('prompt').textContent=['farmGate','returnGate'].includes(near.id)?`Đi qua cổng · ${near.label}`:`E · ${near.label}`;const time=performance.now();if(time-hudAt>1000){hudAt=time;villageUi.updateHud();}if(socket.connected&&time-saveAt>180){saveAt=time;socket.emit('player:move',{x:player.x,y:player.y,direction:player.direction,seq:++moveSeq},r=>{if(r&&!r.ok&&r.player)player.place(r.player.x,r.player.y);});}},()=>draw(ctx));screen('game');loop.start();clientReady=true;if(socket.connected&&joinedReady)$('status').textContent='Đã kết nối';}
 function drawIsometricFarm(ctx){
+  drawSurroundings(ctx);
   if(art.farmGround.complete&&art.farmGround.naturalWidth)ctx.drawImage(art.farmGround.bitmap||art.farmGround,0,0,farmWorld.width,farmWorld.height);
   phase5Ui?.drawGround(ctx,camera);
   villageUi?.drawSeason(ctx,camera);
@@ -157,7 +165,7 @@ function drawIsometricFarm(ctx){
     {y:depth(1165,480),draw:()=>upright(ctx,1165,480,art.coop,280,187)},
     {y:depth(710,485),draw:()=>upright(ctx,710,485,art.house,510,340)},
     {y:depth(550,740),draw:()=>upright(ctx,550,740,art.tree,115,115)},
-    {y:depth(1080,630),draw:()=>upright(ctx,1080,630,art.tree,140,140)},
+    {y:depth(1080,630),draw:()=>drawLife(ctx,1080,630,'shade',140,140,art,upright)},
     {y:depth(1150,785),draw:()=>upright(ctx,1150,785,art.pond,335,223)},
     {y:depth(player.x,player.y),draw:()=>drawIsoAvatar(ctx,player.x,player.y,player.direction,player.state==='walk', $('userName').textContent,actionEffect)}
   ];
@@ -167,6 +175,7 @@ function drawIsometricFarm(ctx){
   for(const npc of villageUi?.npcs(scene)||[])layers.push({y:depth(npc.x,npc.y),draw:()=>drawIsoNpc(ctx,npc)});
   for(const member of remoteMembers.values()){member.drawX+=(member.x-member.drawX)*.25;member.drawY+=(member.y-member.drawY)*.25;layers.push({y:depth(member.drawX,member.drawY),draw:()=>drawIsoAvatar(ctx,member.drawX,member.drawY,member.direction,Math.hypot(member.x-member.drawX,member.y-member.drawY)>1,member.name)});}
   const occupied=[...(phase5Ui?.state?.buildings||[]),...(phase5Ui?.state?.decorations||[])].map(b=>{const z=footprint(BUILDINGS[b.definitionId]||DECORATIONS[b.definitionId],b.rotation);return {x:b.x*TILE_SIZE,y:b.y*TILE_SIZE,w:z.w*TILE_SIZE,h:z.h*TILE_SIZE};});
+  layers.push(...villageScenery('farm',art,upright,villageUi?.reduced,occupied).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
   layers.push(...sceneryLayers('farm',art,upright,villageUi?.reduced,occupied).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
   const fixtures=[['farm_sign',343,700],['lantern',935,586],['bamboo_gate',720,855]].map(([definitionId,x,y])=>({definitionId,x:x/TILE_SIZE-.5,y:y/TILE_SIZE-1,rotation:0}));
   layers.push(...decorationLayers([...(phase5Ui?.state?.decorations||[]),...fixtures],art.decorations,upright).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
@@ -176,9 +185,10 @@ function drawIsometricFarm(ctx){
 function drawIsoAvatar(ctx,x,y,direction,moving,name,action){const actionIndex={till:0,plant:1,water:2,harvest:3}[action?.kind],acting=actionIndex!==undefined&&performance.now()-action.at<750;if(acting)upright(ctx,x,y,art.actions,90,91,[actionIndex*543,0,543,724]);else{const row={down:0,up:1,left:2,right:3}[direction]??0,frame=moving?Math.floor(performance.now()/135)%4:1,w=art.walk.naturalWidth/4||315,h=art.walk.naturalHeight/4||312;const bob=moving?Math.sin(performance.now()/110)*1.5:0;upright(ctx,x,y+bob,art.walk,78,86,[frame*w,row*h,w,h]);}ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff8dd';ctx.strokeStyle='#38523f';ctx.lineWidth=3;ctx.strokeText(name,0,-95);ctx.fillText(name,0,-95);ctx.restore();}
 function drawIsoNpc(ctx,npc){npc={...npc,y:npc.y+(villageUi?.reduced?0:Math.sin(performance.now()/1400+npc.x)*.6)};const index={tu:0,lan:1,ba:2,na:3}[npc.id]??0;upright(ctx,npc.x,npc.y,art.npcs,72,92,[index*543,0,543,724]);ctx.save();ctx.translate(npc.x,npc.y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff8dd';ctx.strokeStyle='#38523f';ctx.lineWidth=3;ctx.strokeText(npc.name,0,-98);ctx.fillText(npc.name,0,-98);ctx.restore();}
 function drawIsoMarket(ctx){
-  if(art.marketGround.complete&&art.marketGround.naturalWidth)ctx.drawImage(art.marketGround.bitmap||art.marketGround,0,0,MARKET_WORLD.width,MARKET_WORLD.height);
+  drawSurroundings(ctx);
+  if(art.marketLifeGround.naturalWidth)ctx.drawImage(art.marketLifeGround.bitmap||art.marketLifeGround,0,0,MARKET_WORLD.width,MARKET_WORLD.height);
   villageUi?.drawSeason(ctx,camera);
-  const layers=sceneryLayers('market',art,upright,villageUi?.reduced);
+  const layers=[...sceneryLayers('market',art,upright,villageUi?.reduced),...villageScenery('market',art,upright,villageUi?.reduced)];
   for(const [x,key,w,h] of [[300,'seedV9',290,206],[600,'buyerV9',310,211],[900,'ordersV9',280,220]])layers.push({y:depth(x,340),draw:()=>drawMarketStall(ctx,x,key,w,h)});
   for(const npc of villageUi?.npcs(scene)||[])layers.push({y:depth(npc.x,npc.y),draw:()=>drawIsoNpc(ctx,npc)});
   layers.push({y:depth(player.x,player.y),draw:()=>drawIsoAvatar(ctx,player.x,player.y,player.direction,player.state==='walk',$('userName').textContent)});
@@ -186,6 +196,7 @@ function drawIsoMarket(ctx){
   paintLayers(ctx,layers);
   worldLabel(ctx,600,710,'Về nông trại');
 }
+function drawSurroundings(ctx){if(art.surroundings.naturalWidth)ctx.drawImage(art.surroundings.bitmap||art.surroundings,-1100,-1000,4300,3600);}
 function drawMarketStall(ctx,x,key,w,h){
   const image=art[key];upright(ctx,x,340,image,w,h);
   const region={seedV9:[.30,.35,.19,.30],ordersV9:[.225,.52,.14,.20]}[key];
@@ -230,4 +241,5 @@ ctx.textAlign='start';
 ctx.fillStyle='#745131';ctx.fillRect(575,660,50,45);ctx.fillStyle='#fff0bd';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('VỀ FARM',600,735);ctx.textAlign='start';
 for(const [x,y] of [[55,65],[55,745]]){ctx.fillStyle='#c9ae71';ctx.fillRect(x,y,1090,15);}for(const x of [55,1130])for(let y=65;y<760;y+=22){ctx.fillStyle='#c9ae71';ctx.fillRect(x,y,15,9);}
 }
-try{const data=await api('/me');csrf=data.csrf;await enter(data.farm);}catch{screen('welcome');}
+$('loadingRetry').onclick=()=>location.reload();
+try{const data=await api('/me');csrf=data.csrf;await enter(data.farm);}catch(error){if(error.status===401)screen('welcome');else loadingFailure();}

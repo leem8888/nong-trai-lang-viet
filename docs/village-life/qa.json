@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "unauthenticated loading resolves to login",
+    "returning session never flashes login while API is delayed",
+    "failed session load offers retry and recovers without showing login",
+    "no NPC on private farm",
+    "click gate walks and auto-travels without E or bounce",
+    "all NPCs in village",
+    "village navigation walks to banyan square",
+    "return gate auto-travels and remains at home",
+    "quantity 1000 disabled",
+    "buy 999 with actual server transaction",
+    "sell 999 and remove exhausted product card",
+    "sell max obeys inventory and empty warehouse is explained",
+    "mobile catalog and quantity dialog fit viewport",
+    "Escape closes quantity dialog and keeps catalog open"
+  ],
+  "shots": [],
+  "errors": [],
+  "performanceSample": {
+    "p50Ms": 16.699999999999818,
+    "p95Ms": 16.700000000000273,
+    "heap": 2666716
+  }
+}

@@ -203,7 +203,7 @@ export function createApp(db = openDatabase(),{worldNow=Date.now,questNow=Date.n
       const destination=state?.scene==='farm'?'market':'farm';
       const point=state?.scene==='farm'?'farmGate':'returnGate';
       if(!state||payload.to!==destination||!inRange(state,point))return ack(cb,{ok:false,error:'Hãy đến gần cổng để chuyển cảnh.'});
-      const spawn=destination==='market'?{x:600,y:640}:{x:720,y:850};
+      const spawn=destination==='market'?{x:600,y:620}:{x:720,y:790};
       db.prepare('UPDATE player_states SET scene=?,x=?,y=?,direction=?,updated_at=? WHERE user_id=?').run(destination,spawn.x,spawn.y,'down',Date.now(),auth.user_id);
       lastMove=Date.now();
       if(destination==='market')social.leave(socket);else social.join(socket,joined,true);

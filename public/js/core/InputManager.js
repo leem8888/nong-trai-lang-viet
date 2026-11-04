@@ -13,7 +13,7 @@ export class InputManager {
     window.addEventListener('keyup', e => this.keys.delete(e.key.toLowerCase()), opts);
     window.addEventListener('blur', () => this.clear(), opts);
     // A tap on an interactive object is handed to onPoint (walk there, then interact); anywhere else is a move target.
-    canvas.addEventListener('pointerdown', e => { if (!this.active) return; const point = camera.toWorld(e.clientX, e.clientY); if (!this.onPoint?.(point,e)) this.target = point; }, opts);
+    canvas.addEventListener('pointerdown', e => { if (!this.active) return; const point = camera.toWorld(e.clientX, e.clientY); this.cancelPath(); if (!this.onPoint?.(point,e)) this.target = point; }, opts);
     const update = e => { const r = joystick.getBoundingClientRect(); const dx = (e.clientX - r.left - r.width / 2) / 32, dy = (e.clientY - r.top - r.height / 2) / 32; const len = Math.max(1, Math.hypot(dx, dy)); this.stick = { x: dx / len, y: dy / len }; joystick.firstElementChild.style.transform = `translate(${this.stick.x * 25}px,${this.stick.y * 25}px)`; this.cancelPath(); this.onManual?.(); };
     joystick.addEventListener('pointerdown', e => { if (!this.active) return; joystick.setPointerCapture(e.pointerId); update(e); }, opts);
     joystick.addEventListener('pointermove', e => { if (joystick.hasPointerCapture(e.pointerId)) update(e); }, opts);

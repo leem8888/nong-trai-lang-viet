@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "packaging": "Generated original PNG artwork was converted to local WebP at quality 0.88 in Edge; transparent pixels are retained. Browser-ready WebP assets total 5.3 MB versus 26.4 MB of the source PNGs.",
   "assets": [
     {
@@ -179,6 +179,42 @@
       "prompt": "/assets/phase9-art-prompts.json#decorations-v9",
       "license": "Project use under the applicable OpenAI output terms; no third-party game asset used",
       "anchor": "128px horizontal atlas cells, bottom-center; paving is drawn on the ground plane"
+    },
+    {
+      "path": "/assets/village-life-v10.webp",
+      "role": "Nine original village scenery sprites in horizontal 384px cells",
+      "source": "Original image generated with OpenAI built-in image_gen.imagegen on 2026-11-04",
+      "sourcePath": "/assets/village-life-v10.png",
+      "sourceSha256": "9f851e348bda31f2c6fb50b674603d5c334ca6f58c487fc94fdb5105466a7ff7",
+      "prompt": "/assets/village-life-prompts.json#village-life-v10",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game assets used"
+    },
+    {
+      "path": "/assets/products-v10.webp",
+      "role": "Twelve original inventory illustrations in horizontal 128px cells",
+      "source": "Original image generated with OpenAI built-in image_gen.imagegen on 2026-11-04",
+      "sourcePath": "/assets/products-v10.png",
+      "sourceSha256": "2b145f70c75f185025631036a4777e1f6a83b74b30c861efd9d0a8b307eb205f",
+      "prompt": "/assets/village-life-prompts.json#products-v10",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game assets used"
+    },
+    {
+      "path": "/assets/product-icons-v10.webp",
+      "role": "Twelve product illustrations and six existing crop illustrations packed in 18 horizontal 128px cells",
+      "source": "Packed from products-v10.webp, mature-crops.webp and soy-crop.webp using tests/browser-village-life.mjs package",
+      "license": "Same project use terms as the source artwork"
+    },
+    {
+      "path": "/assets/surroundings-v10.svg",
+      "role": "surroundings-v10",
+      "source": "Original deterministic scenery authored in scripts/build-village-surroundings.mjs on 2026-11-04",
+      "license": "Project-owned original work"
+    },
+    {
+      "path": "/assets/market-life-ground-v10.svg",
+      "role": "market-life-ground-v10",
+      "source": "Original deterministic scenery authored in scripts/build-village-surroundings.mjs on 2026-11-04",
+      "license": "Project-owned original work"
     }
   ],
   "phase9": {
@@ -190,5 +226,10 @@
       "node scripts/build-phase9-scenery.mjs"
     ],
     "packagingNotes": "Stalls max width 1024px; garden/cart max width 512px; decoration grid trimmed into 15 horizontal 128px cells; alpha preserved."
+  },
+  "villageLife": {
+    "prompts": "/assets/village-life-prompts.json",
+    "packaging": "node tests/browser-village-life.mjs package",
+    "scenery": "node scripts/build-village-surroundings.mjs"
   }
 }

@@ -73,7 +73,7 @@ export function performMarketAction(db,userId,payload,at=now()) {
     if(!player||player.scene!=='market'||!inRange(player,point))throw new Error('Hãy đến gần người bán hoặc bảng đơn ở chợ.');
     let message,transactionId=null;
     if(payload.action==='buy'||payload.action==='sell') {
-      if(!Number.isSafeInteger(payload.quantity)||payload.quantity<1||payload.quantity>99||typeof payload.itemId!=='string')throw new Error('Số lượng hoặc vật phẩm không hợp lệ.');
+      if(!Number.isSafeInteger(payload.quantity)||payload.quantity<1||payload.quantity>999||typeof payload.itemId!=='string')throw new Error('Số lượng hoặc vật phẩm không hợp lệ (1–999).');
       const day=marketDay(at);
       if(payload.marketId!==day.id)throw new Error('Giá chợ đã đổi. Hãy xem lại bảng giá.');
       const offer=marketCatalog(at).find(row=>row[payload.action==='buy'?'seedItem':'produceItem']===payload.itemId);
