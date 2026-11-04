@@ -21,6 +21,14 @@ Mở `http://localhost:3000`. Dùng `npm run dev` để tự khởi động lạ
 
 `data/starter.sqlite` được lưu trong Git, chứa schema khởi đầu và **không có tài khoản, mật khẩu hay session**. Lần chạy đầu, server sao chép file này thành `data/farm.sqlite`. Dữ liệu chơi cá nhân nằm trong `data/farm.sqlite` và không tự đồng bộ qua Git. Mỗi máy/nhánh dùng cùng schema khởi đầu; dùng backup riêng nếu muốn chuyển tiến độ chơi giữa các máy.
 
+## Tài khoản Admin cho phát triển
+
+Chạy `npm run dev` để bật `NODE_ENV=development`. Khi mở database lần đầu, game tạo tài khoản **admin / admin**, role `ADMIN`, nông trại sẵn chơi và 999.999.999 Đồng Làng. Tài khoản này chỉ dành cho máy phát triển hoặc môi trường test. Tắt server rồi chạy lại không tạo thêm tài khoản và không đặt lại số dư. Khoản cấp đầu được ghi trong `economy_transactions` và `admin_audit_log`.
+
+`npm start` không tự bật tài khoản mặc định khi `NODE_ENV` chưa được đặt. Trên production, đặt `NODE_ENV=production`, `ADMIN_USERNAME` và `ADMIN_PASSWORD` (ít nhất 12 ký tự, khác `admin`) bằng biến môi trường trước khi khởi động. Thiếu thông tin quản trị hợp lệ thì server từ chối khởi động. Nếu dùng lại database từng chạy development với mật khẩu `admin`, đặt `ADMIN_USERNAME=admin` và mật khẩu production mới để server đổi mật khẩu cũ; số dư và nông trại vẫn được giữ. Không đưa mật khẩu production vào Git.
+
+Người chơi thường đăng ký qua giao diện luôn có role `USER` và 200 Đồng Làng ban đầu; client không có API để tự cấp quyền hoặc cấp tiền. `data/starter.sqlite` vẫn không chứa tài khoản Admin: seed chỉ chạy trên database làm việc.
+
 ## Trồng trọt
 
 Đi tới khu ruộng ở góc tây nam, chạm hoặc nhấp một ô để xem thao tác hợp lệ. Chọn **Cuốc**, **Gieo** (chọn giống trong menu), **Tưới** hoặc **Thu hoạch** theo trạng thái ô. Sau khi chọn thao tác, chạm một ô để làm ngay; giữ và kéo qua nhiều ô để làm liên tiếp. Trên điện thoại, giữ khoảng 0,38 giây trước khi kéo. **Esc** hoặc **Hủy** thoát chế độ thao tác. Phím **1–4** vẫn chọn nhanh thao tác. Dock nhỏ dưới màn hình mở **Túi đồ**, **Nhiệm vụ**, **Xây dựng**, **Bạn bè**; nút **Nông trại** mở thêm chế biến, trang trí, mở đất và nhận hạt khi hết. Server vẫn kiểm quyền, khoảng cách, hạt giống và trạng thái từng ô. Cây lớn theo thời gian thực kể cả khi đóng trình duyệt.
