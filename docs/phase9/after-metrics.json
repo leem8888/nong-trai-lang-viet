@@ -1,0 +1,49 @@
+{
+  "shots": [
+    "docs/phase9/after-farm-1920.png",
+    "docs/phase9/after-market-1920.png",
+    "docs/phase9/after-farm-1366.png",
+    "docs/phase9/after-market-1366.png",
+    "docs/phase9/after-farm-390.png",
+    "docs/phase9/after-market-390.png",
+    "docs/phase9/after-farm-matched-1366.png",
+    "docs/phase9/after-market-matched-1366.png",
+    "docs/phase9/after-interact-seed.png",
+    "docs/phase9/after-interact-buyer.png",
+    "docs/phase9/after-interact-orders.png",
+    "docs/phase9/after-farm-day.png",
+    "docs/phase9/after-farm-night.png",
+    "docs/phase9/after-farm-rain.png",
+    "docs/phase9/after-farm-reduced-effects.png",
+    "docs/phase9/after-farm-planted-built.png",
+    "docs/phase9/after-farm-build-grid.png",
+    "docs/phase9/after-farm-mobile-zoom-pan.png",
+    "docs/phase9/after-mobile-interact-seed.png",
+    "docs/phase9/after-mobile-interact-buyer.png",
+    "docs/phase9/after-mobile-interact-orders.png",
+    "docs/phase9/after-farm-decoration-catalog.png"
+  ],
+  "checks": [
+    "market seed interaction",
+    "market buyer interaction",
+    "market orders interaction",
+    "house projected pointer hitbox",
+    "pond projected pointer hitbox",
+    "coop projected pointer hitbox",
+    "projected mouse drag tills three tiles",
+    "planted crops and placed mill render",
+    "camera inverse and pond hit coordinate",
+    "mobile touch waters projected crop",
+    "mobile seed touch interaction",
+    "mobile buyer touch interaction",
+    "mobile orders touch interaction",
+    "all fifteen persisted decoration IDs render"
+  ],
+  "errors": [],
+  "protocolCancellations": 0,
+  "metrics": {
+    "p50Ms": 16.699999999999818,
+    "p95Ms": 16.799999999999727,
+    "heap": 2058667
+  }
+}

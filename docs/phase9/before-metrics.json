@@ -1,0 +1,53 @@
+{
+  "shots": [
+    "docs/phase9/before-farm-1920.png",
+    "docs/phase9/before-market-1920.png",
+    "docs/phase9/before-farm-1366.png",
+    "docs/phase9/before-market-1366.png",
+    "docs/phase9/before-farm-390.png",
+    "docs/phase9/before-market-390.png",
+    "docs/phase9/before-farm-matched-1366.png",
+    "docs/phase9/before-market-matched-1366.png",
+    "docs/phase9/before-interact-seed.png",
+    "docs/phase9/before-interact-buyer.png",
+    "docs/phase9/before-interact-orders.png",
+    "docs/phase9/before-farm-day.png",
+    "docs/phase9/before-farm-night.png",
+    "docs/phase9/before-farm-rain.png",
+    "docs/phase9/before-farm-reduced-effects.png",
+    "docs/phase9/before-farm-planted-built.png",
+    "docs/phase9/before-farm-build-grid.png",
+    "docs/phase9/before-farm-mobile-zoom-pan.png",
+    "docs/phase9/before-mobile-interact-seed.png",
+    "docs/phase9/before-mobile-interact-buyer.png",
+    "docs/phase9/before-mobile-interact-orders.png",
+    "docs/phase9/before-farm-decoration-catalog.png"
+  ],
+  "checks": [
+    "market seed interaction",
+    "market buyer interaction",
+    "market orders interaction",
+    "baseline defect: direct house pointer panel closes on the opening event",
+    "house projected pointer hitbox (keyboard fallback)",
+    "pond projected pointer hitbox",
+    "coop projected pointer hitbox",
+    "projected mouse drag tills three tiles",
+    "planted crops and placed mill render",
+    "camera inverse and pond hit coordinate",
+    "mobile touch waters projected crop",
+    "baseline defect: mobile seed panel requires keyboard fallback",
+    "mobile seed touch interaction",
+    "baseline defect: mobile buyer panel requires keyboard fallback",
+    "mobile buyer touch interaction",
+    "baseline defect: mobile orders panel requires keyboard fallback",
+    "mobile orders touch interaction",
+    "all fifteen persisted decoration IDs render"
+  ],
+  "errors": [],
+  "protocolCancellations": 2,
+  "metrics": {
+    "p50Ms": 16.699999999999818,
+    "p95Ms": 16.799999999999727,
+    "heap": 2565722
+  }
+}

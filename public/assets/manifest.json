@@ -1,5 +1,5 @@
-﻿{
-  "version": 2,
+{
+  "version": 3,
   "packaging": "Generated original PNG artwork was converted to local WebP at quality 0.88 in Edge; transparent pixels are retained. Browser-ready WebP assets total 5.3 MB versus 26.4 MB of the source PNGs.",
   "assets": [
     {
@@ -91,7 +91,104 @@
       "role": "Hoe, sow, water and harvest action poses",
       "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
       "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/market-seed-v9.webp",
+      "role": "market-seed-v9",
+      "source": "Original image generated with OpenAI built-in image_gen.imagegen on 2026-11-04",
+      "sourcePath": "/assets/market-seed-v9.png",
+      "sourceSha256": "4e994f98a44ec65b11b01e008ae8df54a3c558fb55643eee75daab17a87c34f8",
+      "prompt": "/assets/phase9-art-prompts.json#market-seed-v9",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game assets used",
+      "anchor": "bottom-center after alpha trim; upright in shared isometric projection"
+    },
+    {
+      "path": "/assets/market-buyer-v9.webp",
+      "role": "market-buyer-v9",
+      "source": "Original image generated with OpenAI built-in image_gen.imagegen on 2026-11-04",
+      "sourcePath": "/assets/market-buyer-v9.png",
+      "sourceSha256": "17b96cdfbfd26b7a72b3184d33c1ac5366270382231a8044717e0c60f9dffc7f",
+      "prompt": "/assets/phase9-art-prompts.json#market-buyer-v9",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game assets used",
+      "anchor": "bottom-center after alpha trim; upright in shared isometric projection"
+    },
+    {
+      "path": "/assets/market-orders-v9.webp",
+      "role": "market-orders-v9",
+      "source": "Original image generated with OpenAI built-in image_gen.imagegen on 2026-11-04",
+      "sourcePath": "/assets/market-orders-v9.png",
+      "sourceSha256": "7a482a5878c8d34e85b8d4fc6e08452a5fdb169f383cf4233752a3c9950cda2a",
+      "prompt": "/assets/phase9-art-prompts.json#market-orders-v9",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game assets used",
+      "anchor": "bottom-center after alpha trim; upright in shared isometric projection"
+    },
+    {
+      "path": "/assets/garden-v9.webp",
+      "role": "garden-v9",
+      "source": "Original image generated with OpenAI built-in image_gen.imagegen on 2026-11-04",
+      "sourcePath": "/assets/garden-v9.png",
+      "sourceSha256": "b0ed414af478132448acdb776b50d43d2770b9e1b2a4c4a5e2dea6c1005a2b5e",
+      "prompt": "/assets/phase9-art-prompts.json#garden-v9",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game assets used",
+      "anchor": "bottom-center after alpha trim; upright in shared isometric projection"
+    },
+    {
+      "path": "/assets/rural-props-v9.webp",
+      "role": "rural-props-v9",
+      "source": "Original image generated with OpenAI built-in image_gen.imagegen on 2026-11-04",
+      "sourcePath": "/assets/rural-props-v9.png",
+      "sourceSha256": "c5f590a063f3061020ca48409a6b2b0df8a44418ec68c2da3e2023e05b7a1252",
+      "prompt": "/assets/phase9-art-prompts.json#rural-props-v9",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game assets used",
+      "anchor": "bottom-center after alpha trim; upright in shared isometric projection"
+    },
+    {
+      "path": "/assets/farm-ground-v9.svg",
+      "role": "farm-ground-v9",
+      "source": "Original SVG artwork authored in repository on 2026-11-04; scripts/build-phase9-scenery.mjs",
+      "license": "Project-owned original work",
+      "anchor": "world origin, server coordinates"
+    },
+    {
+      "path": "/assets/market-ground-v9.svg",
+      "role": "market-ground-v9",
+      "source": "Original SVG artwork authored in repository on 2026-11-04; scripts/build-phase9-scenery.mjs",
+      "license": "Project-owned original work",
+      "anchor": "world origin, server coordinates"
+    },
+    {
+      "path": "/assets/butterfly-v9.svg",
+      "role": "butterfly-v9",
+      "source": "Original SVG artwork authored in repository on 2026-11-04; scripts/build-phase9-scenery.mjs",
+      "license": "Project-owned original work",
+      "anchor": "bottom-center"
+    },
+    {
+      "path": "/assets/bird-v9.svg",
+      "role": "Small ambient birds",
+      "source": "Original SVG authored in scripts/build-phase9-scenery.mjs on 2026-11-04",
+      "license": "Project-owned original work",
+      "anchor": "bottom-center"
+    },
+    {
+      "path": "/assets/decorations-v9.webp",
+      "role": "Fifteen original isometric decoration sprites, ordered by DECORATIONS IDs",
+      "source": "Original OpenAI image_gen generation and transparent-background edit on 2026-11-04",
+      "sourcePath": "/assets/decorations-v9.png",
+      "sourceSha256": "e07ceb28601fec023465e3e69706441f85be661f6c537726634fab6289702097",
+      "prompt": "/assets/phase9-art-prompts.json#decorations-v9",
+      "license": "Project use under the applicable OpenAI output terms; no third-party game asset used",
+      "anchor": "128px horizontal atlas cells, bottom-center; paving is drawn on the ground plane"
     }
-  ]
+  ],
+  "phase9": {
+    "baselineCommit": "8de04dc0bea3b8f736c68de63a356821bb151fe1",
+    "requestedBaseline": "1bd1efb9c6f641204d7c0d94012550ce725bc248",
+    "prompts": "/assets/phase9-art-prompts.json",
+    "packaging": "node tests/browser-phase9-qa.mjs package",
+    "proceduralRebuild": [
+      "node scripts/build-phase9-scenery.mjs"
+    ],
+    "packagingNotes": "Stalls max width 1024px; garden/cart max width 512px; decoration grid trimmed into 15 horizontal 128px cells; alpha preserved."
+  }
 }
-
