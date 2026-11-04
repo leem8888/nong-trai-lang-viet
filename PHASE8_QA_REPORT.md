@@ -1,4 +1,27 @@
-# Phase 8 QA — 2026-11-04
+# Phase 8 QA — cập nhật 2026-11-04
+
+**Trạng thái hiện tại: INCOMPLETE.** Commit nền: `d1012036bf90fa162855f6e055a95e2c8bc22328`; phần hoàn thiện từ `feature/phase-8-completion` được đưa lên `main` để AI web review theo yêu cầu. Việc merge để review không phải nghiệm thu Phase 8. Báo cáo phía dưới mục “Bản QA đầu tiên” là lịch sử của commit nền.
+
+## Kết quả mới trên nhánh hoàn thiện
+
+- Đã backup SQLite chơi trước sửa: `data/backups/farm-2026-11-04T07-07-23-366Z.sqlite`. Browser QA dùng SQLite tạm. **NO DB MIGRATION**; server authority và công thức kinh tế không đổi.
+- `node tests/browser-phase8-journey.mjs`: Edge mở **600 giây** với tài khoản mới. Qua đăng ký, đi bằng bàn phím quanh vật cản, cuốc/gieo/tưới bằng UI, xem túi/nhiệm vụ, mở lại/bỏ qua hướng dẫn, đi ra chợ và reload. Rau cải cần 15 phút theo luật nên chưa thu hoạch trong 10 phút; regression kiểm thu hoạch offline. Ảnh `.qa/phase8-journey-*.png`, mẫu `.qa/phase8-journey-report.json`.
+- `node tests/browser-phase8-panels.mjs`: **17 loại popup × 5 viewport = 85 lượt PASS** ở 1366×768, 1920×1080, 390×844, 360×800, 768×1024; có touch emulation, Escape, nút Đóng, focus và kiểm khung popup không ra ngoài màn hình.
+- `node tests/browser-phase8-network.mjs`: POST chậm 1,2 giây hiện pending, chỉ trừ tiền một lần; offline hiện lỗi, ví không đổi và kết nối lại được.
+- Regression cuối: `npm test` **36/36**; Edge `npm run qa:browser` **14/14**, `qa:vac` **5/5**, `qa:phase5` **13/13**, `qa:phase6` **12/12**, `qa:phase7` **4/4**. Hai tài khoản social và kiểm quyền khách vẫn qua. Đã sửa race báo kết nối trước khi `farm:join` thành công, phát hiện bởi browser QA.
+- Ảnh khớp vị trí và clock: `.qa/phase8-{before,after}-desktop-{morning,night,rain,spring,summer,autumn,winter}.png`, `.qa/phase8-{before,after}-mobile-morning.png`. `before` lấy client từ commit `d101203` bằng `git archive`, `after` lấy nhánh hiện tại; cùng fixture server giờ/thời tiết/mùa.
+- FPS sau sửa, Edge headless, 120 frame tại farm 1366×768: median **59,88 FPS**, p95 **17,1 ms**; 390×844: **59,88 FPS**, p95 **17,1 ms**. Baseline ngắn ở commit nền được ghi phía dưới. Mẫu 10 phút ở chợ có median frame **16,7 ms**, p95 **16,8 ms**, draw trung bình **0,37 ms**, update **0,06 ms** tại phút 10. JS heap các mẫu khoảng **3,50–4,22 MB**, cuối **3,97 MB**, không tăng đều. Mẫu 10 phút bắt đầu trước thay đổi hình NPC/quầy chợ cuối; các thay đổi cuối đã qua benchmark ngắn và regression.
+
+## Chưa đạt Definition of Done
+
+- **MAJOR — browser zoom thật 125%: BLOCKED bởi công cụ QA.** `browser-phase8-zoom.mjs` trong Edge headless và headed gửi `Ctrl+=` nhưng `innerWidth`, DPR và visual viewport không đổi. Công cụ `computer-use` và `cua_repl` đều lỗi `failed to write kernel assets` trước khi điều khiển UI. CSS zoom 125% đã qua kiểm tràn ngang nhưng không thay thế browser zoom thật. Cần thử thủ công trên Edge/Chrome ở 125%.
+- **NOT TESTED ON PHYSICAL DEVICE.** Mobile đã giả lập cảm ứng, chưa có bằng chứng điện thoại thật.
+- Chưa đo 10 phút *trước* sửa cùng cảnh, chỉ có benchmark ngắn trước/sau. Chưa đo 10 phút riêng ở chế độ giảm hiệu ứng.
+- Canvas art và animation hành động đã cải thiện nhưng không có remote animation cho mọi thao tác VAC/kinh tế vì server không phát broadcast hành động đó. Không thêm sự kiện gameplay chỉ để trang trí.
+
+Thử thủ công còn lại: chạy `npm start`, đặt browser zoom thật 125%, mở Menu/Túi đồ/Nhiệm vụ/Chợ/Ao/Chuồng/Chế biến/Xây dựng tại 1366×768 và 390×844; trên điện thoại thật thử joystick, chạm ô ruộng, đóng popup, xoay màn hình và âm thanh.
+
+## Bản QA đầu tiên tại commit `d101203` (lịch sử)
 
 **Trạng thái: INCOMPLETE.** Đây là kết quả của thay đổi hiện có, chưa phải chứng nhận toàn bộ Phase 8.
 

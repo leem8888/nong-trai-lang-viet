@@ -1,3 +1,9 @@
+# Handoff hiện tại — Phase 8 (2026-11-04)
+
+Đợt hoàn thiện này bắt đầu từ `main` commit `d1012036bf90fa162855f6e055a95e2c8bc22328` trên nhánh `feature/phase-8-completion` và được đưa lên `main` để AI web review theo yêu cầu. **Phase 8 vẫn INCOMPLETE** vì browser zoom thật 125% chưa kiểm được do lỗi công cụ Windows UI; xem `PHASE8_QA_REPORT.md` để biết toàn bộ PASS, giới hạn và ảnh. Không có migration; SQLite chơi được backup trước QA. Không làm deploy.
+
+Mã thay đổi: panel chợ/VAC/chế biến/xây dựng có trạng thái và chỉ dẫn rõ hơn; âm thanh tổng hợp tùy chọn theo hành động; nhân vật/NPC, cây/tre, mùa vụ và quầy chợ có cải thiện; kết nối chỉ báo sẵn sàng sau `farm:join`; chế độ giảm hiệu ứng lưu cục bộ. Test browser Phase 1–7 và 85 lượt popup qua. Phần bên dưới là handoff lịch sử các phase trước.
+
 # Handoff — Phase 6
 
 Phase 7 đang ở branch `feature/phase-7-social-farms`; xem `PHASE7_HANDOFF.md`, `PHASE7_TEST_REPORT.md`, `PHASE7_API_CONTRACT.md` và `PHASE7_PRECHECK.md`. Phần Phase 6 bên dưới là lịch sử.

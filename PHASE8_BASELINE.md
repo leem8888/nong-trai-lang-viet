@@ -1,5 +1,9 @@
 # Phase 8 baseline — 2026-11-04
 
+## Baseline cho đợt hoàn thiện
+
+Nhánh `feature/phase-8-completion` bắt đầu từ `main` commit `d1012036bf90fa162855f6e055a95e2c8bc22328`, working tree ban đầu sạch. `npm test` baseline **36/36**. Sao lưu dữ liệu địa phương: `data/backups/farm-2026-11-04T07-07-23-366Z.sqlite`. Client baseline của commit này được trích vào `.qa/phase8-main-source` (bị Git bỏ qua) để chụp ảnh cùng clock/mùa/thời tiết với client sau sửa. Ảnh và kết quả chi tiết ở `PHASE8_QA_REPORT.md`. Phần dưới là baseline gốc của lần triển khai đầu tiên từ `c867fa6`.
+
 - Branch: `feature/phase-8-player-experience`; HEAD trước sửa: `c867fa6` (Phase 7).
 - Stack: Canvas 2D/ES modules, Express/Socket.IO, SQLite. Scene farm và chợ; soil, market, VAC, crafting/building, NPC quests và social trong các module `public/js/` tương ứng. Không có hệ thống âm thanh trước Phase 8.
 - Dữ liệu chơi thật được sao lưu tại `data/backups/farm-2026-11-04T02-54-43-426Z.sqlite`; QA sử dụng SQLite tạm. Không migration.

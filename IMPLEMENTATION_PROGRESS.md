@@ -1,4 +1,8 @@
-# Tiến độ triển khai
+# Tiến độ hiện tại — Phase 8 (2026-11-04)
+
+Đợt hoàn thiện trên `feature/phase-8-completion` bắt đầu từ `main` commit `d101203` và được đưa lên `main` để review theo yêu cầu. Đã thực hiện UX panel, audio phản hồi, art/animation nhẹ, benchmark 10 phút, hành trình người mới 10 phút, 85 lượt popup và regression 36/36 + browser Phase 1–7. Trạng thái **INCOMPLETE**: zoom browser thật 125% bị chặn bởi công cụ; điện thoại thật chưa thử. Xem `PHASE8_QA_REPORT.md`. Không triển khai deploy.
+
+# Tiến độ triển khai (lịch sử)
 
 ## Phase 7 — social farms (môi trường phát triển)
 

@@ -1,6 +1,6 @@
 export class GameLoop {
-  constructor(update, render) { this.update = update; this.render = render; this.running = false; this.last = null; this.frame = this.frame.bind(this); }
+  constructor(update, render) { this.update = update; this.render = render; this.running = false; this.last = null; this.frame = this.frame.bind(this); this.debug = typeof location!=='undefined'&&new URLSearchParams(location.search).has('debug'); this.samples = []; if(this.debug)window.__farmFrameStats=()=>{const rows=this.samples.slice().sort((a,b)=>a.frame-b.frame);return {frames:rows.length,medianFrameMs:rows[Math.floor(rows.length/2)]?.frame||0,p95FrameMs:rows[Math.floor(rows.length*.95)]?.frame||0,meanUpdateMs:rows.reduce((n,r)=>n+r.update,0)/(rows.length||1),meanDrawMs:rows.reduce((n,r)=>n+r.draw,0)/(rows.length||1)};}; }
   start() { if (this.running) return; this.running = true; this.last = null; this.id = requestAnimationFrame(this.frame); }
-  frame(now) { if (!this.running) return; const dt = this.last === null ? 0 : Math.min((now - this.last) / 1000, .05); this.last = now; this.update(dt); this.render(); this.id = requestAnimationFrame(this.frame); }
+  frame(now) { if (!this.running) return; const dt = this.last === null ? 0 : Math.min((now - this.last) / 1000, .05); const frame=this.last===null?0:now-this.last; this.last = now; if(this.debug){const a=performance.now();this.update(dt);const b=performance.now();this.render();this.samples.push({frame,update:b-a,draw:performance.now()-b});if(this.samples.length>240)this.samples.shift();}else{this.update(dt);this.render();} this.id = requestAnimationFrame(this.frame); }
   stop() { this.running = false; cancelAnimationFrame(this.id); this.last = null; }
 }
