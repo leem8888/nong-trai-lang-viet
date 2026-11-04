@@ -1,6 +1,6 @@
 # Handoff Phase 7 — 2026-11-03
 
-Branch `feature/phase-7-social-farms`, baseline `main` `3b3e174`. Không push/merge theo yêu cầu trong `Phase7.md`.
+Branch `feature/phase-7-social-farms`, baseline `main` `3b3e174`, commit triển khai `364de8175fdac6beba4b13e1d344dea1f13b7990`. Không push/merge theo yêu cầu trong `Phase7.md`.
 
 Đã thêm quyền thăm `private/request/public`, tìm kiếm farm, yêu cầu/duyệt, lời mời, kick, room hiện diện riêng, di chuyển khách server-authoritative, biểu cảm và UI desktop/mobile. Các API gameplay của chính tài khoản bị khóa khi tài khoản đang thăm farm khác; không có API nào cho khách thao tác tài sản chủ. Vị trí farm riêng của khách không bị ghi đè khi đi thăm. Snapshot xã hội lọc toàn bộ ví/kho/quest. Xem `PHASE7_API_CONTRACT.md`.
 
