@@ -9,12 +9,14 @@ import { MarketUI } from './market.js';
 import { VacUI } from './vac.js';
 import { Phase5UI } from './phase5.js';
 import { VillageUI } from './village.js';
+import { SocialUI } from './social.js';
 import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from './shared/phase5.js';
 import { VAC_POINTS } from './shared/vac.js';
 import { MARKET_WORLD, MARKET_POINTS, FARM_GATE } from './shared/marketMap.js';
 
 const $=id=>document.getElementById(id);
-let csrf='', farm=null, socket=null, loop=null, player=null, input=null, camera=null, collision=null, farming=null, marketUi=null, vacUi=null, phase5Ui=null, villageUi=null, lamp=0, scene='farm';
+let csrf='', farm=null, socket=null, loop=null, player=null, input=null, camera=null, collision=null, farming=null, marketUi=null, vacUi=null, phase5Ui=null, villageUi=null, socialUi=null, lamp=0, scene='farm', visiting=null, selfId=null;
+const remoteMembers=new Map();let ownEmote=null;
 const farmWorld={width:1440,height:1024,margin:{left:0,right:0,top:0,bottom:0},obstacles:[
 {x:480,y:265,w:460,h:220},{x:50,y:75,w:1340,h:15},{x:50,y:920,w:1340,h:15},{x:50,y:75,w:15,h:860},{x:1375,y:75,w:15,h:860},
 {x:520,y:720,w:45,h:35},{x:1060,y:610,w:40,h:35},{x:215,y:460,w:70,h:25},{x:700,y:514,w:25,h:15},{x:925,y:575,w:20,h:20},
@@ -24,17 +26,19 @@ async function api(url,options={}) { const response=await fetch('/api'+url,{...o
 function showError(message){$('error').textContent=message;$('error').classList.remove('hidden');setTimeout(()=>$('error').classList.add('hidden'),4500);}
 function showNotice(message){$('notice').textContent=message;$('notice').classList.remove('hidden');setTimeout(()=>$('notice').classList.add('hidden'),2800);}
 function screen(id){for(const name of ['welcome','create','game'])$(name).classList.toggle('hidden',name!==id);}
-function panel(html){$('panelContent').innerHTML=html;$('panel').classList.remove('hidden');if(input)input.active=false;}
-function closePanel(){$('panel').classList.add('hidden');if(input)input.active=true;}
+let panelOpener=null;
+function panel(html){if($('panel').classList.contains('hidden'))panelOpener=document.activeElement;$('panelContent').innerHTML=html;$('panel').classList.remove('hidden');if(input)input.active=false;$('closePanel').focus();}
+function closePanel(){$('panel').classList.add('hidden');if(input)input.active=true;if(panelOpener?.isConnected)panelOpener.focus();panelOpener=null;}
 function syncPhase5Collision(){if(!phase5Ui?.state||scene!=='farm'||!collision)return;const s=phase5Ui.state;const dynamic=[...s.buildings.map(o=>{const z=footprint(BUILDINGS[o.definitionId],o.rotation);return {x:o.x*TILE_SIZE,y:o.y*TILE_SIZE,w:z.w*TILE_SIZE,h:z.h*TILE_SIZE};}),...s.decorations.filter(o=>DECORATIONS[o.definitionId]?.blocking).map(o=>({x:o.x*TILE_SIZE,y:o.y*TILE_SIZE,w:TILE_SIZE,h:TILE_SIZE}))];collision.obstacles=[...new CollisionSystem(farmWorld).obstacles,...dynamic];}
 $('closePanel').onclick=closePanel;
+window.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('panel').classList.contains('hidden')){event.preventDefault();closePanel();}});
 let mode='login';
 for(const name of ['login','register'])$(name+'Tab').onclick=()=>{mode=name;$('authSubmit').textContent=name==='login'?'Đăng nhập':'Đăng ký';};
 $('authForm').onsubmit=async e=>{e.preventDefault();try{const data=await api('/'+mode,{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});csrf=data.csrf;await enter(data.farm);}catch(error){showError(error.message);}};
 $('farmForm').onsubmit=async e=>{e.preventDefault();try{const data=await api('/farms',{method:'POST',body:JSON.stringify({name:new FormData(e.target).get('name')})});await enter(data.farm);}catch(error){showError(error.message);}};
 $('menuButton').onclick=()=>panel('<h2>Tạm nghỉ</h2><p>Trạng thái được lưu trên máy chủ.</p><button id="logout">Đăng xuất</button>');
 $('panel').addEventListener('click',async e=>{if(e.target.id==='logout'){try{await api('/logout',{method:'POST'});}catch{} socket?.disconnect();loop?.stop();location.reload();}});
-function nearbyObjects(){return {...(scene==='market'?MARKET_POINTS:objects),...Object.fromEntries((villageUi?.npcs(scene)||[]).map(n=>[`npc:${n.id}`,{x:n.x,y:n.y,label:`Trò chuyện · ${n.name}`}]))};}
+function nearbyObjects(){return visiting?{}:{...(scene==='market'?MARKET_POINTS:objects),...Object.fromEntries((villageUi?.npcs(scene)||[]).map(n=>[`npc:${n.id}`,{x:n.x,y:n.y,label:`Trò chuyện · ${n.name}`}]))};}
 function nearest(){return Object.entries(nearbyObjects()).map(([id,o])=>({id,...o,d:Math.hypot(player.x-o.x,player.y-o.y)})).filter(o=>o.d<=96).sort((a,b)=>a.d-b.d)[0];}
 function interact(id=nearest()?.id){if(!id)return;const o=nearbyObjects()[id];if(!o||Math.hypot(player.x-o.x,player.y-o.y)>96){showError('Hãy đến gần vật thể.');return;}
 if(id.startsWith('npc:'))return villageUi.interact(id.slice(4));
@@ -50,27 +54,52 @@ scene=next;const world=scene==='market'?MARKET_WORLD:farmWorld;
 collision=new CollisionSystem(world);camera.setWorld(world);player.place(x,y,direction);camera.snap(x,y);input?.clear();
 syncPhase5Collision();
 $('farmHud').classList.toggle('hidden',scene==='market');$('marketHud').classList.toggle('hidden',scene!=='market');
-$('help').textContent=scene==='market'?'Đến gần quầy, bảng đơn hoặc cổng rồi nhấn E.':'WASD / mũi tên: đi · E: tương tác · 1–4: công cụ · Nhấp ô ruộng để dùng';
+$('help').textContent=visiting?'WASD / mũi tên: đi dạo · Chỉ chủ farm được thao tác.':scene==='market'?'Đến gần quầy, bảng đơn hoặc cổng rồi nhấn E.':'WASD / mũi tên: đi · E: tương tác · 1–4: công cụ · Nhấp ô ruộng để dùng';
+if(visiting)$('farmHud').classList.add('hidden');
 }
-function travel(to){if(!socket?.connected){showError('Mất kết nối với server.');return;}socket.emit('world:travel',{to},async result=>{
+function travel(to){if(visiting)return showError('Hãy về nông trại của bạn trước.');if(!socket?.connected){showError('Mất kết nối với server.');return;}socket.emit('world:travel',{to},async result=>{
 if(!result.ok){showError(result.error);return;}applyScene(result.scene,result.x,result.y);try{marketUi.setState(await api('/market'));}catch(error){showError(error.message);}
 });}
+function applyVisitSnapshot(s){
+  lamp=s.objects.find(o=>o.objectId==='lamp')?.state||0;
+  farming.state={farmId:s.farm.id,serverTime:Date.now(),inventory:[],tiles:s.tiles.map(t=>({x:t.x,y:t.y,state:t.state,crop:t.cropId?{cropId:t.cropId,plantedAt:t.plantedAt,durationMs:t.durationMs,bonusMs:t.bonusMs,wateredAt:t.wateredAt}:null}))};
+  phase5Ui.state={farmId:s.farm.id,level:s.level,buildings:s.buildings,decorations:s.decorations,jobs:[]};vacUi.state={pond:s.pond,coop:s.coop};syncPhase5Collision();
+}
+function applyMembers(members){const ids=new Set();for(const m of members){if(m.userId===selfId)continue;ids.add(m.userId);const old=remoteMembers.get(m.userId);remoteMembers.set(m.userId,{...m,drawX:old?.drawX??m.x,drawY:old?.drawY??m.y,emote:old?.emote});}for(const id of remoteMembers.keys())if(!ids.has(id))remoteMembers.delete(id);}
+function visitFarm(result){visiting=result.farm;closePanel();applyScene('farm',result.player.x,result.player.y,result.player.direction);applyVisitSnapshot(result.snapshot);applyMembers(result.members);$('farmName').textContent=result.farm.name;$('visitLabel').textContent=`Đang thăm nông trại của ${result.farm.ownerName}`;$('visitBanner').classList.remove('hidden');for(const id of ['balance','historyButton','questsButton'])$(id).classList.add('hidden');showNotice('Đã vào nông trại. Bạn có thể đi dạo và chào hỏi.');}
+async function returnHome(sendLeave=true){if(sendLeave&&socket?.connected)await new Promise(resolve=>socket.emit('social:leave',{},resolve));visiting=null;remoteMembers.clear();$('visitBanner').classList.add('hidden');for(const id of ['balance','historyButton','questsButton'])$(id).classList.remove('hidden');$('farmName').textContent=farm.name;closePanel();try{const state=await api('/farm');applyScene(state.player.scene||'farm',state.player.x,state.player.y,state.player.direction);lamp=state.objects.find(o=>o.object_id==='lamp')?.state||0;farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch(error){showError(error.message);}}
+function drawRemote(ctx){for(const m of remoteMembers.values()){m.drawX+=(m.x-m.drawX)*.25;m.drawY+=(m.y-m.drawY)*.25;ctx.fillStyle=m.role==='owner'?'#e7b45f':'#d4e6a4';ctx.beginPath();ctx.arc(m.drawX,m.drawY-21,12,0,7);ctx.fill();ctx.fillStyle='#345064';ctx.fillRect(m.drawX-10,m.drawY-13,20,24);ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff4d4';ctx.fillText(`${m.role==='owner'?'★ ':'◇ '}${m.name}`,m.drawX,m.drawY-41);if(m.emote&&Date.now()-m.emote.at<2600)ctx.fillText({wave:'👋',hello:'🌾',thanks:'🙏',happy:'😊'}[m.emote.name],m.drawX,m.drawY-62);ctx.textAlign='start';}}
 async function enter(existing){if(!existing){screen('create');return;}farm=existing;const state=await api('/farm');lamp=state.objects.find(o=>o.object_id==='lamp')?.state||0;
-$('farmName').textContent=farm.name;$('userName').textContent=(await api('/me')).user.username;screen('game');
+$('farmName').textContent=farm.name;const me=await api('/me');selfId=me.user.id;$('userName').textContent=me.user.username;screen('game');
 const canvas=$('canvas'),ctx=canvas.getContext('2d');player=new Player();player.place(state.player.x,state.player.y,state.player.direction);scene=state.player.scene||'farm';camera=new Camera(scene==='market'?MARKET_WORLD:farmWorld);camera.snap(player.x,player.y);
 farming=new FarmingUI(api,showError,showNotice,panel);farming.setState(await api('/farming'));
 marketUi=new MarketUI(api,panel,showError,showNotice,async()=>farming.setState(await api('/farming')));marketUi.setState(await api('/market'));
 vacUi=new VacUI(api,panel,showError,showNotice,async()=>{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));});vacUi.setState(await api('/vac'));
  phase5Ui=new Phase5UI(api,panel,closePanel,showNotice,showError,async()=>{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));});phase5Ui.refreshCollision=syncPhase5Collision;await phase5Ui.load();
  villageUi=new VillageUI(api,panel,showNotice,showError,async()=>{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));});await villageUi.load();
- collision=new CollisionSystem(scene==='market'?MARKET_WORLD:farmWorld);input=new InputManager(canvas,camera,$('joystick'),key=>{if(phase5Ui?.mode){phase5Ui.key(key);return;}if(key==='e')interact();if(key==='escape')closePanel();if(scene==='farm'){if(key==='b')phase5Ui.open('build');else farming.key(key);}});input.active=true;
+ socialUi=new SocialUI(api,panel,showError,showNotice,visitFarm);$('returnFarm').onclick=()=>returnHome();$('emoteButton').onclick=()=>socket?.emit('social:emote',{emote:'wave'},r=>{if(!r.ok)showError(r.error);});
+ const wave=document.createElement('button');wave.textContent='👋';wave.title='Vẫy tay';wave.setAttribute('aria-label','Vẫy tay chào');wave.onclick=()=>socket?.emit('social:emote',{emote:'wave'},r=>{if(!r.ok)showError(r.error);});document.querySelector('#hud>div:last-child').append(wave);
+ collision=new CollisionSystem(scene==='market'?MARKET_WORLD:farmWorld);input=new InputManager(canvas,camera,$('joystick'),key=>{if(phase5Ui?.mode){phase5Ui.key(key);return;}if(key==='e')interact();if(key==='escape')closePanel();if(!visiting&&scene==='farm'){if(key==='b')phase5Ui.open('build');else farming.key(key);}});input.active=true;
 applyScene(scene,player.x,player.y,player.direction);
-input.onPoint=point=>{if(scene==='farm'&&phase5Ui?.mode)return phase5Ui.point(point);if(scene==='farm'&&tileAt(point.x,point.y))return farming.point(point);const entry=Object.entries(nearbyObjects()).find(([,o])=>Math.hypot(point.x-o.x,point.y-o.y)<38);if(entry){interact(entry[0]);return true;}return false;};
+input.onPoint=point=>{if(visiting)return false;if(scene==='farm'&&phase5Ui?.mode)return phase5Ui.point(point);if(scene==='farm'&&tileAt(point.x,point.y))return farming.point(point);const entry=Object.entries(nearbyObjects()).find(([,o])=>Math.hypot(point.x-o.x,point.y-o.y)<38);if(entry){interact(entry[0]);return true;}return false;};
 canvas.addEventListener('pointermove',e=>{const point=camera.toWorld(e.clientX,e.clientY);farming.hover=scene==='farm'&&!phase5Ui?.mode?tileAt(point.x,point.y):null;if(phase5Ui)phase5Ui.hover=point;});canvas.addEventListener('pointerleave',()=>{farming.hover=null;});
 function resize(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(innerWidth*dpr);canvas.height=Math.round(innerHeight*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);camera.resize(innerWidth,innerHeight);}addEventListener('resize',resize);resize();
-socket=io({withCredentials:true});socket.on('connect',()=>{ $('status').textContent='Đã kết nối';socket.emit('farm:join',{farmId:farm.id},async r=>{if(r.ok){applyScene(r.snapshot.player.scene||'farm',r.snapshot.player.x,r.snapshot.player.y,r.snapshot.player.direction);lamp=r.snapshot.objects.find(o=>o.object_id==='lamp')?.state||0;try{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch(error){showError(error.message);}}else showError(r.error);});});socket.on('disconnect',()=>{$('status').textContent='Mất kết nối';});socket.on('farm:object',o=>{if(o.objectId==='lamp')lamp=o.state;});socket.on('farm:farming',state=>farming.setState(state));socket.on('farm:market',state=>marketUi.setState(state));socket.on('farm:vac',state=>vacUi.setState(state));socket.on('farm:phase5',state=>phase5Ui.setState(state));socket.on('farm:quests',state=>{if(villageUi?.state){villageUi.state.quests=state;villageUi.updateHud();}});
-setInterval(async()=>{if(document.visibilityState==='visible')try{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch{}},30000);
-let saveAt=0,hudAt=0;loop=new GameLoop((dt)=>{input.active=$('panel').classList.contains('hidden');player.update(dt,input.vector(player),collision);camera.update(player,dt);const near=nearest();$('prompt').style.display=near?'block':'none';if(near)$('prompt').textContent=`E · ${near.label}`;const time=performance.now();if(time-hudAt>1000){hudAt=time;villageUi.updateHud();}if(socket.connected&&time-saveAt>180){saveAt=time;socket.emit('player:move',{x:player.x,y:player.y,direction:player.direction},r=>{if(r&&!r.ok&&r.player)player.place(r.player.x,r.player.y);});}},()=>draw(ctx));loop.start();}
+socket=io({withCredentials:true});socialUi.setSocket(socket);
+socket.on('connect',()=>{ $('status').textContent='Đã kết nối';socket.emit('farm:join',{farmId:farm.id},async r=>{
+  if(!r.ok)return showError(r.error);
+  if(visiting){const wanted=visiting.id;const joined=await new Promise(resolve=>socket.emit('social:join',{farmId:wanted},resolve));if(joined.ok)return visitFarm(joined);showError(joined.error);visiting=null;}
+  await returnHome(false);
+});});
+socket.on('disconnect',()=>{$('status').textContent='Mất kết nối';remoteMembers.clear();});
+socket.on('social:members',applyMembers);
+socket.on('social:move',m=>{const old=remoteMembers.get(m.userId);if(old)Object.assign(old,{x:m.x,y:m.y,direction:m.direction});});
+socket.on('social:emote',m=>{if(m.userId===selfId)ownEmote={name:m.emote,at:Date.now()};const old=remoteMembers.get(m.userId);if(old)old.emote={name:m.emote,at:Date.now()};});
+socket.on('social:farm',s=>{if(visiting?.id===s.farm.id)applyVisitSnapshot(s);});
+socket.on('social:revoked',m=>{showError(m.reason);returnHome();});
+socket.on('social:replaced',()=>{if(visiting){showError('Phiên khác đã vào nông trại.');returnHome(false);}});
+socket.on('farm:object',o=>{if(!visiting&&o.objectId==='lamp')lamp=o.state;});socket.on('farm:farming',state=>{if(!visiting)farming.setState(state);});socket.on('farm:market',state=>{if(!visiting)marketUi.setState(state);});socket.on('farm:vac',state=>{if(!visiting)vacUi.setState(state);});socket.on('farm:phase5',state=>{if(!visiting)phase5Ui.setState(state);});socket.on('farm:quests',state=>{if(!visiting&&villageUi?.state){villageUi.state.quests=state;villageUi.updateHud();}});
+setInterval(async()=>{if(document.visibilityState==='visible'&&!visiting)try{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch{}},30000);
+let saveAt=0,hudAt=0,moveSeq=0;loop=new GameLoop((dt)=>{input.active=$('panel').classList.contains('hidden');player.update(dt,input.vector(player),collision);camera.update(player,dt);const near=nearest();$('prompt').style.display=near?'block':'none';if(near)$('prompt').textContent=`E · ${near.label}`;const time=performance.now();if(time-hudAt>1000){hudAt=time;villageUi.updateHud();}if(socket.connected&&time-saveAt>180){saveAt=time;socket.emit('player:move',{x:player.x,y:player.y,direction:player.direction,seq:++moveSeq},r=>{if(r&&!r.ok&&r.player)player.place(r.player.x,r.player.y);});}},()=>draw(ctx));loop.start();}
 function draw(ctx){ctx.clearRect(0,0,camera.width,camera.height);ctx.save();camera.apply(ctx);if(scene==='market'){drawMarket(ctx);villageUi?.drawSeason(ctx,camera);villageUi?.drawNpcs(ctx,camera,scene);drawPlayer(ctx);ctx.restore();villageUi?.drawAtmosphere(ctx,camera.width,camera.height);return;}ctx.fillStyle='#95bc69';ctx.fillRect(0,0,farmWorld.width,farmWorld.height);
 // Repeating texture keeps the map tile based and avoids a flattened background image.
 for(let y=0;y<farmWorld.height;y+=48)for(let x=0;x<farmWorld.width;x+=48){if(!camera.visible(x,y,80))continue;ctx.fillStyle=(x/48+y/48)%3===0?'#8eb662':'#98bf6d';ctx.fillRect(x,y,48,48);ctx.fillStyle='#6f9a53';ctx.fillRect(x+8,y+12,2,5);ctx.fillRect(x+31,y+36,3,4);}
@@ -85,7 +114,7 @@ for(const [x,y] of [[155,370],[1310,560]]){ctx.fillStyle='#608b3e';for(let i=0;i
 ctx.fillStyle='#dbb85d';ctx.fillRect(480,265,460,220);ctx.fillStyle='#9c4d39';ctx.beginPath();ctx.moveTo(455,275);ctx.lineTo(710,155);ctx.lineTo(965,275);ctx.closePath();ctx.fill();for(let x=510;x<930;x+=22){ctx.strokeStyle='#71392d';ctx.beginPath();ctx.moveTo(x,260);ctx.lineTo(x+140,190);ctx.stroke();}ctx.fillStyle='#643d2c';ctx.fillRect(680,385,65,100);ctx.fillStyle='#ebd8aa';ctx.fillRect(540,350,65,60);ctx.fillRect(820,350,65,60);
 ctx.fillStyle='#8a582d';ctx.fillRect(320,665,45,55);ctx.fillStyle='#f0d797';ctx.fillRect(323,668,39,40);ctx.fillStyle='#68543a';ctx.fillRect(690,500,45,25);ctx.fillStyle=lamp?'#ffe87e':'#a38b59';ctx.fillRect(929,560,16,28);if(lamp){ctx.fillStyle='#fff3a066';ctx.beginPath();ctx.arc(937,570,62,0,7);ctx.fill();}
 ctx.fillStyle='#72502e';ctx.fillRect(700,823,40,34);ctx.fillStyle='#f5dd9b';ctx.fillRect(686,804,68,25);ctx.fillStyle='#503b26';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText('CHỢ QUÊ',720,821);ctx.textAlign='start';
-farming.draw(ctx);phase5Ui?.draw(ctx,camera);villageUi?.drawNpcs(ctx,camera,scene);drawPlayer(ctx);ctx.restore();villageUi?.drawAtmosphere(ctx,camera.width,camera.height);}
+farming.draw(ctx);phase5Ui?.draw(ctx,camera);villageUi?.drawNpcs(ctx,camera,scene);drawRemote(ctx);drawPlayer(ctx);if(ownEmote&&Date.now()-ownEmote.at<2600){ctx.font='25px system-ui';ctx.fillText({wave:'👋',hello:'🌾',thanks:'🙏',happy:'😊'}[ownEmote.name],player.x-12,player.y-68);}ctx.restore();villageUi?.drawAtmosphere(ctx,camera.width,camera.height);}
 function drawPlayer(ctx){ctx.fillStyle='#425932';ctx.beginPath();ctx.ellipse(player.x,player.y+5,18,8,0,0,7);ctx.fill();ctx.fillStyle='#294555';ctx.fillRect(player.x-11,player.y-35,22,30);ctx.fillStyle='#e2ad82';ctx.beginPath();ctx.arc(player.x,player.y-42,12,0,7);ctx.fill();ctx.fillStyle='#483323';ctx.fillRect(player.x-13,player.y-54,26,7);ctx.fillStyle='#213c52';const step=player.state==='walk'&&Math.sin(player.elapsed*16)>0?4:0;ctx.fillRect(player.x-9,player.y-5,7,12+step);ctx.fillRect(player.x+3,player.y-5,7,16-step);}
 function drawMarket(ctx){
 ctx.fillStyle='#80ad71';ctx.fillRect(0,0,MARKET_WORLD.width,MARKET_WORLD.height);

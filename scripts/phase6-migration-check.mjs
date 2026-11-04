@@ -18,14 +18,14 @@ try{
   assert.equal(versionBefore,5,'Source must be Phase 5 schema');
   const before=snapshot(db);db.close();
   db=openDatabase(copy);
-  assert.equal(db.prepare('SELECT max(version) v FROM schema_migrations').get().v,6);
+  assert.equal(db.prepare('SELECT max(version) v FROM schema_migrations').get().v,7);
   assert.deepEqual(snapshot(db),before,'Existing player data changed');
   assert.equal(db.pragma('integrity_check')[0].integrity_check,'ok');
   assert.equal(db.pragma('foreign_key_check').length,0);
   db.close();
   db=openDatabase(copy);
-  assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,6);
+  assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,7);
   assert.deepEqual(snapshot(db),before,'Second startup changed player data');
   db.close();
-  console.log(JSON.stringify({source,versionBefore,versionAfter:6,rows:Object.fromEntries(Object.entries(before).map(([name,rows])=>[name,rows.length])),integrity:'ok',foreignKeys:'ok',idempotent:true}));
+  console.log(JSON.stringify({source,versionBefore,versionAfter:7,rows:Object.fromEntries(Object.entries(before).map(([name,rows])=>[name,rows.length])),integrity:'ok',foreignKeys:'ok',idempotent:true}));
 }finally{try{rmSync(dir,{recursive:true,force:true,maxRetries:10,retryDelay:100});}catch(error){console.warn(`Temporary copy cleanup deferred: ${error.code}`);}}

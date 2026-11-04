@@ -179,6 +179,23 @@ CREATE TABLE quest_reward_events (
 );
 `;
 
+const migration7 = `
+CREATE TABLE farm_visit_requests (
+  id TEXT PRIMARY KEY, farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  visitor_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL CHECK(status IN ('pending','approved','denied')),
+  created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, decided_at INTEGER
+);
+CREATE INDEX farm_visit_requests_farm ON farm_visit_requests(farm_id,status,expires_at);
+CREATE INDEX farm_visit_requests_visitor ON farm_visit_requests(visitor_id,expires_at);
+CREATE TABLE farm_invites (
+  id TEXT PRIMARY KEY, farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  visitor_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL
+);
+CREATE INDEX farm_invites_visitor ON farm_invites(visitor_id,expires_at);
+`;
+
 export function openDatabase(file = process.env.DB_FILE || path.resolve('data/farm.sqlite')) {
   if (file !== ':memory:') {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -214,6 +231,10 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
   if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 6').get()) db.transaction(() => {
     db.exec(migration6);
     db.prepare('INSERT INTO schema_migrations VALUES (6, ?, ?)').run('phase 6 living village', Date.now());
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 7').get()) db.transaction(() => {
+    db.exec(migration7);
+    db.prepare('INSERT INTO schema_migrations VALUES (7, ?, ?)').run('phase 7 social farms', Date.now());
   })();
   return db;
   } catch (error) { db.close(); throw error; }

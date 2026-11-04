@@ -1,5 +1,7 @@
 # Handoff — Phase 6
 
+Phase 7 đang ở branch `feature/phase-7-social-farms`; xem `PHASE7_HANDOFF.md`, `PHASE7_TEST_REPORT.md`, `PHASE7_API_CONTRACT.md` và `PHASE7_PRECHECK.md`. Phần Phase 6 bên dưới là lịch sử.
+
 Cập nhật cuối Phase 6 (2026-11-03): đã hoàn tất ở môi trường phát triển trên nhánh `feature/phase-6-living-village`. Test 34/34; Edge Phase 6 12/12 và hồi quy 14/14 + VAC 5/5 + Phase 5 13/13. Migration v5→v6 trên bản sao dữ liệu có thật giữ nguyên mọi dòng và qua integrity/FK. Chi tiết API, schema, rollback, giới hạn và lệnh chạy ở `PHASE6_HANDOFF.md`; kết quả ở `PHASE6_TEST_REPORT.md`. Master context không đổi. Phần bên dưới là lịch sử triển khai, không phải trạng thái hiện tại.
 
 Gate 0 (2026-11-03): baseline `86b1859`, nhánh `feature/phase-6-living-village`, `npm test` 29/29, backup trước migration ở `data/backups/farm-2026-11-03T09-45-42-594Z.sqlite`. Bản đồ kiến trúc và rủi ro ở `PHASE6_PRECHECK.md`. Chưa đánh dấu Phase 6 hoàn thành; phần Phase 5 bên dưới là trạng thái đã nghiệm thu.

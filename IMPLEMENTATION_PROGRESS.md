@@ -1,5 +1,9 @@
 # Tiến độ triển khai
 
+## Phase 7 — social farms (môi trường phát triển)
+
+Nhánh `feature/phase-7-social-farms` từ `3b3e174`. Tìm farm public/request, duyệt yêu cầu, mời tài khoản, thăm/di chuyển realtime, biểu cảm, kick, private revoke, giới hạn 8 khách và một avatar/tài khoản đã triển khai. Migration v7 bảo toàn dữ liệu Phase 1–6 trên bản sao backup. Chi tiết test và giới hạn ở `PHASE7_TEST_REPORT.md`; API ở `PHASE7_API_CONTRACT.md`. Chưa push/merge.
+
 ## Phase 6 — complete ở môi trường phát triển
 
 Gate 0: Phase 5 baseline `86b1859`, `npm test` 29/29, backup SQLite v5 bằng backup API. Triển khai bốn NPC có lịch/hội thoại, năm main quest, hai side quest UTC, đồng hồ thế giới 24 phút/ngày, ba thời tiết và bốn mùa chỉ ảnh hưởng hình ảnh/lời thoại. Migration v6 giữ nguyên dữ liệu cũ. `npm test` 34/34; Edge `qa:phase6` 12/12, `qa:browser` 14/14, `qa:vac` 5/5, `qa:phase5` 13/13. Xem `PHASE6_TEST_REPORT.md` và `PHASE6_HANDOFF.md`. Chưa kiểm tra thiết bị cảm ứng vật lý hoặc tải dài hạn; không có Phase 7.
