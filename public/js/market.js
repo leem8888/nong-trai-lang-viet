@@ -1,3 +1,4 @@
+import { ITEMS } from './shared/crops.js';
 const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export class MarketUI {
   constructor(api,openPanel,showError,showNotice,refreshFarming) {
@@ -25,10 +26,10 @@ export class MarketUI {
     if(this.current==='shop'||this.current==='buyer'){
       const buy=this.current==='shop',offers=state.catalog.filter(row=>buy?row.seedItem&&row.buyPrice:row.produceItem&&row.sellPrice).map(row=>({id:buy?row.seedItem:row.produceItem,name:row.name,price:buy?row.buyPrice:row.sellPrice,
         owned:state.inventory.find(item=>item.id===(buy?row.seedItem:row.produceItem))?.quantity||0}));
-      const options=offers.map(row=>`<option value="${row.id}">${escapeHtml(row.name)} · ${fmt(row.price)} Đồng${buy?'':` · có ${row.owned}`}</option>`).join('');
+      const options=offers.map(row=>`<option value="${row.id}">${escapeHtml(row.name)} · ${fmt(row.price)} Đồng · đang có ${row.owned}</option>`).join('');
       this.openPanel(`<h2>${buy?'Cô Mai · giống và thức ăn':'Cô Lan · thu mua'}</h2><p>Ví: <b>${fmt(state.balance)} Đồng Làng</b></p>
         <form data-market-form="${buy?'buy':'sell'}"><label>${buy?'Mặt hàng':'Nông sản'}<select name="itemId">${options}</select></label>
-        <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label><p class="market-total">Tổng: 0 Đồng</p>
+        <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label><p class="market-total" role="status">Tổng: 0 Đồng</p><p class="market-guidance hint"></p>
         <button type="submit">${buy?'Mua hàng':'Bán nông sản'}</button></form><p class="hint">Giá được máy chủ xác nhận khi giao dịch.</p>`);
       this.updateTotal(document.querySelector('[data-market-form]'));return;
     }
@@ -42,7 +43,7 @@ export class MarketUI {
           order.status==='ACCEPTED'?`<button data-order-action="complete_order" data-order-id="${order.id}">Giao hàng</button>`:'<span>Đã hoàn thành</span>';
         return `<li><b>${escapeHtml(order.title)}</b> · ${escapeHtml(order.npc)}<small>${needs} · thưởng ${fmt(order.reward)} Đồng</small>${action}</li>`;
       }).join('');
-      this.openPanel(`<h2>Bảng đơn hàng làng</h2><p>Mỗi đơn chỉ hoàn thành một lần.</p><ul class="order-list">${rows}</ul>`);return;
+      this.openPanel(`<h2>Bảng đơn hàng làng</h2><p>Mỗi đơn chỉ hoàn thành một lần. Hãy trồng đủ nông sản rồi quay lại giao.</p><ul class="order-list">${rows||'<li>Chưa có đơn hàng.</li>'}</ul>`);return;
     }
     const rows=state.history.map(entry=>`<li><b>${entry.delta>0?'+':''}${fmt(entry.delta)} Đồng</b> · ${escapeHtml(entry.kind)}
       ${entry.itemId?`· ${escapeHtml(entry.itemId)}`:''}${entry.quantity?` × ${entry.quantity}`:''}
@@ -52,16 +53,22 @@ export class MarketUI {
   updateTotal(form){if(!form||!this.state)return;const itemId=form.elements.itemId.value,quantity=Number(form.elements.quantity.value);
     const offer=this.state.catalog.find(row=>row.seedItem===itemId||row.produceItem===itemId);
     const price=form.dataset.marketForm==='buy'?offer?.buyPrice:offer?.sellPrice;
-    form.querySelector('.market-total').textContent=`Tổng: ${Number.isSafeInteger(quantity)&&quantity>0&&price?(price*quantity).toLocaleString('vi-VN'):'0'} Đồng`;
+    const total=Number.isSafeInteger(quantity)&&quantity>0&&price?price*quantity:0;
+    form.querySelector('.market-total').textContent=`${form.dataset.marketForm==='buy'?'Cần trả':'Sẽ nhận'}: ${total.toLocaleString('vi-VN')} Đồng Làng`;
+    const owned=this.state.inventory.find(item=>item.id===itemId)?.quantity||0;
+    const buying=form.dataset.marketForm==='buy';
+    const guidance=form.querySelector('.market-guidance');
+    const free=Math.max(0,(ITEMS[itemId]?.stackLimit||999)-owned);
+    guidance.textContent=!total?'Chọn số lượng từ 1 đến 99.':buying&&quantity>free?`Túi chỉ còn ${free} chỗ cho mặt hàng này. Hãy giảm số lượng.`:buying&&total>this.state.balance?'Không đủ Đồng Làng. Giảm số lượng hoặc bán nông sản trước.':!buying&&quantity>owned?'Túi đồ chưa đủ hàng. Hãy thu hoạch hoặc giảm số lượng.':buying?`Đang có ${owned} · còn ${free-quantity} chỗ · còn ${this.state.balance-total} Đồng Làng sau khi mua.`:`Đang có ${owned} · còn ${owned-quantity} sau khi bán.`;
   }
   async act(intent,button){
     if(!this.state||button.disabled)return;
     const fingerprint=JSON.stringify({...intent,farmId:this.state.farmId});
     if(this.pending?.fingerprint!==fingerprint)this.pending={fingerprint,requestId:crypto.randomUUID()};
-    button.disabled=true;
+    button.disabled=true;const label=button.textContent;button.textContent='Đang xử lý…';
     try {
       const result=await this.api('/market/action',{method:'POST',body:JSON.stringify({...intent,farmId:this.state.farmId,requestId:this.pending.requestId})});
-      this.pending=null;this.setState(result.state);try{await this.refreshFarming();}catch{}this.showNotice(result.message);this.render();
-    } catch(error){this.showError(error.message);} finally {button.disabled=false;}
+      this.pending=null;this.setState(result.state);try{await this.refreshFarming();}catch{}this.showNotice(result.message,intent.action);this.render();
+    } catch(error){this.showError(error.message);} finally {button.disabled=false;button.textContent=label;}
   }
 }

@@ -38,7 +38,7 @@ export class FarmingUI {
       if(action!=='claim_seeds') { payload.x=tile.x;payload.y=tile.y; }
       if(action==='plant') payload.cropId=this.cropId;
       const result=await this.api('/farming/action',{method:'POST',body:JSON.stringify(payload)});
-      this.setState(result.state); this.showNotice(result.message);
+      this.setState(result.state); this.showNotice(result.message,action);
     } catch(error) { this.showError(error.message); } finally { this.pending=false; this.updateInfo(true); }
   }
   point(point) {

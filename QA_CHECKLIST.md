@@ -77,5 +77,7 @@ Trạng thái: **PASS các kịch bản đã chạy**. Node 20.19.6, Microsoft E
 Giới hạn: art Canvas là hình tạm; chưa kiểm thử máy cảm ứng vật lý/production HTTPS. Browser test dùng thao tác điều hướng nhanh bằng cập nhật vị trí trong SQLite thử; đường đi/collision nền được regression Phase 1 kiểm tra. FPS khoảng 60 chỉ là phép đo 1,2 giây với 100 đường gạch trên máy QA, chưa chứng minh hiệu năng trên thiết bị yếu hoặc nhiều trăm vật; giá, thời gian và biên lợi nhuận cần playtest người thật. Preview là chỉ báo cục bộ; quyết định đặt cuối cùng thuộc server.
 # Phase 8 QA bổ sung — 2026-11-04
 
+Cập nhật nhánh `feature/phase-8-completion`: 10 phút hành trình người mới qua; 17 popup trên 5 viewport qua; mạng chậm/offline qua; unit 36/36 và browser Phase 1–7 đều qua. Browser zoom thật 125% chưa kiểm được do công cụ Windows UI lỗi; xem `PHASE8_QA_REPORT.md`. Không đánh dấu Phase 8 hoàn thành.
+
 Xem `PHASE8_QA_REPORT.md` cho lệnh, ảnh trước/sau, FPS và trạng thái từng kịch bản. Đã chạy unit 36/36 và browser Phase 1–7 trên Edge headless; CSS zoom 125% không tràn ngang. Chưa thử điện thoại vật lý, browser zoom thật, mạng chậm hoặc mọi popup trên cả 5 kích thước.
 

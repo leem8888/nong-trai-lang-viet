@@ -24,34 +24,34 @@ export class VacUI {
   render(){if(!this.state)return;
     const {pond,coop}=this.state;
     if(this.current==='pond'){
-      const fish=pond.fish.map(row=>`<li><b>${row.name} #${row.id}</b><small>${row.remainingMs?`Còn ${Math.ceil(row.remainingMs/60000)} phút`:'Đã trưởng thành'} · ${Math.round(row.progress*100)}%</small>
+      const fish=pond.fish.map(row=>`<li><b>${row.name} #${row.id}</b><small>${row.remainingMs?`Còn khoảng ${Math.ceil(row.remainingMs/60000)} phút`:'Sẵn sàng thu hoạch'} · ${Math.round(row.progress*100)}% · ${row.fedAt===null?'chưa cho ăn':'đã cho ăn'}</small>
         <div class="vac-actions">${row.remainingMs&&row.fedAt===null?`<button data-vac-action="feed_fish" data-entity-id="${row.id}">Cho ăn</button>`:''}${!row.remainingMs?`<button data-vac-action="harvest_fish" data-entity-id="${row.id}">Thu hoạch</button>`:''}</div></li>`).join('');
-      this.openPanel(`<h2>Ao cá · ${pond.fish.length}/${pond.capacity}</h2><p>Thức ăn cá: ${this.count('fish_feed')}. Mua cá giống và thức ăn tại chợ.</p>
+      this.openPanel(`<h2>Ao cá · ${pond.fish.length}/${pond.capacity}</h2><p>Còn ${pond.capacity-pond.fish.length} chỗ · thức ăn cá: ${this.count('fish_feed')}. ${this.count('fish_feed')?'Cho cá ăn để rút ngắn thời gian chờ.':'Hết thức ăn: mua tại chợ hoặc đổi từ đậu nành.'}</p>
         <form class="vac-form" data-vac-form="stock_fish"><label>Cá giống<select name="fishId">${Object.entries(FISH).map(([id,row])=>`<option value="${id}">${row.name} · có ${this.count(row.fingerling)}</option>`).join('')}</select></label>
         <label>Số lượng<input name="quantity" type="number" min="1" max="6" value="1" required></label><button type="submit">Thả cá</button></form>
-        <ul class="vac-list">${fish||'<li>Ao đang trống.</li>'}</ul>${this.recipeForm('pond')}`);
+        <ul class="vac-list">${fish||'<li>Ao đang trống. Mua cá giống ở chợ rồi thả vào ao.</li>'}</ul>${this.recipeForm('pond')}`);
     }else{
       const chickens=coop.chickens.map(row=>`<li><b>Gà #${row.id}</b><small>${row.status==='GROWING'?`Còn ${Math.ceil(row.remainingMs/60000)} phút để trưởng thành`:row.status==='PRODUCING'?'Đang trong chu kỳ trứng':'Chờ thức ăn'} · trứng chờ: ${row.eggsReady}/${row.maxEggs}</small>
         ${row.status==='WAITING_FOR_FEED'?`<button data-vac-action="feed_chicken" data-entity-id="${row.id}">Cho gà ăn</button>`:''}</li>`).join('');
-      this.openPanel(`<h2>Chuồng gà · ${coop.chickens.length}/${coop.capacity}</h2><p>Gà con: ${this.count('chick')} · thức ăn gà: ${this.count('chicken_feed')}. Gà lớn kể cả khi bạn offline.</p>
+      this.openPanel(`<h2>Chuồng gà · ${coop.chickens.length}/${coop.capacity}</h2><p>Còn ${coop.capacity-coop.chickens.length} chỗ · gà con: ${this.count('chick')} · thức ăn gà: ${this.count('chicken_feed')}. Gà lớn kể cả khi bạn offline.</p>
         <form class="vac-form" data-vac-form="add_chicken"><label>Thêm gà con<input name="quantity" type="number" min="1" max="4" value="1" required></label><button type="submit">Thêm gà</button></form>
-        <ul class="vac-list">${chickens||'<li>Chuồng đang trống.</li>'}</ul><button data-vac-action="collect_eggs">Nhặt trứng (${coop.chickens.reduce((n,row)=>n+row.eggsReady,0)})</button>${this.recipeForm('coop')}`);
+        <ul class="vac-list">${chickens||'<li>Chuồng đang trống. Mua gà con ở chợ để bắt đầu.</li>'}</ul><button data-vac-action="collect_eggs" ${coop.chickens.some(row=>row.eggsReady)?'':'disabled'}>Nhặt trứng (${coop.chickens.reduce((n,row)=>n+row.eggsReady,0)})</button>${this.recipeForm('coop')}`);
     }
   }
   recipeForm(kind){const recipes=Object.entries(VAC_RECIPES).filter(([,row])=>kind==='pond'?row.output==='fish_feed':row.output==='chicken_feed');
-    return `<h3>Đổi nông sản thành thức ăn</h3><form class="vac-form" data-vac-form="convert"><label>Công thức<select name="recipeId">${recipes.map(([id,row])=>`<option value="${id}">${row.name} · có ${this.count(row.input)}</option>`).join('')}</select></label>
+    return `<h3>Đổi nông sản thành thức ăn</h3><form class="vac-form" data-vac-form="convert"><label>Công thức<select name="recipeId">${recipes.map(([id,row])=>`<option value="${id}">${row.name} · có ${this.count(row.input)} · nhận ${row.yield} thức ăn</option>`).join('')}</select></label>
       <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label><button type="submit">Đổi thức ăn</button></form>`;
   }
   async act(intent,button){if(!this.state||button.disabled)return;
     const fingerprint=JSON.stringify({...intent,farmId:this.state.farmId});
     if(this.pending?.fingerprint!==fingerprint)this.pending={fingerprint,requestId:crypto.randomUUID()};
-    button.disabled=true;
+    button.disabled=true;const label=button.textContent;button.textContent='Đang xử lý…';
     try{const result=await this.api('/vac/action',{method:'POST',body:JSON.stringify({...intent,farmId:this.state.farmId,requestId:this.pending.requestId})});
       this.pending=null;this.setState(result.state);this.flashUntil=performance.now()+600;
-      try{await this.refreshInventory();}catch{}this.showNotice(result.message);this.render();
-    }catch(error){this.showError(error.message);}finally{button.disabled=false;}
+      try{await this.refreshInventory();}catch{}this.showNotice(result.message,intent.action);this.render();
+    }catch(error){this.showError(error.message);}finally{button.disabled=false;button.textContent=label;}
   }
-  draw(ctx){const t=performance.now()/1000;
+  draw(ctx){const t=document.body.classList.contains('low-effects')?0:performance.now()/1000;
     ctx.fillStyle='#927246';ctx.fillRect(1004,704,292,157);ctx.fillStyle='#467d81';ctx.fillRect(1015,715,270,135);
     for(let i=0;i<8;i++){const x=1040+(i*47)%225,y=735+(i*31)%105,r=4+(t*7+i*3)%16;
       ctx.strokeStyle='#a9d5be';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();}
