@@ -75,3 +75,7 @@ Trạng thái: **PASS các kịch bản đã chạy**. Node 20.19.6, Microsoft E
 | Layout, FPS và restart | PASS | Đã xem `.qa/phase5-farm.png` và `.qa/phase5-mobile.png` (390 px), mouse/keyboard, không `pageerror`; browser restart HTTP server cùng SQLite giữ công trình, vật phẩm và đất; 100 decoration đạt khoảng 60 FPS trong Edge headless tại máy QA |
 
 Giới hạn: art Canvas là hình tạm; chưa kiểm thử máy cảm ứng vật lý/production HTTPS. Browser test dùng thao tác điều hướng nhanh bằng cập nhật vị trí trong SQLite thử; đường đi/collision nền được regression Phase 1 kiểm tra. FPS khoảng 60 chỉ là phép đo 1,2 giây với 100 đường gạch trên máy QA, chưa chứng minh hiệu năng trên thiết bị yếu hoặc nhiều trăm vật; giá, thời gian và biên lợi nhuận cần playtest người thật. Preview là chỉ báo cục bộ; quyết định đặt cuối cùng thuộc server.
+# Phase 8 QA bổ sung — 2026-11-04
+
+Xem `PHASE8_QA_REPORT.md` cho lệnh, ảnh trước/sau, FPS và trạng thái từng kịch bản. Đã chạy unit 36/36 và browser Phase 1–7 trên Edge headless; CSS zoom 125% không tràn ngang. Chưa thử điện thoại vật lý, browser zoom thật, mạng chậm hoặc mọi popup trên cả 5 kích thước.
+
