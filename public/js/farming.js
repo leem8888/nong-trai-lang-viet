@@ -5,7 +5,7 @@ export class FarmingUI {
   constructor(api, showError, showNotice, openPanel) {
     this.api=api; this.showError=showError; this.showNotice=showNotice; this.openPanel=openPanel;
     this.tool='till'; this.cropId='mustard'; this.state=null; this.hover=null; this.selected=null;
-    this.receivedAt=0; this.lastInfo=0;
+    this.receivedAt=0; this.lastInfo=0; this.pending=false;
     for(const button of document.querySelectorAll('[data-tool]')) button.onclick=()=>this.chooseTool(button.dataset.tool);
     const select=document.getElementById('seedSelect');
     for(const id of CROP_IDS) select.add(new Option(CROPS[id].name,id));
@@ -29,14 +29,17 @@ export class FarmingUI {
   serverNow() { return Math.floor(this.state.serverTime+performance.now()-this.receivedAt); }
   tile(x,y) { return this.state?.tiles.find(tile=>tile.x===x&&tile.y===y); }
   async act(action=this.tool, tile=this.selected) {
-    if(!this.state)return;
+    if(!this.state||this.pending)return;
+    if(action!=='claim_seeds'&&!tile)return;
+    this.pending=true;
+    document.getElementById('cropInfo').textContent='Đang xử lý…';
     try {
       const payload={farmId:this.state.farmId,action};
-      if(action!=='claim_seeds') { if(!tile)return; payload.x=tile.x;payload.y=tile.y; }
+      if(action!=='claim_seeds') { payload.x=tile.x;payload.y=tile.y; }
       if(action==='plant') payload.cropId=this.cropId;
       const result=await this.api('/farming/action',{method:'POST',body:JSON.stringify(payload)});
       this.setState(result.state); this.showNotice(result.message);
-    } catch(error) { this.showError(error.message); }
+    } catch(error) { this.showError(error.message); } finally { this.pending=false; this.updateInfo(true); }
   }
   point(point) {
     const tile=tileAt(point.x,point.y);
@@ -59,7 +62,7 @@ export class FarmingUI {
   showInventory() {
     if(!this.state)return;
     const rows=this.state.inventory.filter(item=>item.quantity>0).map(item=>`<li><span style="color:${item.color}">${item.icon||'◆'}</span> ${item.name}: <b>${item.quantity}</b><small>${item.description}</small></li>`).join('');
-    this.openPanel(`<h2>Túi đồ</h2><ul class="inventory-list">${rows||'<li>Chưa có vật phẩm.</li>'}</ul><p>Chọn loại hạt ở thanh công cụ trước khi gieo.</p>`);
+    this.openPanel(`<h2>Túi đồ</h2><ul class="inventory-list">${rows||'<li>Chưa có vật phẩm. Hãy cuốc đất, nhận hạt miễn phí nếu đã hết, rồi gieo và thu hoạch.</li>'}</ul><p>Chọn loại hạt ở thanh công cụ trước khi gieo. Khi có nông sản, đến Chợ Quê để bán.</p>`);
   }
   draw(ctx) {
     if(!this.state)return;
@@ -69,6 +72,8 @@ export class FarmingUI {
       ctx.fillStyle=tile.state==='EMPTY'?'#795b3b':tile.state==='WATERED'?'#4d4034':'#644d35';
       ctx.fillRect(r.x,r.y,r.w,r.h);
       ctx.strokeStyle='#a78957';ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);
+      if(tile.state==='EMPTY'){ctx.fillStyle='#9b7853';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*18,r.y+13+i%2*9,9,2);}
+      else {ctx.strokeStyle=tile.state==='WATERED'?'#678d91':'#9d7651';for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(r.x+5,r.y+11+i*9);ctx.lineTo(r.x+r.w-5,r.y+11+i*9);ctx.stroke();}}
       if(tile.state==='WATERED'||tile.crop?.wateredAt){ctx.fillStyle='#6aa4b2';ctx.fillRect(r.x+4,r.y+4,8,3);ctx.fillRect(r.x+r.w-13,r.y+r.h-8,6,3);}
       if(tile.crop) this.drawCrop(ctx,r,tile.crop,time);
     }

@@ -85,3 +85,7 @@ Ghi chú lịch sử Phase 2: starter ở thời điểm đó là v3; **hiện �
 | P3.8 QA/docs | Hoàn thành | `npm test` 16/16; `npm run qa:browser` 14/14; receipt rời chợ, giới hạn đơn, lỗi scene được kiểm tra |
 
 Trước migration v3 đã chạy backup; Phase 1–3 đạt Definition of Done ở môi trường phát triển ngày 2026-11-03. Những số liệu Phase 3 là lịch sử trước Phase 4. Hiện Phase 1–4 đã nghiệm thu ở môi trường phát triển; có thể bắt đầu Phase 5 theo yêu cầu riêng. QA trên thiết bị cảm ứng thật và HTTPS production vẫn chưa thực hiện.
+# Phase 8 — đang triển khai (2026-11-04)
+
+Đã thêm hướng dẫn đầu game có thể bỏ qua/xem lại, phản hồi đang xử lý cho trồng trọt và đăng nhập, menu cùng bố cục mobile, nhân vật local dễ đọc hơn, âm thanh xác nhận tùy chọn (mặc định tắt). Baseline và QA thực tế: xem `PHASE8_BASELINE.md`, `PHASE8_QA_REPORT.md`. Server/gameplay/SQLite không đổi. Các bộ test hiện tại qua, nhưng P8.2–P8.8 còn việc bắt buộc; **chưa hoàn thành Phase 8 và chưa commit**.
+

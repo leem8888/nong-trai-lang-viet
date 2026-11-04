@@ -66,3 +66,7 @@ Cập nhật 2026-11-03. Phase 1–4: **complete ở môi trường phát triể
 ## Bước tiếp
 
 Nếu người dùng yêu cầu Phase 5, đọc lại `PROJECT_MASTER_CONTEXT.md`, `GDD.md`, `IMPLEMENTATION_PROGRESS.md`, `HANDOFF.md`, `QA_CHECKLIST.md` và Phase5 spec trước khi code. Phase 5 mới được làm rice mill, crafting và construction; không lặp lại hệ đổi thức ăn VAC thành crafting engine.
+# Phase 8 handoff tạm — 2026-11-04
+
+Nhánh `feature/phase-8-player-experience` bắt đầu từ `c867fa6`. Đã backup SQLite chơi cục bộ trong `data/backups/`; kiểm thử dùng DB tạm. Tình trạng và phần chưa hoàn thành nằm trong `PHASE8_QA_REPORT.md`. Chưa push/merge/deploy và chưa tạo commit vì Definition of Done chưa đạt.
+
