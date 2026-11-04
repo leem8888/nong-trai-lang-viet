@@ -1,0 +1,239 @@
+{
+  "pipeline": "node tests/browser-plots-shop.mjs package",
+  "cellSize": 128,
+  "alphaThreshold": 20,
+  "minComponentFraction": 0.04,
+  "items": [
+    {
+      "id": "tilapia",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 0
+    },
+    {
+      "id": "carp",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 1
+    },
+    {
+      "id": "chick",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 2
+    },
+    {
+      "id": "egg",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 3
+    },
+    {
+      "id": "fish_feed",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 4
+    },
+    {
+      "id": "chicken_feed",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 5
+    },
+    {
+      "id": "milled_rice",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 6
+    },
+    {
+      "id": "corn_flour",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 7
+    },
+    {
+      "id": "soy_milk",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 8
+    },
+    {
+      "id": "tomato_sauce",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 9
+    },
+    {
+      "id": "dried_fish",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 10
+    },
+    {
+      "id": "fried_rice",
+      "source": "products-v10.png",
+      "columns": 4,
+      "rows": 3,
+      "index": 11
+    },
+    {
+      "id": "rice",
+      "source": "mature-crops.webp",
+      "columns": 6,
+      "rows": 1,
+      "index": 1
+    },
+    {
+      "id": "mustard",
+      "source": "mature-crops.webp",
+      "columns": 6,
+      "rows": 1,
+      "index": 0
+    },
+    {
+      "id": "carrot",
+      "source": "mature-crops.webp",
+      "columns": 6,
+      "rows": 1,
+      "index": 2
+    },
+    {
+      "id": "tomato",
+      "source": "mature-crops.webp",
+      "columns": 6,
+      "rows": 1,
+      "index": 3
+    },
+    {
+      "id": "corn",
+      "source": "mature-crops.webp",
+      "columns": 6,
+      "rows": 1,
+      "index": 4
+    },
+    {
+      "id": "soy",
+      "source": "soy-crop.webp",
+      "columns": 1,
+      "rows": 1,
+      "index": 0
+    },
+    {
+      "id": "decor_bamboo_fence",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 0
+    },
+    {
+      "id": "decor_bamboo_gate",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 1
+    },
+    {
+      "id": "decor_brick_path",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 2
+    },
+    {
+      "id": "decor_stone_path",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 3
+    },
+    {
+      "id": "decor_water_jar",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 4
+    },
+    {
+      "id": "decor_lotus_pot",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 5
+    },
+    {
+      "id": "decor_chrysanthemum",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 6
+    },
+    {
+      "id": "decor_portulaca",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 7
+    },
+    {
+      "id": "decor_bench",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 8
+    },
+    {
+      "id": "decor_lantern",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 9
+    },
+    {
+      "id": "decor_banana",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 10
+    },
+    {
+      "id": "decor_areca",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 11
+    },
+    {
+      "id": "decor_bougainvillea",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 12
+    },
+    {
+      "id": "decor_farm_sign",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 13
+    },
+    {
+      "id": "decor_haystack",
+      "source": "decorations-v9.webp",
+      "columns": 15,
+      "rows": 1,
+      "index": 14
+    }
+  ]
+}

@@ -138,8 +138,9 @@ test('migration v3 to v4 preserves account, crop, inventory, wallet and order',(
       INSERT INTO wallets VALUES('u',456,0);
       INSERT INTO player_orders VALUES('f','greens','ACCEPTED',0,NULL);
       INSERT INTO farm_crops VALUES(1,'f',0,0,'rice',0,5400000,0,NULL,NULL,3);`);
+    old.exec("CREATE TABLE farm_soil_tiles(farm_id TEXT,tile_x INTEGER,tile_y INTEGER,state TEXT,updated_at INTEGER,PRIMARY KEY(farm_id,tile_x,tile_y));INSERT INTO farm_soil_tiles VALUES('f',0,0,'PLANTED',0);");
     old.close();db=openDatabase(file);
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,8);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,9);
     assert.equal(db.prepare('SELECT count(*) n FROM farm_ponds').get().n,1);
     assert.equal(db.prepare('SELECT count(*) n FROM farm_coops').get().n,1);
     assert.deepEqual(db.prepare("SELECT x,y FROM player_states WHERE user_id='u'").get(),{x:990,y:780});

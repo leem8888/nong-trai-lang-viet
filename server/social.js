@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import {plotState,farmingState} from './crops.js';
 
 const REQUEST_MS = 10 * 60_000;
 const GRANT_MS = 60 * 60_000;
@@ -32,9 +33,8 @@ export function visitorSnapshot(db, farmId) {
   return {
     farm: { id: farm.id, name: farm.name, ownerName: farm.owner_name },
     objects: db.prepare('SELECT object_id AS objectId,state FROM farm_objects WHERE farm_id=?').all(farmId),
-    tiles: db.prepare(`SELECT s.tile_x AS x,s.tile_y AS y,s.state,c.crop_id AS cropId,c.planted_at AS plantedAt,
-      c.duration_ms AS durationMs,c.bonus_ms AS bonusMs,c.watered_at AS wateredAt
-      FROM farm_soil_tiles s LEFT JOIN farm_crops c ON c.farm_id=s.farm_id AND c.tile_x=s.tile_x AND c.tile_y=s.tile_y AND c.harvested_at IS NULL WHERE s.farm_id=?`).all(farmId),
+    plots:plotState(db,farmId),
+    tiles:farmingState(db,farm.owner_id).tiles.map(t=>({x:t.x,y:t.y,locked:t.locked,state:t.state,cropId:t.crop?.cropId??null,plantedAt:t.crop?.plantedAt,durationMs:t.crop?.durationMs,bonusMs:t.crop?.bonusMs,wateredAt:t.crop?.wateredAt})),
     buildings: db.prepare('SELECT id,definition_id AS definitionId,tile_x AS x,tile_y AS y,rotation FROM farm_buildings WHERE farm_id=?').all(farmId),
     decorations: db.prepare('SELECT id,definition_id AS definitionId,tile_x AS x,tile_y AS y,rotation FROM farm_decorations WHERE farm_id=?').all(farmId),
     pond: { fish: db.prepare('SELECT fish_id AS fishId FROM pond_fish WHERE farm_id=? AND harvested_at IS NULL').all(farmId) },

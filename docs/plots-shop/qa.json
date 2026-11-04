@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "five starter squares and no NPCs on farm",
+    "locked tile opens purchase dialog and charges 100 exactly once",
+    "young and mature crop sprites render successfully with the new square geometry",
+    "seed category contains only six seeds",
+    "all categories use decoded standalone 128px images without sprite bleed",
+    "store title and category tabs remain sticky on scroll",
+    "categorized mobile shop and quantity popup fit viewport"
+  ],
+  "errors": [],
+  "screenshots": 0
+}

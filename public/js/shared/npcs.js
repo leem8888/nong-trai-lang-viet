@@ -5,3 +5,4 @@ export const NPCS=Object.freeze({
   na:{name:'Bé Na',role:'Hàng xóm',scene:'market',color:'#d0904d',icon:'🌼',waypoints:{morning:[1060,1030],noon:[1260,1010],afternoon:[1420,630],night:[980,1110]},fallback:[1060,1030]}
 });
 export const NPC_IDS=Object.keys(NPCS);
+export const npcsForScene=(npcs,scene)=>scene==='farm'?[]:(npcs||[]).filter(n=>n.scene==='market');

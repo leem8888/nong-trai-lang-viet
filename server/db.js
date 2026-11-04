@@ -241,6 +241,38 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
     db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'USER' CHECK(role IN ('USER','ADMIN'));\nCREATE TABLE admin_audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, action TEXT NOT NULL, amount INTEGER NOT NULL, transaction_id INTEGER REFERENCES economy_transactions(id), created_at INTEGER NOT NULL);");
     db.prepare('INSERT INTO schema_migrations VALUES (8, ?, ?)').run('admin role and seed audit', Date.now());
   })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 9').get()) db.transaction(() => {
+    db.exec(`CREATE TABLE farm_soil_tiles_v9 (
+      farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+      tile_x INTEGER NOT NULL CHECK(tile_x BETWEEN 0 AND 7),tile_y INTEGER NOT NULL CHECK(tile_y BETWEEN 0 AND 3),
+      state TEXT NOT NULL CHECK(state IN ('TILLED','WATERED','PLANTED')),updated_at INTEGER NOT NULL,PRIMARY KEY(farm_id,tile_x,tile_y));
+      CREATE TABLE farm_crops_v9 (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+        tile_x INTEGER NOT NULL,tile_y INTEGER NOT NULL,crop_id TEXT NOT NULL,planted_at INTEGER NOT NULL,
+        duration_ms INTEGER NOT NULL CHECK(duration_ms>0),bonus_ms INTEGER NOT NULL DEFAULT 0 CHECK(bonus_ms>=0),
+        watered_at INTEGER,harvested_at INTEGER,yield_quantity INTEGER NOT NULL CHECK(yield_quantity>0),
+        FOREIGN KEY(farm_id,tile_x,tile_y) REFERENCES farm_soil_tiles_v9(farm_id,tile_x,tile_y) ON DELETE CASCADE);
+      INSERT INTO farm_soil_tiles_v9 SELECT * FROM farm_soil_tiles;
+      INSERT INTO farm_crops_v9 SELECT * FROM farm_crops;
+      UPDATE sqlite_sequence SET seq=MAX(seq,COALESCE((SELECT seq FROM sqlite_sequence WHERE name='farm_crops'),0)) WHERE name='farm_crops_v9';
+      DROP TABLE farm_crops;DROP TABLE farm_soil_tiles;
+      ALTER TABLE farm_soil_tiles_v9 RENAME TO farm_soil_tiles;
+      ALTER TABLE farm_crops_v9 RENAME TO farm_crops;
+      CREATE UNIQUE INDEX one_active_crop_per_tile ON farm_crops(farm_id,tile_x,tile_y) WHERE harvested_at IS NULL;
+      CREATE INDEX farm_crops_farm ON farm_crops(farm_id,harvested_at);
+      CREATE TABLE farm_plot_expansions (
+      farm_id TEXT PRIMARY KEY REFERENCES farms(id) ON DELETE CASCADE,
+      unlocked_count INTEGER NOT NULL DEFAULT 5 CHECK(unlocked_count BETWEEN 5 AND 32),
+      purchased_count INTEGER NOT NULL DEFAULT 0 CHECK(purchased_count>=0),updated_at INTEGER NOT NULL);
+      CREATE TABLE farm_plot_receipts (
+        farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,request_key TEXT NOT NULL,
+        plot_count INTEGER NOT NULL,amount INTEGER NOT NULL,transaction_id INTEGER NOT NULL REFERENCES economy_transactions(id),
+        created_at INTEGER NOT NULL,PRIMARY KEY(farm_id,request_key));
+      INSERT INTO farm_plot_expansions(farm_id,unlocked_count,purchased_count,updated_at)
+      SELECT f.id,MAX(5,COALESCE((SELECT MAX(tile_y*8+tile_x+1) FROM farm_soil_tiles WHERE farm_id=f.id),0),
+        COALESCE((SELECT MAX(tile_y*8+tile_x+1) FROM farm_crops WHERE farm_id=f.id),0)),0,strftime('%s','now')*1000 FROM farms f;`);
+    db.prepare('INSERT INTO schema_migrations VALUES (9, ?, ?)').run('square field and paid plot unlocks',Date.now());
+  })();
   if (file !== ':memory:' && path.resolve(file) !== path.resolve('data/starter.sqlite') &&
       db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='farm_objects'").get()) seedAdmin(db);
   return db;

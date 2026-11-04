@@ -12,13 +12,17 @@ export class FarmingUI {
     select.value=this.cropId; select.onchange=()=>{this.cropId=select.value;this.chooseTool('plant');};
     document.getElementById('inventoryButton').onclick=()=>this.showInventory();
     document.getElementById('claimSeeds').onclick=()=>this.act('claim_seeds');
+    const expand=document.createElement('button');expand.type='button';expand.id='plotsButton';expand.textContent='Mở ô ruộng';expand.onclick=()=>this.showPlots();document.getElementById('toolbar').append(expand);
+    document.getElementById('panel').addEventListener('click',e=>{if(e.target.closest('[data-unlock-plot]'))this.unlockPlot();});
     this.chooseTool('till');
   }
   chooseTool(tool) {
     this.tool=tool;
     for(const button of document.querySelectorAll('[data-tool]')) button.classList.toggle('selected',button.dataset.tool===tool);
   }
-  setState(state) { this.state=state; this.receivedAt=performance.now(); this.updateInfo(true); this.updateSeeds(); }
+  setState(state) { this.state=state; this.receivedAt=performance.now(); this.updateInfo(true); this.updateSeeds();const p=state.plots;if(p)document.getElementById('plotsButton').textContent=`Ô ruộng ${p.unlocked}/${p.max}`; }
+  showPlots(){const p=this.state?.plots;if(!p)return;this.openPanel(`<h2>Mở rộng ruộng</h2><p>Đã mở <b>${p.unlocked}/${p.max}</b> ô. Mỗi ô vuông 48×48, mở lần lượt từng ô.</p>${p.nextPrice===null?'<p>Đã mở toàn bộ ô ruộng.</p>':`<p>Mở ô số ${p.unlocked+1}: <b>${p.nextPrice.toLocaleString('vi-VN')} Đồng Làng</b></p><button data-unlock-plot ${this.unlocking?'disabled':''}>Xác nhận mở thêm 1 ô</button>`}<p class="hint">Giá các lần mở: 100, 175, 300, 475… Đồng Làng. Giá tăng theo số lần bạn đã mua ô.</p>`);}
+  async unlockPlot(){if(this.unlocking)return;this.unlocking=true;this.unlockRequestId??=crypto.randomUUID();this.unlockIntent??={action:'unlock_plot',farmId:this.state.farmId,requestId:this.unlockRequestId,expectedCount:this.state.plots.unlocked+1};document.querySelector('[data-unlock-plot]')?.setAttribute('disabled','');try{const r=await this.api('/farming/action',{method:'POST',body:JSON.stringify(this.unlockIntent)});this.unlockRequestId=null;this.unlockIntent=null;this.setState(r.state);this.showNotice(r.message);this.showPlots();}catch(e){if(e.status>=400&&e.status<500){this.unlockRequestId=null;this.unlockIntent=null;}this.showError(e.message);try{this.setState(await this.api('/farming'));this.showPlots();}catch{}}finally{this.unlocking=false;document.querySelector('[data-unlock-plot]')?.removeAttribute('disabled');}}
   updateSeeds() {
     if(!this.state)return;
     const select=document.getElementById('seedSelect');
@@ -69,12 +73,14 @@ export class FarmingUI {
     const time=this.serverNow();
     for(const tile of this.state.tiles) {
       const r=tileRect(tile.x,tile.y);
+      if(tile.locked){ctx.save();ctx.strokeStyle='#d6dca070';ctx.setLineDash([4,4]);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);if(tile.y*FIELD.columns+tile.x===this.state.plots?.unlocked){ctx.fillStyle='#f5e5a9';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.fillText('+',r.x+r.w/2,r.y+r.h/2+6);}ctx.restore();continue;}
       ctx.fillStyle=tile.state==='EMPTY'?'#795b3b':tile.state==='WATERED'?'#4d4034':'#644d35';
       ctx.fillRect(r.x,r.y,r.w,r.h);
       ctx.strokeStyle='#a78957';ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);
       if(tile.state==='EMPTY'){ctx.fillStyle='#9b7853';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*18,r.y+13+i%2*9,9,2);}
       else {ctx.strokeStyle=tile.state==='WATERED'?'#678d91':'#9d7651';for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(r.x+5,r.y+11+i*9);ctx.lineTo(r.x+r.w-5,r.y+11+i*9);ctx.stroke();}}
       if(tile.state==='WATERED'||tile.crop?.wateredAt){ctx.fillStyle='#6aa4b2';ctx.fillRect(r.x+4,r.y+4,8,3);ctx.fillRect(r.x+r.w-13,r.y+r.h-8,6,3);}
+      if(tile.crop&&cropProgress(tile.crop,time).stage!=='MATURE'){ctx.save();ctx.fillStyle='#332217ed';ctx.shadowColor='#21170ed0';ctx.shadowBlur=3;ctx.beginPath();ctx.ellipse(r.x+r.w/2,r.y+r.h/2,r.w*.34,r.h*.34,0,0,Math.PI*2);ctx.fill();ctx.restore();}
       if(tile.crop&&!this.isometric) this.drawCrop(ctx,r,tile.crop,time);
     }
     const mark=this.hover||this.selected;

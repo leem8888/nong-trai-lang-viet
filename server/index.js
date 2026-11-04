@@ -80,6 +80,7 @@ export function createApp(db = openDatabase(),{worldNow=Date.now,questNow=Date.n
     try {
       const result=performFarmAction(db,key,req.body);
       io.to(`farm:${result.state.farmId}`).emit('farm:farming',result.state);
+      if(req.body.action==='unlock_plot')io.to(`farm:${result.state.farmId}`).emit('farm:market',marketState(db,key));
       social.broadcastFarm(result.state.farmId);
       io.to(`farm:${result.state.farmId}`).emit('farm:quests',questState(db,key));
       res.json({ok:true,...result});

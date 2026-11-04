@@ -9,3 +9,4 @@ import './contextual.test.js';
 import './isometric.test.js';
 import './adminSeed.test.js';
 import './villageLife.test.js';
+import './plots.test.js';

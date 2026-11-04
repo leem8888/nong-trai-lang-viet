@@ -4,7 +4,7 @@ const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<'
 export class MarketUI {
   constructor(api,openPanel,showError,showNotice,refreshFarming) {
     this.api=api;this.openPanel=openPanel;this.showError=showError;this.showNotice=showNotice;this.refreshFarming=refreshFarming;
-    this.state=null;this.current=null;this.pending=null;this.selected=null;
+    this.state=null;this.current=null;this.pending=null;this.selected=null;this.group='seeds';
     document.getElementById('historyButton').onclick=()=>this.open('history');
     const panel=document.getElementById('panel');
     panel.addEventListener('submit',event=>{
@@ -15,6 +15,7 @@ export class MarketUI {
     panel.addEventListener('click',event=>{
       const button=event.target.closest('[data-order-action]');if(button)this.act({action:button.dataset.orderAction,orderId:button.dataset.orderId},button);
       const product=event.target.closest('[data-market-product]');if(product){this.selected=product.dataset.marketProduct;this.render();}
+      const group=event.target.closest('[data-market-group]');if(group){this.group=group.dataset.marketGroup;this.selected=null;this.render();panel.scrollTop=0;}
       if(event.target.closest('[data-trade-back]')){const id=this.selected;this.selected=null;this.render();document.querySelector(`[data-market-product="${id}"]`)?.focus();}
       if(event.target.closest('[data-trade-max]')){const form=panel.querySelector('[data-market-form]');form.elements.quantity.value=this.limit(form.elements.itemId.value);this.updateTotal(form);}
     });
@@ -35,10 +36,11 @@ export class MarketUI {
     if(!this.state)return;
     const state=this.state,fmt=n=>n.toLocaleString('vi-VN');
     if(this.current==='shop'||this.current==='buyer'){
-      const buy=this.current==='shop',offers=this.offers().filter(o=>buy||o.owned>0),selected=offers.find(o=>o.id===this.selected);
+      const buy=this.current==='shop',groupOf=id=>id.startsWith('decor_')?'decorations':id.startsWith('seed_')?'seeds':'animals',offers=this.offers().filter(o=>buy?groupOf(o.id)===this.group:o.owned>0),selected=offers.find(o=>o.id===this.selected);
+      const tabs=buy?`<nav class="shop-tabs" aria-label="Nhóm mặt hàng">${[['seeds','Hạt giống'],['animals','Vật nuôi & thức ăn'],['decorations','Đồ trang trí']].map(([id,label])=>`<button type="button" data-market-group="${id}" aria-pressed="${this.group===id}">${label}</button>`).join('')}</nav>`:'';
       const cards=offers.map(o=>`<button class="product-card" data-market-product="${o.id}" aria-label="${buy?'Mua':'Bán'} ${escapeHtml(o.name)}">${itemArtwork(o.id,o.name)}<strong>${escapeHtml(o.name)}</strong><span>${fmt(o.price)} Đồng / món</span><small>Đang có: ${fmt(o.owned)}</small></button>`).join('');
       const detail=selected?`<div class="trade-shade"><section class="trade-dialog" role="dialog" aria-modal="true" aria-labelledby="tradeTitle"><button class="trade-back" data-trade-back type="button" aria-label="Quay lại danh sách">← Quay lại</button>${itemArtwork(selected.id,selected.name)}<h3 id="tradeTitle">${buy?'Mua':'Bán'} ${escapeHtml(selected.name)}</h3><p>${fmt(selected.price)} Đồng / món · đang có ${fmt(selected.owned)}</p><form data-market-form="${buy?'buy':'sell'}"><input type="hidden" name="itemId" value="${selected.id}"><label>Số lượng (1–999)<input name="quantity" type="number" inputmode="numeric" min="1" max="999" step="1" value="1" required></label><button type="button" data-trade-max>Tối đa có thể ${buy?'mua':'bán'}</button><p class="market-total" role="status"></p><p class="market-guidance hint"></p><p class="trade-error" role="alert"></p><button type="submit">${buy?'Xác nhận mua':'Xác nhận bán'}</button></form></section></div>`:'';
-      this.openPanel(`<div class="market-catalog" ${selected?'inert aria-hidden="true"':''}><h2>${buy?'Cửa hàng làng · Mua vật phẩm':'Kho nông sản · Bán hàng'}</h2><p>Ví: <b>${fmt(state.balance)} Đồng Làng</b></p><p class="hint">${buy?'Chọn một mặt hàng để xem giá và nhập số lượng.':'Chọn nông sản trong kho để bán cho Cô Lan. Hạt giống, thức ăn và đồ trang trí không nằm trong kho nông sản.'}</p><div class="product-grid">${cards||'<p class="empty-stock">Kho nông sản đang trống. Hãy thu hoạch cây, cá, trứng hoặc chế biến rồi quay lại.</p>'}</div></div>${detail}`);
+      this.openPanel(`<div class="market-catalog" ${selected?'inert aria-hidden="true"':''}><header class="catalog-heading"><h2>${buy?'Cửa hàng làng · Mua vật phẩm':'Kho nông sản · Bán hàng'}</h2><p>Ví: <b>${fmt(state.balance)} Đồng Làng</b></p>${tabs}</header><p class="hint">${buy?'Chọn một mặt hàng để xem giá và nhập số lượng.':'Chọn nông sản trong kho để bán cho Cô Lan. Hạt giống, thức ăn và đồ trang trí không nằm trong kho nông sản.'}</p><div class="product-grid">${cards||'<p class="empty-stock">Kho nông sản đang trống. Hãy thu hoạch cây, cá, trứng hoặc chế biến rồi quay lại.</p>'}</div></div>${detail}`);
       if(selected){const form=document.querySelector('[data-market-form]');this.updateTotal(form);requestAnimationFrame(()=>{form.elements.quantity.focus();form.elements.quantity.select();});}return;
     }
     if(this.current==='orders'){
@@ -54,7 +56,7 @@ export class MarketUI {
       this.openPanel(`<h2>Bảng đơn hàng làng</h2><p>Mỗi đơn chỉ hoàn thành một lần. Hãy trồng đủ nông sản rồi quay lại giao.</p><ul class="order-list">${rows||'<li>Chưa có đơn hàng.</li>'}</ul>`);return;
     }
     const rows=state.history.map(entry=>`<li><b>${entry.delta>0?'+':''}${fmt(entry.delta)} Đồng</b> · ${escapeHtml(entry.kind)}
-      ${entry.itemId?`· ${escapeHtml(entry.itemId)}`:''}${entry.quantity?` × ${entry.quantity}`:''}
+      ${entry.itemId?`· ${escapeHtml(entry.itemId==='farm_plot'?'Mở ô ruộng':ITEMS[entry.itemId]?.name||entry.itemId)}`:''}${entry.quantity?` × ${entry.quantity}`:''}
       <small>${new Date(entry.createdAt).toLocaleString('vi-VN')} · số dư ${fmt(entry.balanceAfter)}</small></li>`).join('');
     this.openPanel(`<h2>Lịch sử Đồng Làng</h2><ul class="order-list">${rows||'<li>Chưa có giao dịch.</li>'}</ul>`);
   }

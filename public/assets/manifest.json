@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "packaging": "Generated original PNG artwork was converted to local WebP at quality 0.88 in Edge; transparent pixels are retained. Browser-ready WebP assets total 5.3 MB versus 26.4 MB of the source PNGs.",
   "assets": [
     {
@@ -58,7 +58,7 @@
     },
     {
       "path": "/assets/mature-crops.webp",
-      "role": "Five mature crop sprites (mustard, rice, carrot, tomato, corn)",
+      "role": "Six source cells: mustard, rice, carrot, tomato, corn, unused sweet potato. Five supported crops extracted with six-column geometry.",
       "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
       "license": "Project use under the applicable OpenAI output terms"
     },
@@ -201,7 +201,7 @@
     {
       "path": "/assets/product-icons-v10.webp",
       "role": "Twelve product illustrations and six existing crop illustrations packed in 18 horizontal 128px cells",
-      "source": "Packed from products-v10.webp, mature-crops.webp and soy-crop.webp using tests/browser-village-life.mjs package",
+      "source": "Compatibility atlas rebuilt from corrected items-v11 standalone images by tests/browser-plots-shop.mjs package",
       "license": "Same project use terms as the source artwork"
     },
     {
@@ -215,6 +215,435 @@
       "role": "market-life-ground-v10",
       "source": "Original deterministic scenery authored in scripts/build-village-surroundings.mjs on 2026-11-04",
       "license": "Project-owned original work"
+    },
+    {
+      "path": "/assets/items-v11/tilapia.webp",
+      "role": "Isolated inventory and crop image: tilapia",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 0,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "46a87f6d1551ab0aab4f72023169c80a06dc382468b18de4c51f8cf4b877a0dc",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/carp.webp",
+      "role": "Isolated inventory and crop image: carp",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 1,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "aa2f1e858bb7ff734dbbce65f5dc988953052328a4f4f6fcc9763557eebd4105",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/chick.webp",
+      "role": "Isolated inventory and crop image: chick",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 2,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "125c5d22210266742a829f5d3e0b1da0adff4009a37915c52b30367b04f3ce42",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/egg.webp",
+      "role": "Isolated inventory and crop image: egg",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 3,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "a4b9ffbdb9f6da4998385d02403441794431e337ce98e8b4ff0f3fac09fe400d",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/fish_feed.webp",
+      "role": "Isolated inventory and crop image: fish_feed",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 4,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "448d50fb4c894fd7227ac6b689663cec315a5e13621737288cd64f13279c6f73",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/chicken_feed.webp",
+      "role": "Isolated inventory and crop image: chicken_feed",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 5,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "b87a59b5ba31955d0b32498ecf8b10f1dc9fce95a2e12b892404ef3e10c00cbf",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/milled_rice.webp",
+      "role": "Isolated inventory and crop image: milled_rice",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 6,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "49b02f434c59347e3bde0fe6fefa1f3282b8a7d02b1464368823a18d3c101699",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/corn_flour.webp",
+      "role": "Isolated inventory and crop image: corn_flour",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 7,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "37cd8fd6d7562774911ff49238d27d87d48a273e779665141f0f4404c66b1c84",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/soy_milk.webp",
+      "role": "Isolated inventory and crop image: soy_milk",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 8,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "99803f4cbd548fe6b756cd330a4435741438a0326e61b7fb92cb94aa52f3e307",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/tomato_sauce.webp",
+      "role": "Isolated inventory and crop image: tomato_sauce",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 9,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "66d4652f8201c696944116ea37bba80b61853459adf153f67641521dadb30653",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/dried_fish.webp",
+      "role": "Isolated inventory and crop image: dried_fish",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 10,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "8f8ecea5d456afe55c5945d52513b98188324882f03f7fdbabaca6629e579e5a",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/fried_rice.webp",
+      "role": "Isolated inventory and crop image: fried_rice",
+      "source": "/assets/products-v10.png",
+      "sourceCell": {
+        "index": 11,
+        "columns": 4,
+        "rows": 3
+      },
+      "sha256": "cc1f0316fd249161520b16c5f3c0d7afe436b627667828c1c7befaa9a46e5569",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/rice.webp",
+      "role": "Isolated inventory and crop image: rice",
+      "source": "/assets/mature-crops.webp",
+      "sourceCell": {
+        "index": 1,
+        "columns": 6,
+        "rows": 1
+      },
+      "sha256": "c873a33cb58f9f1fe6128bb22e36cf9094cae237ca963018019ba1b2c8d9d705",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/mustard.webp",
+      "role": "Isolated inventory and crop image: mustard",
+      "source": "/assets/mature-crops.webp",
+      "sourceCell": {
+        "index": 0,
+        "columns": 6,
+        "rows": 1
+      },
+      "sha256": "ad5eabf69d67a142ee87363112dd61d49a8e742f9f790360830c526255430e61",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/carrot.webp",
+      "role": "Isolated inventory and crop image: carrot",
+      "source": "/assets/mature-crops.webp",
+      "sourceCell": {
+        "index": 2,
+        "columns": 6,
+        "rows": 1
+      },
+      "sha256": "9710c00507c65314a2fc180bd30a39828ceb6e1c9c4bea06cddfa61d5135117c",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/tomato.webp",
+      "role": "Isolated inventory and crop image: tomato",
+      "source": "/assets/mature-crops.webp",
+      "sourceCell": {
+        "index": 3,
+        "columns": 6,
+        "rows": 1
+      },
+      "sha256": "33ab887b18cb79166156c3dcb2274cfbde79de00dc573fdd8611e57836b38a94",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/corn.webp",
+      "role": "Isolated inventory and crop image: corn",
+      "source": "/assets/mature-crops.webp",
+      "sourceCell": {
+        "index": 4,
+        "columns": 6,
+        "rows": 1
+      },
+      "sha256": "7c9c1d6134fb8e2db51de551c04249e4201f6f7481cbfbd638fc206125bb9040",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/soy.webp",
+      "role": "Isolated inventory and crop image: soy",
+      "source": "/assets/soy-crop.webp",
+      "sourceCell": {
+        "index": 0,
+        "columns": 1,
+        "rows": 1
+      },
+      "sha256": "bd1f497912816b4fde1f3b09c81207e3e73c6d64f28ae61a3163f28856d45bc7",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_bamboo_fence.webp",
+      "role": "Isolated inventory and crop image: decor_bamboo_fence",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 0,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "03853d83c09883e5465ed2319701eca002cdfa2692b18e4a7360002f2727cc0a",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_bamboo_gate.webp",
+      "role": "Isolated inventory and crop image: decor_bamboo_gate",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 1,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "5c880fd935f4a4f6d887ac24e310869d754292afd0a5985b06419bd5ac57ca62",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_brick_path.webp",
+      "role": "Isolated inventory and crop image: decor_brick_path",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 2,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "ef9eab6626f917ada59e21b9caba87206d269dfe56863586bf91b699c3bbbaec",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_stone_path.webp",
+      "role": "Isolated inventory and crop image: decor_stone_path",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 3,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "4140c5d0e892c123d79ed3f7c02479e2a250fa844de708b38eab84717acf2108",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_water_jar.webp",
+      "role": "Isolated inventory and crop image: decor_water_jar",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 4,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "8342d4f290477561cb0b60ef16e5ded82f4ff57cc8d5c77d2f37172611e33efa",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_lotus_pot.webp",
+      "role": "Isolated inventory and crop image: decor_lotus_pot",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 5,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "8ae3d7de67866dbff9b58991976a40f44dbded9d1f49f7d5cae70f73e6b7d7e4",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_chrysanthemum.webp",
+      "role": "Isolated inventory and crop image: decor_chrysanthemum",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 6,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "6ed2150cc89fd7af9ea2bd5439b27fc7774b3aeeb1afbe831140fca2e2d244cd",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_portulaca.webp",
+      "role": "Isolated inventory and crop image: decor_portulaca",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 7,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "a67596310f55a40cc450d8185915abe0d54381d90880fa5bf9bec83aa5d1ebe6",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_bench.webp",
+      "role": "Isolated inventory and crop image: decor_bench",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 8,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "ac773de157948c7176cf688f75ef09ec2c76cda984158a0af54df5db377e59a1",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_lantern.webp",
+      "role": "Isolated inventory and crop image: decor_lantern",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 9,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "d42e373a7a00b92b1d2c392fbb943c664559d7987506a97292437131bb59025f",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_banana.webp",
+      "role": "Isolated inventory and crop image: decor_banana",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 10,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "5d0ef634dc850a53005c3be166229f67b77b23f4e40695fccbff0119a438eb8a",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_areca.webp",
+      "role": "Isolated inventory and crop image: decor_areca",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 11,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "25cc2029cdc1ce07bb144112870656ca278f9b7afaf024cf056c11213da130d9",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_bougainvillea.webp",
+      "role": "Isolated inventory and crop image: decor_bougainvillea",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 12,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "0242019d834d49173fcb9285f86d7b4c9df6adcf919ff1cc96114afeff7ee04d",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_farm_sign.webp",
+      "role": "Isolated inventory and crop image: decor_farm_sign",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 13,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "2d3d3dce281a21ce22e666c0cd79ffa05fe9f3ee587a524da74e1f39abdaa9f2",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
+    },
+    {
+      "path": "/assets/items-v11/decor_haystack.webp",
+      "role": "Isolated inventory and crop image: decor_haystack",
+      "source": "/assets/decorations-v9.webp",
+      "sourceCell": {
+        "index": 14,
+        "columns": 15,
+        "rows": 1
+      },
+      "sha256": "5f80e8c5e9c34aac05d268146a971ed449b9ee643bdbbeb6ba23681566fbe87b",
+      "pipeline": "Native browser sprite extraction, isolated alpha components, transparent padding; tests/browser-plots-shop.mjs package",
+      "license": "Same applicable project use terms as the original source artwork; no new third-party asset"
     }
   ],
   "phase9": {
@@ -231,5 +660,10 @@
     "prompts": "/assets/village-life-prompts.json",
     "packaging": "node tests/browser-village-life.mjs package",
     "scenery": "node scripts/build-village-surroundings.mjs"
+  },
+  "plotsShopFix": {
+    "schemaMigration": 9,
+    "packaging": "node tests/browser-plots-shop.mjs package",
+    "itemManifest": "/assets/items-v11/manifest.json"
   }
 }

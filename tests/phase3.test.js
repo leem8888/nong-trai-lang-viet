@@ -121,12 +121,14 @@ test('migration from Phase 2 preserves inventory, wallet and scene after reopen'
       INSERT INTO farms VALUES('f','u','Old farm','starter','private',1,0,0);
       INSERT INTO player_states VALUES('u','f',720,650,'down',0);
       INSERT INTO inventory_items VALUES('f','rice',7);`);
+    old.exec(`CREATE TABLE farm_soil_tiles(farm_id TEXT,tile_x INTEGER,tile_y INTEGER,state TEXT,updated_at INTEGER,PRIMARY KEY(farm_id,tile_x,tile_y));
+      CREATE TABLE farm_crops(id INTEGER PRIMARY KEY,farm_id TEXT,tile_x INTEGER,tile_y INTEGER,crop_id TEXT,planted_at INTEGER,duration_ms INTEGER,bonus_ms INTEGER,watered_at INTEGER,harvested_at INTEGER,yield_quantity INTEGER);`);
     old.close();db=openDatabase(file);
     assert.equal(db.prepare('SELECT quantity FROM inventory_items WHERE farm_id=? AND item_id=?').get('f','rice').quantity,7);
     assert.equal(db.prepare('SELECT balance FROM wallets WHERE user_id=?').get('u').balance,200);
     assert.equal(db.prepare('SELECT scene FROM player_states WHERE user_id=?').get('u').scene,'farm');
     db.close();db=null;db=openDatabase(file);
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,8);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,9);
     assert.equal(db.prepare('SELECT balance FROM wallets WHERE user_id=?').get('u').balance,200);
   } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });
