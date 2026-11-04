@@ -23,7 +23,12 @@ const username=n=>`qa_${n}_${Date.now()}`;
 async function createUser(context,name){
   const page=await context.newPage(), errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(url);await page.locator('#registerTab').click();
+  await page.goto(url);
+  assert.equal(await page.locator('#loginTab').getAttribute('aria-selected'),'true');
+  assert.equal(await page.locator('#registerTab').getAttribute('aria-selected'),'false');
+  await page.locator('#registerTab').click();
+  assert.equal(await page.locator('#registerTab').getAttribute('aria-selected'),'true');
+  assert.equal(await page.locator('#loginTab').getAttribute('aria-selected'),'false');
   await page.locator('[name=username]').fill(name);await page.locator('[name=password]').fill('strong-pass-123');await page.locator('#authSubmit').click();
   await page.locator('#create:not(.hidden)').waitFor();
   await page.locator('[name=name]').fill(`Farm ${name}`);await page.locator('#farmForm button').click();
