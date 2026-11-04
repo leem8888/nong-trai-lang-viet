@@ -46,7 +46,7 @@ export function createApp(db = openDatabase(),{worldNow=Date.now,questNow=Date.n
       fail(res,error);
     }
   });
-  app.get('/api/me',guard,(req,res) => res.json({user:{id:req.auth.user_id,username:req.auth.username},csrf:req.auth.csrf,farm:farmFor(db,req.auth.user_id)}));
+  app.get('/api/me',guard,(req,res) => res.json({user:{id:req.auth.user_id,username:req.auth.username,role:req.auth.role},csrf:req.auth.csrf,farm:farmFor(db,req.auth.user_id)}));
   app.post('/api/logout',guard,csrf,(req,res) => { clearSession(db,req,res); res.json({ok:true}); });
   app.post('/api/farms',guard,csrf,(req,res) => {
     try { res.json({farm:createFarm(db,req.auth.user_id,req.body?.name)}); } catch(error) { fail(res,error); }

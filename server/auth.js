@@ -19,15 +19,15 @@ export function register(db, username, password) {
   if (!/^[a-zA-Z0-9_]{3,24}$/.test(clean) || typeof password !== 'string' || password.length < 10 || password.length > 128) throw new Error('Tên tài khoản 3–24 ký tự; mật khẩu ít nhất 10 ký tự.');
   const id = randomUUID();
   db.transaction(()=>{
-    db.prepare('INSERT INTO users VALUES (?,?,?,?)').run(id,clean,passwordHash(password),now());
+    db.prepare('INSERT INTO users(id,username,password_hash,created_at) VALUES (?,?,?,?)').run(id,clean,passwordHash(password),now());
     createWallet(db,id);
   })();
-  return { id, username: clean };
+  return { id, username: clean, role: 'USER' };
 }
 export function login(db, username, password) {
   const user = db.prepare('SELECT * FROM users WHERE username=?').get(String(username ?? '').trim());
   if (!user || typeof password !== 'string' || !verifyPassword(password,user.password_hash)) throw new Error('Tên tài khoản hoặc mật khẩu không đúng.');
-  return { id: user.id, username: user.username };
+  return { id: user.id, username: user.username, role: user.role };
 }
 export function parseCookies(header = '') {
   return Object.fromEntries(header.split(';').map(x => x.trim().split('=').slice(0,2)).filter(x => x.length === 2));
@@ -35,7 +35,7 @@ export function parseCookies(header = '') {
 export function session(db, request) {
   const token = parseCookies(request.headers.cookie)[cookieName];
   if (!token || !/^[a-f0-9]{64}$/.test(token)) return null;
-  return db.prepare('SELECT s.*, u.username FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?').get(hash(token),now()) || null;
+  return db.prepare('SELECT s.*, u.username, u.role FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?').get(hash(token),now()) || null;
 }
 export function issueSession(db,res,user) {
   const token = randomBytes(32).toString('hex'), csrf = randomBytes(24).toString('hex');

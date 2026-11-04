@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
+import { seedAdmin } from './seedAdmin.js';
 
 const migration = `
 CREATE TABLE users (id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at INTEGER NOT NULL);
@@ -236,6 +237,12 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
     db.exec(migration7);
     db.prepare('INSERT INTO schema_migrations VALUES (7, ?, ?)').run('phase 7 social farms', Date.now());
   })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 8').get()) db.transaction(() => {
+    db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'USER' CHECK(role IN ('USER','ADMIN'));\nCREATE TABLE admin_audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, action TEXT NOT NULL, amount INTEGER NOT NULL, transaction_id INTEGER REFERENCES economy_transactions(id), created_at INTEGER NOT NULL);");
+    db.prepare('INSERT INTO schema_migrations VALUES (8, ?, ?)').run('admin role and seed audit', Date.now());
+  })();
+  if (file !== ':memory:' && path.resolve(file) !== path.resolve('data/starter.sqlite') &&
+      db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='farm_objects'").get()) seedAdmin(db);
   return db;
   } catch (error) { db.close(); throw error; }
 }
