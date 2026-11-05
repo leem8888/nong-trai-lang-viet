@@ -36,7 +36,7 @@ Biến nông trại thành một làng quê Việt có nhịp sống: NPC xuất
 4. Chạy toàn bộ test hiện tại, ghi số lượng pass/fail và nguyên nhân. Nếu baseline fail, phân loại lỗi sẵn có và blocker; không che giấu.
 5. Backup SQLite trước migration, gồm cả trường hợp WAL: dùng SQLite backup API hoặc cơ chế backup nhất quán, **không copy file `.sqlite` đơn lẻ khi đang ghi**. Không xóa database runtime.
 6. Tạo branch `feature/phase-6-living-village` nếu phù hợp workflow; không force push, không ghi đè thay đổi chưa commit.
-7. Viết ngắn `PHASE6_PRECHECK.md` gồm baseline commit, sơ đồ tích hợp, rủi ro, quyết định thiết kế và kết quả test đầu vào.
+7. Viết ngắn `PHASE6_REPORT.md` gồm baseline commit, sơ đồ tích hợp, rủi ro, quyết định thiết kế và kết quả test đầu vào.
 
 **Điều kiện qua Gate 0:** hiểu kiến trúc thật, xác nhận baseline, có backup và có kết quả test đầu vào. Nếu gặp blocker không thể xử lý an toàn, dừng và báo rõ; không làm giả kết quả.
 
@@ -255,9 +255,9 @@ Nếu thiếu mục nào, trạng thái phải là **PARTIAL / BLOCKED**, kèm l
 
 Cập nhật (nếu tồn tại) `README.md`, `GDD.md`, `PROJECT_MASTER_CONTEXT.md`, `IMPLEMENTATION_PROGRESS.md`, `HANDOFF.md`, `QA_CHECKLIST.md` và bổ sung:
 
-- `PHASE6_PRECHECK.md`: source baseline, kiến trúc, rủi ro, baseline test.
-- `PHASE6_TEST_REPORT.md`: lệnh test, số pass/fail, migration test, browser QA steps/results, screenshots/logs nếu có, môi trường test.
-- `PHASE6_HANDOFF.md`: file thay đổi, API/schema, config, cách chạy, giới hạn, rollback, commit SHA.
+- `PHASE6_REPORT.md`: source baseline, kiến trúc, rủi ro, baseline test.
+- `PHASE6_REPORT.md`: lệnh test, số pass/fail, migration test, browser QA steps/results, screenshots/logs nếu có, môi trường test.
+- `PHASE6_REPORT.md`: file thay đổi, API/schema, config, cách chạy, giới hạn, rollback, commit SHA.
 
 Báo cáo cuối cùng cần có:
 1. Commit/branch thực tế.

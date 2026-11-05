@@ -1,18 +1,22 @@
-# Handoff hiện tại — Phase 8 (2026-11-04)
+# Handoff hiện tại — 2026-11-05
 
-**Cập nhật nhánh đang làm:** `feature/contextual-interaction-ux` đang triển khai menu ngữ cảnh và remake isometric theo hai kế hoạch mới. Mã chưa commit/push/merge; trạng thái remake **INCOMPLETE**. Xem `ISOMETRIC_REMAKE_PROGRESS.md`, `ISOMETRIC_REMAKE_ARCHITECTURE.md` và `ISOMETRIC_REMAKE_QA_REPORT.md` để biết bằng chứng và các gate còn thiếu. Phase 1–8 backend/SQLite không đổi.
+Nhánh `main` tại commit `d0df3d9b30509cf32916d2a379a687af49666245` đã có tương tác tự đi tới điểm hành động, bố cục nhà chính mới, hàng rào, ba kiểu nhà hàng xóm, sửa kẹt đường đi và kích thước cửa hàng cố định. Xem `CONTEXTUAL_UX_REPORT.md` để biết chi tiết và giới hạn. Hồi quy: `npm test` 53/53; browser chung 14/14; contextual 14/14; VAC 5/5; Phase 5 13/13; Phase 6 12/12; Phase 7 multiplayer 4/4. Phần dưới ghi lại handoff lịch sử và không mô tả trạng thái Git hiện tại.
 
-Đợt hoàn thiện này bắt đầu từ `main` commit `d1012036bf90fa162855f6e055a95e2c8bc22328` trên nhánh `feature/phase-8-completion` và được đưa lên `main` để AI web review theo yêu cầu. **Phase 8 vẫn INCOMPLETE** vì browser zoom thật 125% chưa kiểm được do lỗi công cụ Windows UI; xem `PHASE8_QA_REPORT.md` để biết toàn bộ PASS, giới hạn và ảnh. Không có migration; SQLite chơi được backup trước QA. Không làm deploy.
+# Handoff lịch sử — Phase 8 (2026-11-04)
+
+**Cập nhật nhánh đang làm:** `feature/contextual-interaction-ux` đang triển khai menu ngữ cảnh và remake isometric theo hai kế hoạch mới. Mã chưa commit/push/merge; trạng thái remake **INCOMPLETE**. Xem `ISOMETRIC_REMAKE_REPORT.md`, `ISOMETRIC_REMAKE_REPORT.md` và `ISOMETRIC_REMAKE_REPORT.md` để biết bằng chứng và các gate còn thiếu. Phase 1–8 backend/SQLite không đổi.
+
+Đợt hoàn thiện này bắt đầu từ `main` commit `d1012036bf90fa162855f6e055a95e2c8bc22328` trên nhánh `feature/phase-8-completion` và được đưa lên `main` để AI web review theo yêu cầu. **Phase 8 vẫn INCOMPLETE** vì browser zoom thật 125% chưa kiểm được do lỗi công cụ Windows UI; xem `PHASE8_REPORT.md` để biết toàn bộ PASS, giới hạn và ảnh. Không có migration; SQLite chơi được backup trước QA. Không làm deploy.
 
 Mã thay đổi: panel chợ/VAC/chế biến/xây dựng có trạng thái và chỉ dẫn rõ hơn; âm thanh tổng hợp tùy chọn theo hành động; nhân vật/NPC, cây/tre, mùa vụ và quầy chợ có cải thiện; kết nối chỉ báo sẵn sàng sau `farm:join`; chế độ giảm hiệu ứng lưu cục bộ. Test browser Phase 1–7 và 85 lượt popup qua. Phần bên dưới là handoff lịch sử các phase trước.
 
 # Handoff — Phase 6
 
-Phase 7 đang ở branch `feature/phase-7-social-farms`; xem `PHASE7_HANDOFF.md`, `PHASE7_TEST_REPORT.md`, `PHASE7_API_CONTRACT.md` và `PHASE7_PRECHECK.md`. Phần Phase 6 bên dưới là lịch sử.
+Phase 7 đang ở branch `feature/phase-7-social-farms`; xem `PHASE7_REPORT.md`, `PHASE7_REPORT.md`, `PHASE7_REPORT.md` và `PHASE7_REPORT.md`. Phần Phase 6 bên dưới là lịch sử.
 
-Cập nhật cuối Phase 6 (2026-11-03): đã hoàn tất ở môi trường phát triển trên nhánh `feature/phase-6-living-village`. Test 34/34; Edge Phase 6 12/12 và hồi quy 14/14 + VAC 5/5 + Phase 5 13/13. Migration v5→v6 trên bản sao dữ liệu có thật giữ nguyên mọi dòng và qua integrity/FK. Chi tiết API, schema, rollback, giới hạn và lệnh chạy ở `PHASE6_HANDOFF.md`; kết quả ở `PHASE6_TEST_REPORT.md`. Master context không đổi. Phần bên dưới là lịch sử triển khai, không phải trạng thái hiện tại.
+Cập nhật cuối Phase 6 (2026-11-03): đã hoàn tất ở môi trường phát triển trên nhánh `feature/phase-6-living-village`. Test 34/34; Edge Phase 6 12/12 và hồi quy 14/14 + VAC 5/5 + Phase 5 13/13. Migration v5→v6 trên bản sao dữ liệu có thật giữ nguyên mọi dòng và qua integrity/FK. Chi tiết API, schema, rollback, giới hạn và lệnh chạy ở `PHASE6_REPORT.md`; kết quả ở `PHASE6_REPORT.md`. Master context không đổi. Phần bên dưới là lịch sử triển khai, không phải trạng thái hiện tại.
 
-Gate 0 (2026-11-03): baseline `86b1859`, nhánh `feature/phase-6-living-village`, `npm test` 29/29, backup trước migration ở `data/backups/farm-2026-11-03T09-45-42-594Z.sqlite`. Bản đồ kiến trúc và rủi ro ở `PHASE6_PRECHECK.md`. Chưa đánh dấu Phase 6 hoàn thành; phần Phase 5 bên dưới là trạng thái đã nghiệm thu.
+Gate 0 (2026-11-03): baseline `86b1859`, nhánh `feature/phase-6-living-village`, `npm test` 29/29, backup trước migration ở `data/backups/farm-2026-11-03T09-45-42-594Z.sqlite`. Bản đồ kiến trúc và rủi ro ở `PHASE6_REPORT.md`. Chưa đánh dấu Phase 6 hoàn thành; phần Phase 5 bên dưới là trạng thái đã nghiệm thu.
 
 ## Handoff Phase 5 (lịch sử)
 
@@ -76,5 +80,5 @@ Cập nhật 2026-11-03. Phase 1–4: **complete ở môi trường phát triể
 Nếu người dùng yêu cầu Phase 5, đọc lại `PROJECT_MASTER_CONTEXT.md`, `GDD.md`, `IMPLEMENTATION_PROGRESS.md`, `HANDOFF.md`, `QA_CHECKLIST.md` và Phase5 spec trước khi code. Phase 5 mới được làm rice mill, crafting và construction; không lặp lại hệ đổi thức ăn VAC thành crafting engine.
 # Phase 8 handoff tạm — 2026-11-04
 
-Nhánh `feature/phase-8-player-experience` bắt đầu từ `c867fa6`. Đã backup SQLite chơi cục bộ trong `data/backups/`; kiểm thử dùng DB tạm. Tình trạng và phần chưa hoàn thành nằm trong `PHASE8_QA_REPORT.md`. Chưa push/merge/deploy và chưa tạo commit vì Definition of Done chưa đạt.
+Nhánh `feature/phase-8-player-experience` bắt đầu từ `c867fa6`. Đã backup SQLite chơi cục bộ trong `data/backups/`; kiểm thử dùng DB tạm. Tình trạng và phần chưa hoàn thành nằm trong `PHASE8_REPORT.md`. Chưa push/merge/deploy và chưa tạo commit vì Definition of Done chưa đạt.
 

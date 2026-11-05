@@ -182,10 +182,10 @@
 ## 9. Bàn giao bắt buộc
 
 1. Code và asset pack trong repo; manifest và giấy phép/nguồn gốc asset.
-2. `ISOMETRIC_REMAKE_ARCHITECTURE.md`: thiết kế tọa độ, renderer, camera, collision, compatibility.
-3. `ISOMETRIC_VISUAL_STYLE_GUIDE.md`: palette, tile sizes, anchors, sprite specs, UI rules.
-4. `ISOMETRIC_REMAKE_QA_REPORT.md`: command và kết quả test thực tế, screenshots/video paths, FPS, blockers.
-5. `ISOMETRIC_REMAKE_PROGRESS.md`: checklist CP0–CP5 và công việc còn thiếu.
+2. `ISOMETRIC_REMAKE_REPORT.md`: thiết kế tọa độ, renderer, camera, collision, compatibility.
+3. `ISOMETRIC_REMAKE_REPORT.md`: palette, tile sizes, anchors, sprite specs, UI rules.
+4. `ISOMETRIC_REMAKE_REPORT.md`: command và kết quả test thực tế, screenshots/video paths, FPS, blockers.
+5. `ISOMETRIC_REMAKE_REPORT.md`: checklist CP0–CP5 và công việc còn thiếu.
 6. Commit SHA local; không push/merge.
 
 ## 10. Prompt giao AI coding

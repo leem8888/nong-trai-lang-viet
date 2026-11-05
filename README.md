@@ -1,10 +1,14 @@
 # Nông Trại Làng Việt
 
-Game nông trại web 2.5D isometric đang được hoàn thiện. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm VAC, Phase 5 thêm chế biến/xây dựng, Phase 6 thêm NPC, nhiệm vụ và nhịp sống làng. Xem `ISOMETRIC_REMAKE_PROGRESS.md` trước khi đánh giá trạng thái nghiệm thu đồ họa.
+Game nông trại web 2.5D isometric đang được hoàn thiện. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm VAC, Phase 5 thêm chế biến/xây dựng, Phase 6 thêm NPC, nhiệm vụ và nhịp sống làng. Xem [tiến độ remake](docs/ISOMETRIC_REMAKE_REPORT.md) trước khi đánh giá trạng thái nghiệm thu đồ họa.
 
-Phase 7 trên nhánh `feature/phase-7-social-farms`: nút **Thăm farm** cho tìm nông trại mở cửa hoặc cần duyệt. Chủ đặt quyền `Riêng tư`, `Cần duyệt` hoặc `Công khai`, xem yêu cầu, mời người chơi bằng tên tài khoản và mời khách rời đi. Khách được đi dạo, vẫy tay và về farm mình; không được sửa ruộng, kho, ví, công trình hay nhận thưởng lúc đang thăm. Mỗi farm tối đa 8 khách hiện diện. `npm run qa:phase7` chạy Edge/Playwright với 3 tài khoản và SQLite tạm; xem `PHASE7_TEST_REPORT.md` và `PHASE7_API_CONTRACT.md`.
+Phase 7 trên `main`: nút **Thăm farm** cho tìm nông trại mở cửa hoặc cần duyệt. Chủ đặt quyền `Riêng tư`, `Cần duyệt` hoặc `Công khai`, xem yêu cầu, mời người chơi bằng tên tài khoản và mời khách rời đi. Khách được đi dạo, vẫy tay và về farm mình; không được sửa ruộng, kho, ví, công trình hay nhận thưởng lúc đang thăm. Mỗi farm tối đa 8 khách hiện diện. `npm run qa:phase7` chạy Edge/Playwright với 3 tài khoản và SQLite tạm; xem [báo cáo Phase 7 gồm QA và API](docs/PHASE7_REPORT.md).
 
-Phase 6: nút **Nhiệm vụ** mở tuyến “Một ngày ở làng” gồm 5 nhiệm vụ chính và 2 nhiệm vụ phụ làm mới mỗi ngày UTC. Đến gần Bác Tư, Cô Lan, Ông Ba hoặc Bé Na rồi nhấn **E** hay nhấp NPC để trò chuyện. HUD hiển thị giờ thế giới, thời tiết và mùa; nút **Giảm hiệu ứng** tắt mưa động. Một ngày thế giới dài 24 phút thực; thời tiết đổi theo slot 8 phút, mỗi mùa dài 7 ngày thực. Các hiệu ứng này chỉ đổi cảnh và lời thoại, không đổi tốc độ cây/VAC/chế biến. Xem `PHASE6_TEST_REPORT.md` để chạy kiểm thử.
+Phase 6: nút **Nhiệm vụ** mở tuyến “Một ngày ở làng” gồm 5 nhiệm vụ chính và 2 nhiệm vụ phụ làm mới mỗi ngày UTC. Nhấp Bác Tư, Cô Lan, Ông Ba hoặc Bé Na để nhân vật tự đi tới trò chuyện; **E** dùng được khi đứng gần. HUD hiển thị giờ thế giới, thời tiết và mùa; nút **Giảm hiệu ứng** tắt mưa động. Một ngày thế giới dài 24 phút thực; thời tiết đổi theo slot 8 phút, mỗi mùa dài 7 ngày thực. Các hiệu ứng này chỉ đổi cảnh và lời thoại, không đổi tốc độ cây/VAC/chế biến. Xem [báo cáo QA Phase 6](docs/PHASE6_REPORT.md) để chạy kiểm thử.
+
+## Tài liệu
+
+Các tài liệu nằm trong [`docs/`](docs/). Bắt đầu từ [tiến độ triển khai](docs/IMPLEMENTATION_PROGRESS.md), [bàn giao](docs/HANDOFF.md), [checklist QA](docs/QA_CHECKLIST.md) và [cập nhật tương tác nông trại](docs/CONTEXTUAL_UX_REPORT.md). Các kế hoạch Phase 1–9 vẫn được giữ riêng.
 
 ## Yêu cầu
 
@@ -35,15 +39,15 @@ Chạm hoặc nhấp ô ruộng để xem thao tác hợp lệ. Chọn **Cuốc*
 
 ## Chợ quê
 
-Đi theo lối phía nam farm tới biển **Chợ quê** và nhấn **E** để vào chợ. Đến gần quầy hạt, quầy thu mua hoặc bảng đơn rồi nhấn **E**. Chọn vật phẩm và số lượng để mua/bán, hoặc nhận và giao đơn hàng. Nút **Lịch sử** cạnh số dư cho xem các giao dịch. Cổng phía nam chợ đưa về farm. Chợ luôn mở; một loại nông sản được thu mua cao hơn 15% theo ngày UTC. Giá, tiền và vật phẩm được xác nhận ở server. Dùng `npm run economy:report` để xem bảng lợi nhuận thử nghiệm.
+Nhấp cổng phía nam farm để nhân vật đi tới **Chợ quê**; **E** cũng dùng được khi đứng cạnh cổng. Tại chợ, nhấp quầy hạt, quầy thu mua hoặc bảng đơn từ xa để nhân vật tự đi tới và mở giao diện. Chọn thẻ vật phẩm, nhập số lượng để mua/bán, hoặc nhận và giao đơn hàng. Nút **Lịch sử** cạnh số dư cho xem các giao dịch. Cổng phía nam chợ đưa về farm. Chợ luôn mở; một loại nông sản được thu mua cao hơn 15% theo ngày UTC. Giá, tiền và vật phẩm được xác nhận ở server. Dùng `npm run economy:report` để xem bảng lợi nhuận thử nghiệm.
 
 ## Ao cá và chuồng gà
 
-Ở farm, tới ao phía đông nam hoặc chuồng gà phía đông bắc, chạm/nhấp vật thể để xem menu ngữ cảnh; **E** vẫn mở bảng VAC khi đứng gần. Menu cho phép xem, cho ăn và thu hoạch khi hợp lệ. Mua cá giống, gà con và thức ăn tại quầy Cô Mai ở chợ; thả cá/thêm gà trong bảng VAC. Đổi đậu nành thành thức ăn cá, ngô hoặc lúa thành thức ăn gà ngay tại bảng tương ứng. Cá và gà lớn theo thời gian thật khi offline. Cá và trứng vào túi đồ và bán cho Cô Lan. Số liệu hiện là giá trị playtest.
+Ở farm, chạm/nhấp ao phía đông nam hoặc chuồng gà phía đông bắc từ bất kỳ vị trí nào để xem menu ngữ cảnh; nhân vật tự đi tới khi chọn thao tác. **E** vẫn mở bảng VAC khi đứng gần. Menu cho phép xem, cho ăn và thu hoạch khi hợp lệ. Mua cá giống, gà con và thức ăn tại quầy Cô Mai ở chợ; thả cá/thêm gà trong bảng VAC. Đổi đậu nành thành thức ăn cá, ngô hoặc lúa thành thức ăn gà ngay tại bảng tương ứng. Cá và gà lớn theo thời gian thật khi offline. Cá và trứng vào túi đồ và bán cho Cô Lan. Số liệu hiện là giá trị playtest.
 
 ## Kiểm thử
 
-`npm test` chạy kiểm thử Phase 1–5: API, SQLite, quyền farm, Socket.IO, offline growth, inventory, kinh tế, VAC, crafting, xây dựng, migration và retry. Checklist QA trình duyệt ở `QA_CHECKLIST.md`.
+`npm test` chạy kiểm thử API, SQLite, quyền farm, Socket.IO, offline growth, inventory, kinh tế, VAC, crafting, xây dựng, migration và retry. Checklist QA trình duyệt ở [docs/QA_CHECKLIST.md](docs/QA_CHECKLIST.md).
 
 `npm run qa:browser` chạy Playwright trên Edge thật với database tạm; cài Playwright bằng `npm install --no-save playwright` nếu máy chưa có. Có thể đặt `PLAYWRIGHT_MODULE` thành URL module Playwright đã cài và `EDGE_PATH` thành đường dẫn trình duyệt. Kịch bản tạo tài khoản thử riêng, không chạm `data/farm.sqlite`; ảnh kiểm tra được lưu trong `.qa/` và bị Git bỏ qua.
 

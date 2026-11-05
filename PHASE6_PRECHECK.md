@@ -1,8 +1,0 @@
-# Phase 6 precheck — 2026-11-03
-
-- Baseline: `main` commit `86b185948a1599ea7158e7a01ed311f200cbb3f0`; working tree chỉ có `Phase6.md` do người dùng cung cấp. Nhánh triển khai: `feature/phase-6-living-village`.
-- Gate 0: `npm test` **29/29 PASS** trên Node 20.19.6. Trước migration đã chạy `npm run backup`, tạo `data/backups/farm-2026-11-03T09-45-42-594Z.sqlite` bằng SQLite backup API (bao gồm WAL).
-- Kiến trúc thật: `server/index.js` xác thực cookie/CSRF và Socket.IO farm room; `server/db.js` migration v1–v5; `server/crops.js` transaction harvest; `server/economy.js` dùng wallet/ledger; `server/vac.js` và `server/phase5.js` có offline progress/receipt riêng. `public/js/main.js` điều khiển Canvas, camera, scene farm/market, HUD và input. Chợ hiện có quầy Cô Lan, chưa có nhân vật NPC có hội thoại; chưa có world clock/weather/season/quest.
-- Tích hợp: thêm migration v6 append-only cho quest/receipt; một service world deterministic không cần DB write mỗi frame; một service NPC/quest dùng farm owner, scene và vị trí server; hook harvest **sau xác thực trong cùng transaction**. Client vẽ NPC và hiệu ứng qua Canvas cũ, không thay tốc độ cây/VAC/crafting/giá.
-- Rủi ro chính: migration trên dữ liệu có WAL, retry claim song song, quest bị kẹt nếu nông sản đã bán, waypoint NPC trùng vật thể Phase 5, HUD mobile. Kiểm bằng bản sao database, test service/API và Edge browser trên SQLite tạm.
-- Quyết định: giữ nhánh riêng để dễ review; world day 24 phút thực, weather slot 8 phút thực, mùa 7 ngày thực; tất cả chỉ visual/narrative. Side quest reset theo ngày UTC. Không sửa `PROJECT_MASTER_CONTEXT.md` vì đây là baseline thiết kế cố định theo yêu cầu người dùng; trạng thái thực tế ghi ở progress/handoff.

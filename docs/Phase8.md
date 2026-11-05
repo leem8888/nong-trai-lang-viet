@@ -28,7 +28,7 @@
 - Inventory all scenes and existing interactions: registration/login, first spawn, farm movement/camera, soil/crops, inventory, market/orders, fish/chickens, crafting/building/decorating/expansion, NPC quests, day/night/weather/seasons and farm visiting.
 - Identify the current rendering stack, sprites/Canvas shapes, audio, input handlers, UI overlays, mobile breakpoints, save/load and error handling. Record precise file paths and any missing features; do not assume prior plans were implemented verbatim.
 - Run existing tests and record counts, failures and environment. Launch locally and capture **baseline** screenshots of key screens (desktop and mobile emulation), with viewport sizes and timestamps.
-- Create a short `PHASE8_BASELINE.md` (or section in handoff) describing UX problems, priority, reproducible steps and baseline screenshots. Screenshots should be stored in a sensible repo QA directory only if small and useful; do not commit giant recordings.
+- Create a short `PHASE8_REPORT.md` (or section in handoff) describing UX problems, priority, reproducible steps and baseline screenshots. Screenshots should be stored in a sensible repo QA directory only if small and useful; do not commit giant recordings.
 - Create a safe copy of local test SQLite DB before QA. Use separate test accounts and fixtures; never overwrite actual player data.
 - **Gate decision:** proceed only if the baseline game can be started and main interactions inspected. Otherwise fix boot/blocking regression first and report.
 
@@ -171,7 +171,7 @@ A person who has never seen the game can create an account, enter the farm and c
 
 ### QA evidence
 - Record test environment, exact commit, commands, test accounts (no passwords), screenshots and observed vs expected outcomes.
-- Create `PHASE8_QA_REPORT.md` with scenario-by-scenario PASS/FAIL/BLOCKED, severity, reproduction steps and evidence paths.
+- Create `PHASE8_REPORT.md` with scenario-by-scenario PASS/FAIL/BLOCKED, severity, reproduction steps and evidence paths.
 - For real phone testing not possible in agent environment, explicitly mark **NOT TESTED ON PHYSICAL DEVICE** and provide a concise manual checklist. Do not conflate emulation with real-device QA.
 
 ## P8.9 — Automated regression and data integrity
@@ -209,7 +209,7 @@ At each checkpoint: run relevant tests, inspect browser console/server logs, fix
 - [ ] End-to-end Scenario A/B/C/D results recorded, including failures or blocked items honestly.
 - [ ] All existing automated tests and critical Phase 1–7 regression checks pass.
 - [ ] Existing accounts and SQLite data preserved; migration documented if necessary.
-- [ ] `IMPLEMENTATION_PROGRESS.md`, `HANDOFF.md`, `QA_CHECKLIST.md` and `PHASE8_QA_REPORT.md` updated with evidence.
+- [ ] `IMPLEMENTATION_PROGRESS.md`, `HANDOFF.md`, `QA_CHECKLIST.md` and `PHASE8_REPORT.md` updated with evidence.
 - [ ] No production deployment work, new major gameplay or unapproved engine rewrite added.
 - [ ] Local commit created only after gates pass; final response includes SHA, files changed, tests, screenshots, unresolved risks.
 

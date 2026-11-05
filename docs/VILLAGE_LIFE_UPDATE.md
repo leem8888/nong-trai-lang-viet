@@ -25,7 +25,7 @@ node tests/browser-village-life.mjs qa
 
 Regression: **47/47 PASS**. Các kiểm tra bổ sung bao gồm mua/bán 999, từ chối 1000/số lẻ, rollback khi túi đầy, NPC ở làng và đường đi tránh các gian hàng.
 
-Browser: **14/14 PASS**, Edge headless chạy game và API thật trên database kiểm thử. Kết quả nằm trong [docs/village-life/qa.json](docs/village-life/qa.json). Bao gồm loading với API chậm và API giả lập lỗi 503/thử lại, cổng hai chiều không cần E, tự đi đến cây đa, mua/bán 999 qua UI, kho trống, popup mobile và Escape quay lại danh sách. Lỗi 503 chủ động tạo để kiểm tra phục hồi được xử lý riêng, không tính thành lỗi game. **Không chụp/lưu screenshot theo yêu cầu.**
+Browser: **14/14 PASS**, Edge headless chạy game và API thật trên database kiểm thử. Kết quả nằm trong [docs/village-life/qa.json](village-life/qa.json). Bao gồm loading với API chậm và API giả lập lỗi 503/thử lại, cổng hai chiều không cần E, tự đi đến cây đa, mua/bán 999 qua UI, kho trống, popup mobile và Escape quay lại danh sách. Lỗi 503 chủ động tạo để kiểm tra phục hồi được xử lý riêng, không tính thành lỗi game. **Không chụp/lưu screenshot theo yêu cầu.**
 
 Mẫu 120 frame tại làng: median 16,7 ms, p95 16,7 ms (khoảng 60 FPS trên máy kiểm thử), không ghi nhận lỗi runtime ngoài trường hợp lỗi mạng giả lập. Đây là mẫu ngắn, không phải kết luận hiệu năng trên mọi thiết bị.
 
@@ -33,7 +33,7 @@ Mobile được kiểm tra bằng viewport 390×844 và browser desktop ở 1366
 
 ## Asset và tái tạo
 
-Ảnh mới dùng built-in `image_gen.imagegen`, giữ nguyên PNG nguồn và bản WebP runtime trong `public/assets/`. [Manifest](public/assets/manifest.json) ghi nguồn và SHA-256; [prompt đầy đủ](public/assets/village-life-prompts.json) lưu hai prompt gốc. Không sử dụng ảnh từ game khác.
+Ảnh mới dùng built-in `image_gen.imagegen`, giữ nguyên PNG nguồn và bản WebP runtime trong `public/assets/`. [Manifest](../public/assets/manifest.json) ghi nguồn và SHA-256; [prompt đầy đủ](../public/assets/village-life-prompts.json) lưu hai prompt gốc. Không sử dụng ảnh từ game khác.
 
 ```powershell
 node scripts/build-village-surroundings.mjs

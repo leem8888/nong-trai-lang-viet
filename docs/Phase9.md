@@ -152,8 +152,8 @@ Phải kiểm tra:
 ## PHẦN 6 — DELIVERABLES
 
 Tạo:
-- `FARM_MARKET_VISUAL_OVERHAUL_REPORT.md`
-- `FARM_MARKET_VISUAL_QA.md`
+- `FARM_MARKET_VISUAL_REPORT.md`
+- `FARM_MARKET_VISUAL_REPORT.md`
 - Screenshot trước/sau cho farm và market.
 - Asset manifest cập nhật.
 - Danh sách file thay đổi.

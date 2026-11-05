@@ -1,16 +1,20 @@
-# Tiến độ hiện tại — Phase 8 (2026-11-04)
+# Tiến độ hiện tại — 2026-11-05
 
-Đợt hoàn thiện trên `feature/phase-8-completion` bắt đầu từ `main` commit `d101203` và được đưa lên `main` để review theo yêu cầu. Đã thực hiện UX panel, audio phản hồi, art/animation nhẹ, benchmark 10 phút, hành trình người mới 10 phút, 85 lượt popup và regression 36/36 + browser Phase 1–7. Trạng thái **INCOMPLETE**: zoom browser thật 125% bị chặn bởi công cụ; điện thoại thật chưa thử. Xem `PHASE8_QA_REPORT.md`. Không triển khai deploy.
+Đã push bản sửa tương tác và bố cục nông trại lên `main` tại `d0df3d9b30509cf32916d2a379a687af49666245`. Nhân vật tự đi tới điểm thao tác; bản đồ có nhà chính gọn hơn, hàng rào và nhà hàng xóm đa dạng; đường đi và popup cửa hàng đã được sửa. Bằng chứng kiểm thử và giới hạn ở `CONTEXTUAL_UX_REPORT.md`. Các mục Phase bên dưới là lịch sử, không phản ánh nhánh đang làm hiện tại.
+
+# Tiến độ lịch sử — Phase 8 (2026-11-04)
+
+Đợt hoàn thiện trên `feature/phase-8-completion` bắt đầu từ `main` commit `d101203` và được đưa lên `main` để review theo yêu cầu. Đã thực hiện UX panel, audio phản hồi, art/animation nhẹ, benchmark 10 phút, hành trình người mới 10 phút, 85 lượt popup và regression 36/36 + browser Phase 1–7. Trạng thái **INCOMPLETE**: zoom browser thật 125% bị chặn bởi công cụ; điện thoại thật chưa thử. Xem `PHASE8_REPORT.md`. Không triển khai deploy.
 
 # Tiến độ triển khai (lịch sử)
 
 ## Phase 7 — social farms (môi trường phát triển)
 
-Nhánh `feature/phase-7-social-farms` từ `3b3e174`. Tìm farm public/request, duyệt yêu cầu, mời tài khoản, thăm/di chuyển realtime, biểu cảm, kick, private revoke, giới hạn 8 khách và một avatar/tài khoản đã triển khai. Migration v7 bảo toàn dữ liệu Phase 1–6 trên bản sao backup. Chi tiết test và giới hạn ở `PHASE7_TEST_REPORT.md`; API ở `PHASE7_API_CONTRACT.md`. Chưa push/merge.
+Nhánh `feature/phase-7-social-farms` từ `3b3e174`. Tìm farm public/request, duyệt yêu cầu, mời tài khoản, thăm/di chuyển realtime, biểu cảm, kick, private revoke, giới hạn 8 khách và một avatar/tài khoản đã triển khai. Migration v7 bảo toàn dữ liệu Phase 1–6 trên bản sao backup. Chi tiết test và giới hạn ở `PHASE7_REPORT.md`; API ở `PHASE7_REPORT.md`. Chưa push/merge.
 
 ## Phase 6 — complete ở môi trường phát triển
 
-Gate 0: Phase 5 baseline `86b1859`, `npm test` 29/29, backup SQLite v5 bằng backup API. Triển khai bốn NPC có lịch/hội thoại, năm main quest, hai side quest UTC, đồng hồ thế giới 24 phút/ngày, ba thời tiết và bốn mùa chỉ ảnh hưởng hình ảnh/lời thoại. Migration v6 giữ nguyên dữ liệu cũ. `npm test` 34/34; Edge `qa:phase6` 12/12, `qa:browser` 14/14, `qa:vac` 5/5, `qa:phase5` 13/13. Xem `PHASE6_TEST_REPORT.md` và `PHASE6_HANDOFF.md`. Chưa kiểm tra thiết bị cảm ứng vật lý hoặc tải dài hạn; không có Phase 7.
+Gate 0: Phase 5 baseline `86b1859`, `npm test` 29/29, backup SQLite v5 bằng backup API. Triển khai bốn NPC có lịch/hội thoại, năm main quest, hai side quest UTC, đồng hồ thế giới 24 phút/ngày, ba thời tiết và bốn mùa chỉ ảnh hưởng hình ảnh/lời thoại. Migration v6 giữ nguyên dữ liệu cũ. `npm test` 34/34; Edge `qa:phase6` 12/12, `qa:browser` 14/14, `qa:vac` 5/5, `qa:phase5` 13/13. Xem `PHASE6_REPORT.md` và `PHASE6_REPORT.md`. Chưa kiểm tra thiết bị cảm ứng vật lý hoặc tải dài hạn; không có Phase 7.
 
 ## Phase 5 — complete ở môi trường phát triển
 
@@ -91,9 +95,9 @@ Ghi chú lịch sử Phase 2: starter ở thời điểm đó là v3; **hiện �
 Trước migration v3 đã chạy backup; Phase 1–3 đạt Definition of Done ở môi trường phát triển ngày 2026-11-03. Những số liệu Phase 3 là lịch sử trước Phase 4. Hiện Phase 1–4 đã nghiệm thu ở môi trường phát triển; có thể bắt đầu Phase 5 theo yêu cầu riêng. QA trên thiết bị cảm ứng thật và HTTPS production vẫn chưa thực hiện.
 # Phase 8 — đang triển khai (2026-11-04)
 
-Đã thêm hướng dẫn đầu game có thể bỏ qua/xem lại, phản hồi đang xử lý cho trồng trọt và đăng nhập, menu cùng bố cục mobile, nhân vật local dễ đọc hơn, âm thanh xác nhận tùy chọn (mặc định tắt). Baseline và QA thực tế: xem `PHASE8_BASELINE.md`, `PHASE8_QA_REPORT.md`. Server/gameplay/SQLite không đổi. Các bộ test hiện tại qua, nhưng P8.2–P8.8 còn việc bắt buộc; **chưa hoàn thành Phase 8 và chưa commit**.
+Đã thêm hướng dẫn đầu game có thể bỏ qua/xem lại, phản hồi đang xử lý cho trồng trọt và đăng nhập, menu cùng bố cục mobile, nhân vật local dễ đọc hơn, âm thanh xác nhận tùy chọn (mặc định tắt). Baseline và QA thực tế: xem `PHASE8_REPORT.md`, `PHASE8_REPORT.md`. Server/gameplay/SQLite không đổi. Các bộ test hiện tại qua, nhưng P8.2–P8.8 còn việc bắt buộc; **chưa hoàn thành Phase 8 và chưa commit**.
 
 # Contextual UX + isometric remake (2026-11-04)
 
-Nhánh `feature/contextual-interaction-ux` đang làm, **chưa hoàn thành Definition of Done và chưa commit**. Menu ngữ cảnh, kéo nhiều ô, UI đồng bộ, phép chiếu isometric farm/chợ và sprite gốc đã triển khai; 40 test tự động và các regression browser Phase 1–7 đang PASS. Hành trình hai tài khoản 20 phút đã PASS. Kiểm tra zoom browser thật, occlusion toàn bộ vật thể, art trang trí và benchmark dài hạn còn mở. Trạng thái chi tiết: `ISOMETRIC_REMAKE_PROGRESS.md` và `ISOMETRIC_REMAKE_QA_REPORT.md`. Các mục bên dưới là lịch sử phase trước.
+Nhánh `feature/contextual-interaction-ux` đang làm, **chưa hoàn thành Definition of Done và chưa commit**. Menu ngữ cảnh, kéo nhiều ô, UI đồng bộ, phép chiếu isometric farm/chợ và sprite gốc đã triển khai; 40 test tự động và các regression browser Phase 1–7 đang PASS. Hành trình hai tài khoản 20 phút đã PASS. Kiểm tra zoom browser thật, occlusion toàn bộ vật thể, art trang trí và benchmark dài hạn còn mở. Trạng thái chi tiết: `ISOMETRIC_REMAKE_REPORT.md` và `ISOMETRIC_REMAKE_REPORT.md`. Các mục bên dưới là lịch sử phase trước.
 

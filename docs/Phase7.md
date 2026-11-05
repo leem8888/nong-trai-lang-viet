@@ -16,11 +16,11 @@ Phase 7 chuyển game từ các nông trại độc lập sang trải nghiệm *
 ## 1. GATE 0 — Bắt buộc trước khi sửa code
 
 1. Checkout nhánh mới `feature/phase-7-social-farms` từ đúng `main` và ghi lại SHA thực tế. Không mặc định rằng HEAD luôn là `3b3e174`; nếu khác, báo cáo diff.
-2. Đọc `PROJECT_MASTER_CONTEXT.md`, `GDD.md`, `README.md`, `HANDOFF.md`, `IMPLEMENTATION_PROGRESS.md`, `PHASE6_HANDOFF.md`, `PHASE6_TEST_REPORT.md`, `QA_CHECKLIST.md`, `package.json`.
+2. Đọc `PROJECT_MASTER_CONTEXT.md`, `GDD.md`, `README.md`, `HANDOFF.md`, `IMPLEMENTATION_PROGRESS.md`, `PHASE6_REPORT.md`, `PHASE6_REPORT.md`, `QA_CHECKLIST.md`, `package.json`.
 3. Đọc thực tế các module auth/session, Socket.IO, farm ownership, scene/collision, player state, database migrations, API security, frontend render/input và test. Không suy đoán tên hàm/API từ tài liệu này.
 4. Chạy `npm test`, `npm run qa:phase6`, `npm run qa:browser`, `npm run qa:vac`, `npm run qa:phase5` khi môi trường hỗ trợ. Lưu kết quả trước khi sửa. Nếu browser không chạy được, đánh dấu NOT RUN, không tự coi PASS.
 5. Backup SQLite bằng backup API, bao gồm dữ liệu WAL; kiểm tra `PRAGMA integrity_check`, `foreign_key_check`, và phục hồi thử trên bản sao. Không đưa DB người chơi hoặc backup có dữ liệu thật lên Git.
-6. Tạo `PHASE7_PRECHECK.md`: sơ đồ kiến trúc, danh sách file dự kiến sửa, API/socket events thực tế, rủi ro bảo mật, số liệu test baseline và rollback.
+6. Tạo `PHASE7_REPORT.md`: sơ đồ kiến trúc, danh sách file dự kiến sửa, API/socket events thực tế, rủi ro bảo mật, số liệu test baseline và rollback.
 7. Nếu baseline fail, phân loại lỗi có sẵn; không sửa lan man hoặc triển khai khi có blocker dữ liệu/bảo mật.
 
 ## 2. Thiết kế quyền sở hữu và trạng thái
@@ -94,7 +94,7 @@ Phase 7 chuyển game từ các nông trại độc lập sang trải nghiệm *
 - Ràng buộc UNIQUE/FK/INDEX, expiry và trạng thái request; dùng UTC server, không dựa vào đồng hồ client.
 - Migrate farm cũ với privacy `private` và không mất dữ liệu.
 - API REST phù hợp kiến trúc hiện hữu, ví dụ `/api/social/search`, `/api/social/settings`, `/api/social/requests`, `/api/social/invites`; tên endpoint cuối cùng do AI chọn sau khi audit. Mọi write cần auth, CSRF, validation, rate limit, ownership check.
-- Socket events ví dụ `social:visit:join`, `social:visit:leave`, `social:presence`, `social:move`, `social:emote`, `social:kick`; định nghĩa payload schema, ack, lỗi, replay policy trong `PHASE7_API_CONTRACT.md`. Không coi đây là tên event đã tồn tại.
+- Socket events ví dụ `social:visit:join`, `social:visit:leave`, `social:presence`, `social:move`, `social:emote`, `social:kick`; định nghĩa payload schema, ack, lỗi, replay policy trong `PHASE7_REPORT.md`. Không coi đây là tên event đã tồn tại.
 - Các hành động state-changing dùng idempotency/request IDs khi cần; thao tác DB nhiều bảng phải atomic.
 - Không sử dụng SQL string interpolation với dữ liệu user; giới hạn input length và escape text render.
 - Cấm sửa trực tiếp `wallets`, `inventory_items`, `farm_crops`, VAC, crafting hay quest rewards thông qua social APIs.
@@ -155,7 +155,7 @@ Sau mỗi checkpoint: chạy test liên quan, sửa lỗi trước khi đi tiế
 - [ ] `npm test` và toàn bộ regression Phase 1–6 PASS.
 - [ ] Browser QA Phase 7 chạy thật và PASS trên desktop/mobile viewport.
 - [ ] Không có lỗi console nghiêm trọng, lộ dữ liệu riêng, hoặc giảm hiệu năng đáng kể.
-- [ ] Tài liệu `PHASE7_PRECHECK.md`, `PHASE7_API_CONTRACT.md`, `PHASE7_TEST_REPORT.md`, `PHASE7_HANDOFF.md`, `IMPLEMENTATION_PROGRESS.md`, `README.md`, `GDD.md` được cập nhật phù hợp.
+- [ ] Tài liệu `PHASE7_REPORT.md`, `PHASE7_REPORT.md`, `PHASE7_REPORT.md`, `PHASE7_REPORT.md`, `IMPLEMENTATION_PROGRESS.md`, `README.md`, `GDD.md` được cập nhật phù hợp.
 - [ ] Có commit SHA, file diff summary, lệnh test, số PASS/FAIL/NOT RUN, giới hạn chưa giải quyết, hướng rollback.
 
 ## 13. Hướng dẫn bàn giao và rollback

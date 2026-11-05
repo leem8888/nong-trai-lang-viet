@@ -1,8 +1,12 @@
-# Nghiệm thu Phase 1–5 — 2026-11-03
+# QA cập nhật — 2026-11-05
+
+Bản `main` tại `d0df3d9b30509cf32916d2a379a687af49666245`: `npm test` 53/53; browser contextual 14/14, browser chung 14/14, VAC 5/5, Phase 5 13/13, Phase 6 12/12, Phase 7 multiplayer 4/4. Đã kiểm tra thao tác từ xa tự đi tới, di chuyển quanh công trình, cửa hàng không đổi kích thước giữa ba nhóm và ảnh farm desktop/mobile. Xem `CONTEXTUAL_UX_REPORT.md`; các bảng bên dưới là nghiệm thu lịch sử tại thời điểm ghi.
+
+# Nghiệm thu lịch sử Phase 1–5 — 2026-11-03
 
 ## Phase 6 — 2026-11-03
 
-PASS ở môi trường phát triển: `npm test` 34/34; Edge `qa:phase6` 12/12, `qa:browser` 14/14, `qa:vac` 5/5, `qa:phase5` 13/13. Bốn NPC, năm main + hai side quests, đồng hồ/ngày đêm, thời tiết/mùa, auth/CSRF/ownership/replay, migration dữ liệu v5→v6 và mobile/console đã kiểm tra. Bằng chứng chi tiết và giới hạn ở `PHASE6_TEST_REPORT.md`. Thiết bị cảm ứng vật lý và chạy tải dài hạn: NOT VERIFIED.
+PASS ở môi trường phát triển: `npm test` 34/34; Edge `qa:phase6` 12/12, `qa:browser` 14/14, `qa:vac` 5/5, `qa:phase5` 13/13. Bốn NPC, năm main + hai side quests, đồng hồ/ngày đêm, thời tiết/mùa, auth/CSRF/ownership/replay, migration dữ liệu v5→v6 và mobile/console đã kiểm tra. Bằng chứng chi tiết và giới hạn ở `PHASE6_REPORT.md`. Thiết bị cảm ứng vật lý và chạy tải dài hạn: NOT VERIFIED.
 
 Trạng thái: **PASS ở môi trường phát triển**. Đã kiểm tra bằng Microsoft Edge 156 headless qua Playwright, Node.js 20.19.6, SQLite tạm. Sau Phase 4: `npm test` **23 pass, 0 fail**; `npm run qa:browser` **14 nhóm PASS**; `npm run qa:vac` **5 nhóm PASS**. Script browser và ảnh kiểm tra ở `tests/browser-qa.mjs`, `tests/browser-vac-qa.mjs` và `.qa/`.
 
@@ -77,7 +81,7 @@ Trạng thái: **PASS các kịch bản đã chạy**. Node 20.19.6, Microsoft E
 Giới hạn: art Canvas là hình tạm; chưa kiểm thử máy cảm ứng vật lý/production HTTPS. Browser test dùng thao tác điều hướng nhanh bằng cập nhật vị trí trong SQLite thử; đường đi/collision nền được regression Phase 1 kiểm tra. FPS khoảng 60 chỉ là phép đo 1,2 giây với 100 đường gạch trên máy QA, chưa chứng minh hiệu năng trên thiết bị yếu hoặc nhiều trăm vật; giá, thời gian và biên lợi nhuận cần playtest người thật. Preview là chỉ báo cục bộ; quyết định đặt cuối cùng thuộc server.
 # Phase 8 QA bổ sung — 2026-11-04
 
-Cập nhật nhánh `feature/phase-8-completion`: 10 phút hành trình người mới qua; 17 popup trên 5 viewport qua; mạng chậm/offline qua; unit 36/36 và browser Phase 1–7 đều qua. Browser zoom thật 125% chưa kiểm được do công cụ Windows UI lỗi; xem `PHASE8_QA_REPORT.md`. Không đánh dấu Phase 8 hoàn thành.
+Cập nhật nhánh `feature/phase-8-completion`: 10 phút hành trình người mới qua; 17 popup trên 5 viewport qua; mạng chậm/offline qua; unit 36/36 và browser Phase 1–7 đều qua. Browser zoom thật 125% chưa kiểm được do công cụ Windows UI lỗi; xem `PHASE8_REPORT.md`. Không đánh dấu Phase 8 hoàn thành.
 
-Xem `PHASE8_QA_REPORT.md` cho lệnh, ảnh trước/sau, FPS và trạng thái từng kịch bản. Đã chạy unit 36/36 và browser Phase 1–7 trên Edge headless; CSS zoom 125% không tràn ngang. Chưa thử điện thoại vật lý, browser zoom thật, mạng chậm hoặc mọi popup trên cả 5 kích thước.
+Xem `PHASE8_REPORT.md` cho lệnh, ảnh trước/sau, FPS và trạng thái từng kịch bản. Đã chạy unit 36/36 và browser Phase 1–7 trên Edge headless; CSS zoom 125% không tràn ngang. Chưa thử điện thoại vật lý, browser zoom thật, mạng chậm hoặc mọi popup trên cả 5 kích thước.
 

@@ -163,7 +163,7 @@ Use a real browser automation tool when available. If not available, state the l
 ## 12. Deliverables and Git policy
 
 - Implementation in existing client/server modules; tests for new interaction and security cases.
-- `CONTEXTUAL_UX_QA_REPORT.md`: screenshots, reproducible scenarios, pass/fail, performance notes and known issues.
+- `CONTEXTUAL_UX_REPORT.md`: screenshots, reproducible scenarios, pass/fail, performance notes and known issues.
 - Update `README.md` controls, `HANDOFF.md`, `IMPLEMENTATION_PROGRESS.md` and relevant QA checklist.
 - Commit locally when all required checks pass. **Do not push or merge without user authorization.**
 - If tests or browser tools are unavailable, say so; do not fabricate screenshots, measurements or completion status.

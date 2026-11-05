@@ -26,7 +26,7 @@ Template `data/starter.sqlite` được cập nhật lên schema 9 và đã xác
 - Tiêu đề, ví và nút nhóm nằm trong header sticky, giữ lại khi cuộn danh sách.
 - Lỗi ảnh gốc: `mature-crops.webp` có **6 cột**, nhưng pipeline cũ chia thành **5**, dẫn đến sai cây và lẫn mảnh ảnh bên cạnh. Một số ô của sheet sản phẩm cũng có mảnh nhỏ từ ô liền kề.
 - Đã xuất **33 ảnh WebP riêng 128×128**, dùng đúng khung nguồn, loại mảnh alpha nhỏ rời rạc và thêm padding trong suốt. Thẻ sản phẩm dùng thẻ `img` thay vì một cửa sổ SVG nhìn vào cả atlas. Atlas tương thích cũ cũng được sửa lại.
-- Ảnh gốc không bị ghi đè; [manifest](public/assets/items-v11/manifest.json) lưu khung nguồn và pipeline. Không tạo thêm ảnh bằng AI cho đợt sửa này.
+- Ảnh gốc không bị ghi đè; [manifest](../public/assets/items-v11/manifest.json) lưu khung nguồn và pipeline. Không tạo thêm ảnh bằng AI cho đợt sửa này.
 
 ## NPC
 
@@ -46,4 +46,4 @@ node tests/browser-plots-shop.mjs qa
 node tests/browser-village-life.mjs qa
 ```
 
-Kết quả mới: [docs/plots-shop/qa.json](docs/plots-shop/qa.json). Chỉ cần tải lại game bằng **Ctrl+F5** để nạp giao diện mới; server local đã được khởi động lại.
+Kết quả mới: [docs/plots-shop/qa.json](plots-shop/qa.json). Chỉ cần tải lại game bằng **Ctrl+F5** để nạp giao diện mới; server local đã được khởi động lại.
