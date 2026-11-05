@@ -52,9 +52,10 @@ try {
     await c.screenshot({ path: '.qa/phase7-mobile.png' });
     assert.equal(await c.evaluate(() => document.documentElement.scrollWidth), 390);
     await a.locator('#socialButton').click(); await a.locator('#socialPrivacy').selectOption('private'); await c.locator('#visitBanner').waitFor({ state: 'hidden' });
+    await Promise.all([a.goto('about:blank'),b.goto('about:blank'),c.goto('about:blank')]);
     await new Promise(resolve => io.close(resolve)); if (server.listening) await new Promise(resolve => server.close(resolve));
     ({ server, io } = createApp(db)); await new Promise(resolve => server.listen(port, '127.0.0.1', resolve));
-    await a.reload(); await a.locator('#game:not(.hidden)').waitFor(); await a.locator('#socialButton').click();
+    await a.goto(url); await a.locator('#game:not(.hidden)').waitFor(); await a.locator('#socialButton').click();
     assert.equal(await a.locator('#socialPrivacy').inputValue(), 'private');
     assert.equal(await a.locator('[data-social=kick]').count(), 0);
     assert.deepEqual(errors, []);

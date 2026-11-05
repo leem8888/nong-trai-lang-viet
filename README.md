@@ -1,5 +1,7 @@
 # Nông Trại Làng Việt
 
+> Đợt Terrain/Land/Fence/Gate và Living Farm hiện **INCOMPLETE** và được chia sẻ để review theo yêu cầu. Xem [bàn giao hiện tại](docs/HANDOFF.md), [QA địa hình](docs/TERRAIN_LAND_FENCE_QA_REPORT.md) và [QA ao/sân gà](docs/LIVING_FARM_VISUAL_QA.md) trước khi đánh giá hoặc phát hành.
+
 Game nông trại web 2.5D isometric đang được hoàn thiện. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm VAC, Phase 5 thêm chế biến/xây dựng, Phase 6 thêm NPC, nhiệm vụ và nhịp sống làng. Xem [tiến độ remake](docs/ISOMETRIC_REMAKE_REPORT.md) trước khi đánh giá trạng thái nghiệm thu đồ họa.
 
 Phase 7 trên `main`: nút **Thăm farm** cho tìm nông trại mở cửa hoặc cần duyệt. Chủ đặt quyền `Riêng tư`, `Cần duyệt` hoặc `Công khai`, xem yêu cầu, mời người chơi bằng tên tài khoản và mời khách rời đi. Khách được đi dạo, vẫy tay và về farm mình; không được sửa ruộng, kho, ví, công trình hay nhận thưởng lúc đang thăm. Mỗi farm tối đa 8 khách hiện diện. `npm run qa:phase7` chạy Edge/Playwright với 3 tài khoản và SQLite tạm; xem [báo cáo Phase 7 gồm QA và API](docs/PHASE7_REPORT.md).

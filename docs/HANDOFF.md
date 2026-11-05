@@ -1,5 +1,9 @@
 # Handoff hiện tại — 2026-11-05
 
+**Living Farm update:** Ao và sân gà được triển khai cùng Terrain/Land/Fence/Gate và chia sẻ trên `main` để review theo yêu cầu. Trạng thái chung **INCOMPLETE**. Test Node 55/55, browser chung 14/14, contextual 16/16 (thả/cho ăn/thu hoạch VAC trực tiếp), VAC 5/5, Phase 5 13/13, Phase 6 12/12, Phase 7 4/4. Ảnh, chuỗi frame và benchmark 10 phút tại `D:\farm-terrain-qa\living`. Xem `LIVING_FARM_IMPLEMENTATION_REPORT.md`, `LIVING_FARM_VISUAL_QA.md`, `REFERENCE_CODE_AUDIT.md`, `PATHFINDING_COMPARISON.md`. So sánh Terrain trước/sau đã chạy lại cùng giờ/thời tiết; zoom Edge 125% thật còn chưa xác minh. Các số liệu cũ bên dưới là lịch sử.
+
+Đợt CP0–CP5 địa hình/đất/rào/cổng bắt đầu từ baseline `7021933` và vẫn **INCOMPLETE**. Ảnh QA ở `D:\farm-terrain-qa`; ảnh trước/sau đã chụp lại cùng giờ/thời tiết, còn zoom Edge 125% thật chưa xác minh. Các số liệu test cũ nằm trong `TERRAIN_LAND_FENCE_QA_REPORT.md`; không coi phần lịch sử dưới đây là trạng thái Git hiện tại.
+
 Nhánh `main` tại commit `d0df3d9b30509cf32916d2a379a687af49666245` đã có tương tác tự đi tới điểm hành động, bố cục nhà chính mới, hàng rào, ba kiểu nhà hàng xóm, sửa kẹt đường đi và kích thước cửa hàng cố định. Xem `CONTEXTUAL_UX_REPORT.md` để biết chi tiết và giới hạn. Hồi quy: `npm test` 53/53; browser chung 14/14; contextual 14/14; VAC 5/5; Phase 5 13/13; Phase 6 12/12; Phase 7 multiplayer 4/4. Phần dưới ghi lại handoff lịch sử và không mô tả trạng thái Git hiện tại.
 
 # Handoff lịch sử — Phase 8 (2026-11-04)

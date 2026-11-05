@@ -3,6 +3,7 @@ import { RECIPES, BUILDINGS, DECORATIONS, EXPANSIONS, TILE_SIZE, footprint, unlo
 import { inventory, addItem, spendItem } from './crops.js';
 import { balance, debit } from './economy.js';
 import { world, validPosition } from './world.js';
+import {livingLayout} from '../public/js/shared/livingLayout.js';
 
 const reqId=/^[a-f0-9-]{36}$/;
 const exact={start:['action','farmId','requestId','buildingId','recipeId','quantity'],claim:['action','farmId','requestId','jobId'],place_building:['action','farmId','requestId','definitionId','x','y','rotation'],move_building:['action','farmId','requestId','id','x','y','rotation'],store_building:['action','farmId','requestId','id'],place_decoration:['action','farmId','requestId','definitionId','x','y','rotation'],move_decoration:['action','farmId','requestId','id','x','y','rotation'],store_decoration:['action','farmId','requestId','id'],unlock:['action','farmId','requestId','level']};
@@ -42,6 +43,15 @@ function validPlace(db,farmId,definitionId,x,y,rotation,kind,skipType,skipId){
   const route=rect(14,10,4,9),field=rect(2,15,9,4);
   if(overlaps(area,route)||overlaps(area,field))throw Error('Vị trí chặn lối đi hoặc ruộng.');
   for(const obstacle of world.obstacles)if(overlaps(area,obstacle))throw Error('Vị trí có vật cản.');
+  // A new placement may occupy only the pond/yard extension. Recompute the
+  // layout with that placement so old buildable tiles retain their use.
+  const objects=placed(db,farmId);
+  const proposed={definitionId,x,y,rotation};
+  const buildings=objects.buildings.filter(v=>skipType!=='building'||v.id!==skipId);
+  const decorations=objects.decorations.filter(v=>skipType!=='decoration'||v.id!==skipId);
+  (kind==='building'?buildings:decorations).push(proposed);
+  const layout=livingLayout(buildings,decorations);
+  if(overlaps(area,layout.pond)||layout.yard&&overlaps(area,layout.yard))throw Error('Vị trí dành cho ao cá hoặc sân gà.');
   const solids=solidObjects(db,farmId,skipType,skipId);
   for(const other of solids)if(overlaps(area,other))throw Error('Vị trí đã có vật thể.');
   if(kind==='building')for(const o of placed(db,farmId).decorations)if(overlaps(area,rect(o.x,o.y,1,1)))throw Error('Vị trí đã có vật trang trí.');

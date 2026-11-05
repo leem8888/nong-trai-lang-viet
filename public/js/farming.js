@@ -71,9 +71,17 @@ export class FarmingUI {
   draw(ctx) {
     if(!this.state)return;
     const time=this.serverNow();
+    if(this.isometric&&this.terrainArt?.naturalWidth){
+      if(this.meadowSource!==this.terrainArt){const image=this.terrainArt,c=document.createElement('canvas');c.width=c.height=128;c.getContext('2d').drawImage(image,image.naturalWidth*.75,image.naturalHeight*.25,image.naturalWidth*.25,image.naturalHeight*.25,0,0,128,128);this.meadowPattern=ctx.createPattern(c,'repeat');this.meadowSource=image;}
+      const owned=this.state.tiles.filter(tile=>!tile.locked);ctx.save();ctx.beginPath();for(const tile of owned){const r=tileRect(tile.x,tile.y);ctx.rect(r.x-6,r.y-6,FIELD.stepX+12,FIELD.stepY+12);}ctx.fillStyle='#aa925e';ctx.globalAlpha=.32;ctx.shadowColor='#3a5135';ctx.shadowBlur=12;ctx.fill();ctx.clip();ctx.shadowBlur=0;ctx.globalAlpha=.72;ctx.fillStyle=this.meadowPattern;ctx.fillRect(FIELD.x-10,FIELD.y-10,FIELD.columns*FIELD.stepX+20,FIELD.rows*FIELD.stepY+20);ctx.restore();
+    }
     for(const tile of this.state.tiles) {
       const r=tileRect(tile.x,tile.y);
-      if(tile.locked){ctx.save();ctx.strokeStyle='#d6dca070';ctx.setLineDash([4,4]);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);if(tile.y*FIELD.columns+tile.x===this.state.plots?.unlocked){ctx.fillStyle='#f5e5a9';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.fillText('+',r.x+r.w/2,r.y+r.h/2+6);}ctx.restore();continue;}
+      if(tile.locked){if(this.isometric){if(tile.y*FIELD.columns+tile.x===this.state.plots?.unlocked){ctx.save();ctx.fillStyle='#fff2c4';ctx.strokeStyle='#5d7548';ctx.lineWidth=2;ctx.beginPath();ctx.arc(r.x+r.w/2,r.y+r.h/2,9,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#486143';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('+',r.x+r.w/2,r.y+r.h/2+5);ctx.restore();}continue;}ctx.save();ctx.strokeStyle='#d6dca070';ctx.setLineDash([4,4]);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);if(tile.y*FIELD.columns+tile.x===this.state.plots?.unlocked){ctx.fillStyle='#f5e5a9';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.fillText('+',r.x+r.w/2,r.y+r.h/2+6);}ctx.restore();continue;}
+      if(this.isometric&&this.soilArt?.naturalWidth&&this.upright){
+        if(tile.state!=='EMPTY'||tile.crop){const image=this.soilArt,cw=image.naturalWidth/4,ch=image.naturalHeight/2,variant=(tile.x*3+tile.y*5)%4,wet=tile.state==='WATERED'||Boolean(tile.crop?.wateredAt);this.upright(ctx,r.x+r.w/2,r.y+r.h,image,76,56,[variant*cw,wet?ch:0,cw,ch]);}
+        continue;
+      }
       ctx.fillStyle=tile.state==='EMPTY'?'#795b3b':tile.state==='WATERED'?'#4d4034':'#644d35';
       ctx.fillRect(r.x,r.y,r.w,r.h);
       ctx.strokeStyle='#a78957';ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);

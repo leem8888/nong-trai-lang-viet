@@ -10,3 +10,4 @@ import './isometric.test.js';
 import './adminSeed.test.js';
 import './villageLife.test.js';
 import './plots.test.js';
+import './livingPathfinding.test.js';

@@ -3,6 +3,30 @@
   "packaging": "Generated original PNG artwork was converted to local WebP at quality 0.88 in Edge; transparent pixels are retained. Browser-ready WebP assets total 5.3 MB versus 26.4 MB of the source PNGs.",
   "assets": [
     {
+      "path": "/assets/farm-surroundings-roads-v1.svg",
+      "role": "Transparent village roads over the cached terrain texture outside the farm",
+      "source": "Original SVG paths authored in this repository on 2026-11-05",
+      "license": "Project-owned original work"
+    },
+    {
+      "path": "/assets/terrain-atlas-v1.png",
+      "role": "Sixteen authored grass, path and soil terrain textures, cached into the farm ground",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-05",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/soil-beds-v1.png",
+      "role": "Dry and watered raised crop bed sprites",
+      "source": "Original image generated for this project with OpenAI image generation on 2026-11-05",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
+      "path": "/assets/farm-fence-gate-v1.png",
+      "role": "Modular bamboo fence, field survey stakes and farm gate sprites",
+      "source": "Original image generated and background edited for this project with OpenAI image generation on 2026-11-05",
+      "license": "Project use under the applicable OpenAI output terms"
+    },
+    {
       "path": "/assets/village-welcome.webp",
       "role": "Login and farm creation background",
       "source": "Original image generated for this project with OpenAI image generation on 2026-11-04",
@@ -669,6 +693,14 @@
   "neighborHomes": {
     "path": "/assets/neighbor-homes.png",
     "source": "Original three-house sprite sheet generated for this project with OpenAI image generation on 2026-11-05",
+    "license": "Project use under the applicable OpenAI output terms"
+  },
+  "livingFarm": {
+    "pond": "/assets/living-pond-v1.png",
+    "emptyCoop": "/assets/living-coop-empty-v1.png",
+    "coopYard": "/assets/living-coop-yard-v1.png",
+    "animals": "/assets/living-animals-v1.png",
+    "source": "Original artwork generated for this project with OpenAI image generation on 2026-11-05; no Sân Mây artwork reused",
     "license": "Project use under the applicable OpenAI output terms"
   }
 }

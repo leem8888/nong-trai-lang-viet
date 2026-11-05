@@ -1,5 +1,7 @@
 import { CROPS, CROP_IDS, FIELD, tileAt, tileRect, cropProgress } from './shared/crops.js';
 import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from './shared/phase5.js';
+import { VAC_POINTS, FISH, CHICKEN } from './shared/vac.js';
+import { livingLayout } from './shared/livingLayout.js';
 
 const $ = id => document.getElementById(id);
 const labels = { till:'Cuốc đất', plant:'Gieo hạt', water:'Tưới', harvest:'Thu hoạch' };
@@ -28,8 +30,8 @@ export function validSoilActions(tile,inventory,now) {
 }
 
 export class ContextualInteraction {
-  constructor({canvas,camera,farming,vac,phase5,input,notice,error,isOwner,isFarm,canReach,npcAt,onNpc,openPanel,onPan}) {
-    Object.assign(this,{canvas,camera,farming,vac,phase5,input,notice,error,isOwner,isFarm,canReach,npcAt,onNpc,openPanel,onPan});
+  constructor({canvas,camera,farming,vac,phase5,input,notice,error,isOwner,isFarm,canReach,npcAt,onNpc,openPanel,onPan,approachObject}) {
+    Object.assign(this,{canvas,camera,farming,vac,phase5,input,notice,error,isOwner,isFarm,canReach,npcAt,onNpc,openPanel,onPan,approachObject});
     this.mode='idle'; this.target=null; this.action=null; this.pointer=null; this.preview=new Map(); this.farming.preview=this.preview; this.seed='mustard'; this.touches=new Set();
     this.menu=$('contextMenu'); this.status=$('contextStatus');
     this.controller=new AbortController();const opts={signal:this.controller.signal};
@@ -49,8 +51,10 @@ export class ContextualInteraction {
       const size=footprint(catalog[row.definitionId],row.rotation),x=row.x*TILE_SIZE,y=row.y*TILE_SIZE;
       if(point.x>=x&&point.x<x+size.w*TILE_SIZE&&point.y>=y&&point.y<y+size.h*TILE_SIZE)return {kind,row,point:{x:x+size.w*TILE_SIZE/2,y:y+size.h*TILE_SIZE/2}};
     }
-    if(Math.hypot(point.x-990,point.y-780)<80)return {kind:'pond',point:{x:990,y:780}};
-    if(Math.hypot(point.x-1010,point.y-425)<80)return {kind:'coop',point:{x:1010,y:425}};
+    const layout=livingLayout(this.phase5.state?.buildings,this.phase5.state?.decorations),p=layout.pond;
+    if(point.x>=p.x-15&&point.x<=p.x+p.w+15&&point.y>=p.y-15&&point.y<=p.y+p.h+15)return {kind:'pond',point:VAC_POINTS.pond};
+    const yard=layout.yard;
+    if((point.x>=990&&point.x<=1300&&point.y>=350&&point.y<=490)||(yard&&point.x>=yard.x&&point.x<=yard.x+yard.w&&point.y>=yard.y&&point.y<=yard.y+yard.h))return {kind:'coop',point:VAC_POINTS.coop};
     return null;
   }
   down(point,e) {
@@ -90,7 +94,9 @@ export class ContextualInteraction {
   }
   releasePointer(){const p=this.pointer;this.pointer=null;if(p&&this.canvas.hasPointerCapture(p.id))this.canvas.releasePointerCapture(p.id);}
   addTiles(tiles){for(const tile of tiles){if(this.preview.size>=25)break;if(!this.preview.has(key(tile)))this.preview.set(key(tile),tile);}}
-  open(target){this.cancel();this.target=target;this.mode='contextMenuOpen';this.renderMenu();this.menu.classList.remove('hidden');this.placeMenu();this.menu.querySelector('button,select')?.focus();}
+  async open(target){this.cancel();this.target=target;const generation=this.generation;
+    if(this.isOwner()&&['pond','coop'].includes(target.kind)&&this.approachObject){this.mode='approaching';try{await this.approachObject(target.point,86);}catch(error){if(generation===this.generation){this.error(error.message);this.cancel();}return;}if(generation!==this.generation||!this.isFarm())return;}
+    this.mode='contextMenuOpen';this.renderMenu();this.menu.classList.remove('hidden');this.placeMenu();this.menu.querySelector('button,select')?.focus();}
   closeMenu(){this.menu.classList.add('hidden');if(this.mode==='contextMenuOpen')this.mode='idle';}
   cancel(){this.generation=(this.generation||0)+1;if(this.pointer?.timer)clearTimeout(this.pointer.timer);this.releasePointer();this.preview.clear();this.closeMenu();this.mode='idle';this.action=null;this.target=null;this.status.classList.add('hidden');this.touches.clear();}
   sceneChanged(){this.cancel();}
@@ -99,7 +105,7 @@ export class ContextualInteraction {
       html=`<strong>${target.npc.name}</strong><small>${target.npc.role||'Người làng'}</small><button data-context-npc="${target.npc.id}">Trò chuyện</button>`;
     }else if(target.kind==='soil'){
       const tile=this.farming.tile(target.tile.x,target.tile.y);const actions=validSoilActions(tile,this.farming.state?.inventory||[],this.farming.serverNow());
-      if(tile?.locked){const p=this.farming.state.plots;this.menu.innerHTML=`<strong>Ô đất chưa mở</strong><small>${owner?`Ô tiếp theo: ${p?.nextPrice?.toLocaleString('vi-VN')||0} Đồng Làng`:'Chỉ chủ farm được mở ô.'}</small>${owner?'<button data-context-open="plots">Mở rộng ruộng</button>':''}`;return;}
+      if(tile?.locked){const p=this.farming.state.plots,next=target.tile.y*FIELD.columns+target.tile.x===p?.unlocked,canBuy=owner&&next&&p?.nextPrice!==null;this.menu.innerHTML=`<strong>Ô đất chưa mua</strong><small>${!owner?'Chỉ chủ farm được mở ô.':next?`Ô tiếp theo · 48×48 · ${p.nextPrice.toLocaleString('vi-VN')} Đồng Làng`:'Cần mở các ô trước theo thứ tự.'}</small>${canBuy?'<button data-context-open="plots">Mua ô này</button>':''}`;return;}
       const crop=tile?.crop,progress=crop?cropProgress(crop,this.farming.serverNow()):null;
       html=`<strong>Ô đất ${target.tile.x+1}, ${target.tile.y+1}</strong><small>${crop?`${CROPS[crop.cropId].name} · ${Math.round(progress.progress*100)}%${progress.remainingMs?` · còn ${Math.ceil(progress.remainingMs/60000)} phút`:' · đã chín'}`:tile?.state==='EMPTY'?'Đất trống':tile?.state==='WATERED'?'Đã tưới':'Đã cuốc'}</small>`;
       if(owner&&actions.includes('plant'))html+=`<label>Hạt giống<select id="contextSeed" aria-label="Chọn hạt giống">${CROP_IDS.map(id=>`<option value="${id}" ${id===this.seed?'selected':''}>${CROPS[id].name} (${this.farming.state.inventory.find(i=>i.id===CROPS[id].seed)?.quantity||0})</option>`).join('')}</select></label>`;
@@ -110,6 +116,8 @@ export class ContextualInteraction {
       const canAct=owner;
       html=`<strong>${pond?'Ao cá':'Chuồng gà'}</strong><small>${s?`${pond?s.fish.length:s.chickens.length}/${s.capacity} con`:'Đang tải…'}</small>`;
       if(canAct&&s){
+        if(pond&&s.fish.length<s.capacity){const fishId=Object.keys(FISH).find(id=>this.vac.count(FISH[id].fingerling)>0);if(fishId)html+=`<button data-context-vac="stock_fish" data-fish-id="${fishId}">Thả ${FISH[fishId].name}</button>`;}
+        if(!pond&&s.chickens.length<s.capacity&&this.vac.count(CHICKEN.item)>0)html+='<button data-context-vac="add_chicken">Nuôi thêm gà con</button>';
         if(pond){const ready=s.fish.find(row=>!row.remainingMs),hungry=s.fish.find(row=>row.remainingMs&&row.fedAt===null);if(ready)html+=`<button data-context-vac="harvest_fish" data-entity-id="${ready.id}">Thu hoạch cá</button>`;if(hungry)html+=`<button data-context-vac="feed_fish" data-entity-id="${hungry.id}" ${(this.vac.count('fish_feed')||0)?'':'disabled title="Hết cám cá"'}>Cho cá ăn${this.vac.count('fish_feed')?'':' · Hết cám'}</button>`;}
         else{const eggs=s.chickens.reduce((n,row)=>n+row.eggsReady,0),hungry=s.chickens.find(row=>row.status==='WAITING_FOR_FEED');if(eggs)html+=`<button data-context-vac="collect_eggs">Nhặt trứng (${eggs})</button>`;if(hungry)html+=`<button data-context-vac="feed_chicken" data-entity-id="${hungry.id}" ${(this.vac.count('chicken_feed')||0)?'':'disabled title="Hết thức ăn gà"'}>Cho gà ăn${this.vac.count('chicken_feed')?'':' · Hết thức ăn'}</button>`;}
       }
@@ -119,7 +127,7 @@ export class ContextualInteraction {
   }
   placeMenu(){if(this.menu.classList.contains('hidden')||!this.target)return;const p=this.target.point,rect=this.menu.getBoundingClientRect(),screen=this.camera.toScreen(p.x,p.y);let x=screen.x,y=screen.y;const margin=12;x=Math.max(margin,Math.min(innerWidth-rect.width-margin,x-rect.width/2));y=y+28+rect.height<innerHeight-margin?y+28:y-rect.height-28;this.menu.style.left=`${x}px`;this.menu.style.top=`${Math.max(margin,Math.min(innerHeight-rect.height-margin,y))}px`;}
   arm(action){if(!this.isOwner()||!this.isFarm())return;this.closeMenu();this.action=action;this.mode='actionArmed';this.renderStatus();}
-  menuClick(e){const action=e.target.closest('[data-context-action]')?.dataset.contextAction,open=e.target.closest('[data-context-open]')?.dataset.contextOpen,vac=e.target.closest('[data-context-vac]'),npc=e.target.closest('[data-context-npc]');if(action){if(e.target.disabled)return;const tile=this.target?.tile;this.seed=$('contextSeed')?.value||this.seed;this.arm(action);if(tile)this.submit([tile]);}if(open){this.closeMenu();this.mode='idle';if(open==='plots')this.farming.showPlots();else if(open==='pond'||open==='coop')this.vac.open(open);else this.phase5.open(open);}if(vac&&!vac.disabled){this.vac.current=this.target.kind;this.closeMenu();this.mode='idle';this.vac.act({action:vac.dataset.contextVac,...(vac.dataset.entityId?{entityId:Number(vac.dataset.entityId)}:{})},vac);}if(npc&&!npc.disabled){const id=npc.dataset.contextNpc;this.closeMenu();this.mode='idle';this.onNpc?.(id);}}
+  menuClick(e){const action=e.target.closest('[data-context-action]')?.dataset.contextAction,open=e.target.closest('[data-context-open]')?.dataset.contextOpen,vac=e.target.closest('[data-context-vac]'),npc=e.target.closest('[data-context-npc]');if(action){if(e.target.disabled)return;const tile=this.target?.tile;this.seed=$('contextSeed')?.value||this.seed;this.arm(action);if(tile)this.submit([tile]);}if(open){this.closeMenu();this.mode='idle';if(open==='plots')this.farming.showPlots();else if(open==='pond'||open==='coop')this.vac.open(open);else this.phase5.open(open);}if(vac&&!vac.disabled){this.vac.current=this.target.kind;this.closeMenu();this.mode='idle';this.vac.act({action:vac.dataset.contextVac,...(vac.dataset.entityId?{entityId:Number(vac.dataset.entityId)}:{}),...(vac.dataset.fishId?{fishId:vac.dataset.fishId,quantity:1}:{}),...(vac.dataset.contextVac==='add_chicken'?{quantity:1}:{})},vac);}if(npc&&!npc.disabled){const id=npc.dataset.contextNpc;this.closeMenu();this.mode='idle';this.onNpc?.(id);}}
   renderStatus(text){this.status.classList.toggle('hidden',this.mode==='idle'||this.mode==='contextMenuOpen');$('contextInstruction').textContent=text||`${labels[this.action]} · ${this.mode==='dragging'?`${this.preview.size} ô đã chọn`: 'chạm một ô hoặc giữ và kéo qua nhiều ô'} · Esc để hủy`;}
   async submit(tiles){if(this.mode==='submitting'||!tiles.length)return;this.mode='submitting';this.renderStatus(`Đang xử lý 0/${tiles.length} ô…`);let ok=0,skipped=0,failed=0,firstError='';const action=this.action,seed=this.seed,generation=this.generation;
     for(const [index,tile] of tiles.entries()){

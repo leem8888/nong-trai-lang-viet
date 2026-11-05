@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { now } from './time.js';
 import { seedFarmInventory } from './crops.js';
+import { validPosition } from './world.js';
 
 export function farmFor(db, userId) {
   return db.prepare('SELECT f.*, u.username AS owner_name FROM farms f JOIN users u ON u.id=f.owner_id WHERE f.owner_id=?').get(userId);
@@ -8,7 +9,16 @@ export function farmFor(db, userId) {
 export function snapshot(db, userId) {
   const farm = farmFor(db, userId);
   if (!farm) return null;
-  return { farm, player: db.prepare('SELECT x,y,direction,scene FROM player_states WHERE user_id=?').get(userId), objects: db.prepare('SELECT object_id,state FROM farm_objects WHERE farm_id=?').all(farm.id) };
+  const player=db.prepare('SELECT x,y,direction,scene FROM player_states WHERE user_id=?').get(userId);
+  if(player?.scene==='farm'&&!validPosition(player.x,player.y,'farm',db,farm.id)){
+    let safe=null;
+    for(let radius=24;radius<=240&&!safe;radius+=24)for(let i=0;i<16;i++){
+      const angle=i*Math.PI/8,x=player.x+Math.cos(angle)*radius,y=player.y+Math.sin(angle)*radius;
+      if(validPosition(x,y,'farm',db,farm.id)){safe={x,y};break;}
+    }
+    if(safe){db.prepare('UPDATE player_states SET x=?,y=?,updated_at=? WHERE user_id=?').run(safe.x,safe.y,now(),userId);player.x=safe.x;player.y=safe.y;}
+  }
+  return { farm, player, objects: db.prepare('SELECT object_id,state FROM farm_objects WHERE farm_id=?').all(farm.id) };
 }
 export function createFarm(db, userId, name) {
   const existing = farmFor(db, userId);

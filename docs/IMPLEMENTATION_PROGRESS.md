@@ -1,5 +1,9 @@
 # Tiến độ hiện tại — 2026-11-05
 
+**Living Farm + Terrain:** INCOMPLETE, bắt đầu từ `main` baseline `7021933` và được chia sẻ để review theo yêu cầu. Đã có asset ao/sân gà/cá/gà mới; server VAC vẫn giữ schema và kinh tế cũ. Test 55/55, browser chung 14/14, contextual 16/16, VAC 5/5, Phase 5 13/13, Phase 6 12/12, Phase 7 4/4. Đã đo 10 phút và chụp chuỗi frame cá/gà. Các gate còn lại ghi tại `LIVING_FARM_IMPLEMENTATION_REPORT.md` và `TERRAIN_LAND_FENCE_QA_REPORT.md`; không deploy.
+
+CP0–CP5 địa hình/đất/rào/cổng: đã triển khai atlas/luống/rào/cổng và chạy regression; ảnh trước/sau đã chụp lại cùng giờ/thời tiết/camera. Vẫn **INCOMPLETE** do chưa xác minh zoom Edge 125% thật. Báo cáo và đường dẫn ảnh: `TERRAIN_LAND_FENCE_QA_REPORT.md`; baseline: `TERRAIN_LAND_FENCE_BASELINE.md`.
+
 Đã push bản sửa tương tác và bố cục nông trại lên `main` tại `d0df3d9b30509cf32916d2a379a687af49666245`. Nhân vật tự đi tới điểm thao tác; bản đồ có nhà chính gọn hơn, hàng rào và nhà hàng xóm đa dạng; đường đi và popup cửa hàng đã được sửa. Bằng chứng kiểm thử và giới hạn ở `CONTEXTUAL_UX_REPORT.md`. Các mục Phase bên dưới là lịch sử, không phản ánh nhánh đang làm hiện tại.
 
 # Tiến độ lịch sử — Phase 8 (2026-11-04)

@@ -41,10 +41,11 @@ try{
   });
   await run('pond stock, feed, offline growth and harvest',async()=>{
     await relocate(page,user,600,690,'market');await page.keyboard.press('e');await page.locator('#farmHud:not(.hidden)').waitFor();
-    addItem(db,farm.id,'soy',1);await relocate(page,user,990,780);await page.keyboard.press('e');await page.locator('[data-vac-form=stock_fish]').waitFor();
+    addItem(db,farm.id,'soy',1);await relocate(page,user,850,770);await page.keyboard.press('e');await page.locator('[data-vac-form=stock_fish]').waitFor();
     await page.locator('[data-vac-form=convert] button').click();await page.getByText('Đã đổi',{exact:false}).first().waitFor();await page.waitForTimeout(150);
     await page.locator('[data-vac-form=stock_fish] button').click();await page.getByText('Đã thả',{exact:false}).first().waitFor();await page.waitForTimeout(150);
     await page.locator('[data-vac-action=feed_fish]').click();await page.getByText('Đã cho cá ăn',{exact:false}).first().waitFor();
+    await page.screenshot({path:'.qa/living-feed-fish.png'});
     let state=await page.evaluate(async()=>await(await fetch('/api/vac')).json());assert.equal(state.pond.fish.length,1);
     await page.goto('about:blank');db.prepare('UPDATE pond_fish SET stocked_at=stocked_at-?,ready_at=ready_at-? WHERE farm_id=?').run(3*3600000,3*3600000,farm.id);
     await page.goto(url);await page.locator('#game:not(.hidden)').waitFor();await page.locator('#status').getByText('Đã kết nối').waitFor();

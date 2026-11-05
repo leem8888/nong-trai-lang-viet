@@ -1,8 +1,8 @@
 import { FISH, VAC_RECIPES } from './shared/vac.js';
 
 export class VacUI {
-  constructor(api,openPanel,showError,showNotice,refreshInventory){
-    this.api=api;this.openPanel=openPanel;this.showError=showError;this.showNotice=showNotice;this.refreshInventory=refreshInventory;
+  constructor(api,openPanel,showError,showNotice,refreshInventory,onSuccess=()=>{}){
+    this.api=api;this.openPanel=openPanel;this.showError=showError;this.showNotice=showNotice;this.refreshInventory=refreshInventory;this.onSuccess=onSuccess;
     this.state=null;this.current=null;this.pending=null;this.flashUntil=0;
     const panel=document.getElementById('panel');
     panel.addEventListener('submit',event=>{
@@ -43,12 +43,13 @@ export class VacUI {
       <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label><button type="submit">Đổi thức ăn</button></form>`;
   }
   async act(intent,button){if(!this.state||button.disabled)return;
+    const panelWasOpen=!document.getElementById('panel').classList.contains('hidden');
     const fingerprint=JSON.stringify({...intent,farmId:this.state.farmId});
     if(this.pending?.fingerprint!==fingerprint)this.pending={fingerprint,requestId:crypto.randomUUID()};
     button.disabled=true;const label=button.textContent;button.textContent='Đang xử lý…';
-    try{const result=await this.api('/vac/action',{method:'POST',body:JSON.stringify({...intent,farmId:this.state.farmId,requestId:this.pending.requestId})});
-      this.pending=null;this.setState(result.state);this.flashUntil=performance.now()+600;
-      try{await this.refreshInventory();}catch{}this.showNotice(result.message,intent.action);this.render();
+    try{const before=this.state,result=await this.api('/vac/action',{method:'POST',body:JSON.stringify({...intent,farmId:this.state.farmId,requestId:this.pending.requestId})});
+      this.pending=null;this.setState(result.state);this.onSuccess(intent,result,before);this.flashUntil=performance.now()+600;
+      try{await this.refreshInventory();}catch{}this.showNotice(result.message,intent.action);if(panelWasOpen)this.render();
     }catch(error){this.showError(error.message);}finally{button.disabled=false;button.textContent=label;}
   }
   draw(ctx){const t=document.body.classList.contains('low-effects')?0:performance.now()/1000;

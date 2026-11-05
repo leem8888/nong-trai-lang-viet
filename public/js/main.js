@@ -1,4 +1,7 @@
 import {drawLife,villageScenery} from './villageScenery.js';
+import {FarmTerrain} from './terrain.js';
+import {LivingFarmVisual} from './livingVisual.js';
+import {drawFarmFence,fieldBoundaryLayers} from './farmFence.js';
 import {findPath} from './systems/Pathfinding.js';
 import {depth,sceneryLayers,paintLayers,drawNightLights,decorationLayers,drawDecorationGround} from './scenery.js';
 ﻿import { GameLoop } from './core/GameLoop.js';
@@ -16,20 +19,24 @@ import { VillageUI } from './village.js';
 import { SocialUI } from './social.js';
 import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from './shared/phase5.js';
 import { VAC_POINTS } from './shared/vac.js';
+import {livingLayout,yardObstacles,POND_OLD} from './shared/livingLayout.js';
 import { MARKET_WORLD, MARKET_POINTS, FARM_GATE, VILLAGE_PLACES } from './shared/marketMap.js';
 import { createOnboarding } from './onboarding.js';
 import { audioSettings, saveAudio, cue } from './audio.js';
 import { ContextualInteraction } from './contextual.js';
 
 const $=id=>document.getElementById(id);
+const livingVisual=new LivingFarmVisual();
 let csrf='', farm=null, socket=null, loop=null, player=null, input=null, camera=null, collision=null, farming=null, marketUi=null, vacUi=null, phase5Ui=null, villageUi=null, socialUi=null, contextual=null, lamp=0, scene='farm', visiting=null, selfId=null;
 const remoteMembers=new Map();let ownEmote=null;
+const farmTerrain=new FarmTerrain();
 const farmWorld={width:1440,height:1024,margin:{left:0,right:0,top:0,bottom:0},obstacles:[
 {x:540,y:90,w:340,h:260},{x:50,y:75,w:1340,h:15},{x:50,y:920,w:1340,h:15},{x:50,y:75,w:15,h:860},{x:1375,y:75,w:15,h:860},
 {x:520,y:720,w:45,h:35},{x:1060,y:610,w:40,h:35},{x:215,y:460,w:70,h:25},{x:700,y:514,w:25,h:15},{x:925,y:575,w:20,h:20},
 {x:1010,y:710,w:280,h:145},{x:1050,y:360,w:230,h:130}]};
-const art = Object.fromEntries([...CROP_IDS.map(id=>['mature_'+id,'items-v11/'+id+'.webp']),['neighbors','neighbor-homes.png'],['villageLife','village-life-v10.webp'],['surroundings','surroundings-v10.svg'],['marketLifeGround','market-life-ground-v10.svg'],['decorations','decorations-v9.webp'],['farmGround','farm-ground-v9.svg'],['marketGround','market-ground-v9.svg'],['garden','garden-v9.webp'],['props','rural-props-v9.webp'],['bird','bird-v9.svg'],['butterfly','butterfly-v9.svg'],['seedV9','market-seed-v9.webp'],['buyerV9','market-buyer-v9.webp'],['ordersV9','market-orders-v9.webp'],['house','farmhouse.webp'],['pond','lotus-pond.webp'],['coop','chicken-coop.webp'],['walk','farmer-walk.webp'],['actions','farmer-actions.webp'],['tree','mango-tree.webp'],['stall','seed-stall.webp'],['npcs','village-npcs.webp'],['stages','rice-stages.webp'],['crops','mature-crops.webp'],['soy','soy-crop.webp'],['production','production-buildings.webp'],['animals','farm-animals.webp']].map(([key,file])=>{const image=new Image();image.file=file;image.onerror=()=>{image.failed=true;console.warn(`Không tải được asset ${file}`);};return [key,image];}));
-async function loadArt(keys){keys=[...new Set([...keys,...(keys.includes('stall')?['marketLifeGround','seedV9','buyerV9','ordersV9']:['farmGround','decorations',...CROP_IDS.map(id=>'mature_'+id)]),'garden','props','butterfly','tree','bird','villageLife','surroundings','neighbors'])];await Promise.all(keys.map(async key=>{const image=art[key];if(!image.src)image.src=`/assets/${image.file}`;try{await image.decode();if(!image.bitmapPromise&&!(['walk','actions','npcs','stages','crops','production','animals'].includes(key))){image.bitmapPromise=(async()=>{const ground=key.endsWith('Ground')||key==='decorations'||key==='villageLife'||key==='surroundings'||key==='neighbors',width=key==='surroundings'?1600:ground?image.naturalWidth:Math.min(image.naturalWidth,1024);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=Math.round(image.naturalHeight*width/image.naturalWidth);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.bitmap=await createImageBitmap(canvas);})().catch(()=>{});}if(image.bitmapPromise)await image.bitmapPromise;}catch{image.failed=true;}}));}
+const art = Object.fromEntries([...CROP_IDS.map(id=>['mature_'+id,'items-v11/'+id+'.webp']),['terrain','terrain-atlas-v1.png'],['soilBeds','soil-beds-v1.png'],['farmFence','farm-fence-gate-v1.png'],['farmSurroundings','farm-surroundings-roads-v1.svg'],['neighbors','neighbor-homes.png'],['villageLife','village-life-v10.webp'],['surroundings','surroundings-v10.svg'],['marketLifeGround','market-life-ground-v10.svg'],['decorations','decorations-v9.webp'],['farmGround','farm-ground-v9.svg'],['marketGround','market-ground-v9.svg'],['garden','garden-v9.webp'],['props','rural-props-v9.webp'],['bird','bird-v9.svg'],['butterfly','butterfly-v9.svg'],['seedV9','market-seed-v9.webp'],['buyerV9','market-buyer-v9.webp'],['ordersV9','market-orders-v9.webp'],['house','farmhouse.webp'],['pond','lotus-pond.webp'],['coop','chicken-coop.webp'],['walk','farmer-walk.webp'],['actions','farmer-actions.webp'],['tree','mango-tree.webp'],['stall','seed-stall.webp'],['npcs','village-npcs.webp'],['stages','rice-stages.webp'],['crops','mature-crops.webp'],['soy','soy-crop.webp'],['production','production-buildings.webp'],['animals','farm-animals.webp']].map(([key,file])=>{const image=new Image();image.file=file;image.onerror=()=>{image.failed=true;console.warn(`Không tải được asset ${file}`);};return [key,image];}));
+for(const [key,file] of [['livingPond','living-pond-v1.png'],['livingCoop','living-coop-empty-v1.png'],['coopYard','living-coop-yard-v1.png'],['livingAnimals','living-animals-v1.png']]){const image=new Image();image.file=file;image.onerror=()=>{image.failed=true;console.warn(`Không tải được asset ${file}`);};art[key]=image;}
+async function loadArt(keys){keys=[...new Set([...keys,...(keys.includes('stall')?['marketLifeGround','seedV9','buyerV9','ordersV9']:['farmGround','terrain','soilBeds','farmFence','farmSurroundings','decorations',...CROP_IDS.map(id=>'mature_'+id)]),'garden','props','butterfly','tree','bird','villageLife','surroundings','neighbors'])];await Promise.all(keys.map(async key=>{const image=art[key];if(!image.src)image.src=`/assets/${image.file}`;try{await image.decode();if(!image.bitmapPromise&&!(['walk','actions','npcs','stages','crops','production','animals'].includes(key))){image.bitmapPromise=(async()=>{const ground=key.endsWith('Ground')||key==='decorations'||key==='villageLife'||key==='surroundings'||key==='neighbors'||key==='terrain',width=key==='surroundings'?1600:ground?image.naturalWidth:Math.min(image.naturalWidth,1024);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=Math.round(image.naturalHeight*width/image.naturalWidth);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.bitmap=await createImageBitmap(canvas);})().catch(()=>{});}if(image.bitmapPromise)await image.bitmapPromise;}catch{image.failed=true;}}));}
 function upright(ctx,x,y,image,width,height,source,mirror=false){if(!image.naturalWidth&&!image.failed)return;ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);if(mirror)ctx.scale(-1,1);if(image.failed){ctx.fillStyle='#78543d';ctx.fillRect(-width/2,-height,width,height);ctx.strokeStyle='#f1d89f';ctx.strokeRect(-width/2,-height,width,height);}else if(source)ctx.drawImage(image.bitmap||image,...source.map((v,i)=>image.bitmap?v*(i%2?image.bitmap.height/image.naturalHeight:image.bitmap.width/image.naturalWidth):v),-width/2,-height,width,height);else ctx.drawImage(image.bitmap||image,-width/2,-height,width,height);ctx.restore();}
 const objects={board:{x:343,y:700,label:'Bảng thông tin'},door:{x:712,y:385,label:'Cửa nhà'},lamp:{x:935,y:586,label:'Đèn sân'},farmGate:{...FARM_GATE,label:'Ra chợ làng'},...VAC_POINTS};
 async function api(url,options={}) { const destination=actionDestination(url,options);if(destination)await approach(destination.point,destination.range);const response=await fetch('/api'+url,{...options,headers:{'content-type':'application/json','x-csrf-token':csrf,...options.headers}}); const data=await response.json(); if(!response.ok) throw Object.assign(Error(data.error),{status:response.status}); return data; }
@@ -52,7 +59,7 @@ let panelOpener=null;
 let onboarding=null;
 function panel(html){contextual?.cancel();if($('panel').classList.contains('hidden'))panelOpener=document.activeElement;$('panelContent').innerHTML=html;$('panel').classList.remove('hidden');if(input)input.active=false;$('closePanel').focus();}
 function closePanel(){$('panel').classList.add('hidden');if(input)input.active=true;if(panelOpener?.isConnected)panelOpener.focus();panelOpener=null;}
-function syncPhase5Collision(){if(!phase5Ui?.state||scene!=='farm'||!collision)return;const s=phase5Ui.state;const dynamic=[...s.buildings.map(o=>{const z=footprint(BUILDINGS[o.definitionId],o.rotation);return {x:o.x*TILE_SIZE,y:o.y*TILE_SIZE,w:z.w*TILE_SIZE,h:z.h*TILE_SIZE};}),...s.decorations.filter(o=>DECORATIONS[o.definitionId]?.blocking).map(o=>({x:o.x*TILE_SIZE,y:o.y*TILE_SIZE,w:TILE_SIZE,h:TILE_SIZE}))];collision.obstacles=[...new CollisionSystem(farmWorld).obstacles,...dynamic];}
+function syncPhase5Collision(){if(!phase5Ui?.state||scene!=='farm'||!collision)return;const s=phase5Ui.state,layout=livingLayout(s.buildings,s.decorations);const dynamic=[...s.buildings.map(o=>{const z=footprint(BUILDINGS[o.definitionId],o.rotation);return {x:o.x*TILE_SIZE,y:o.y*TILE_SIZE,w:z.w*TILE_SIZE,h:z.h*TILE_SIZE};}),...s.decorations.filter(o=>DECORATIONS[o.definitionId]?.blocking).map(o=>({x:o.x*TILE_SIZE,y:o.y*TILE_SIZE,w:TILE_SIZE,h:TILE_SIZE})),...(layout.pond===POND_OLD?[]:[layout.pond]),...yardObstacles(layout.yard)];collision.obstacles=[...new CollisionSystem(farmWorld).obstacles,...dynamic];}
 $('closePanel').onclick=closePanel;
 window.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('panel').classList.contains('hidden')){event.preventDefault();closePanel();}});
 window.addEventListener('keydown',event=>{if($('panel').classList.contains('hidden')||/INPUT|TEXTAREA|SELECT/.test(event.target.tagName))return;if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(event.key.toLowerCase()))closePanel();});
@@ -77,7 +84,7 @@ if(id==='lamp')socket.emit('farm:interact',{objectId:'lamp'},result=>{if(!result
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function applyScene(next,x,y,direction='down'){
 contextual?.sceneChanged();if(phase5Ui)phase5Ui.mode=null;scene=next;const world=scene==='market'?MARKET_WORLD:farmWorld;
-void loadArt(scene==='market'?['stall','walk','npcs']:['house','pond','coop','walk','npcs','tree','stages','crops','soy','production','animals','actions']);
+void loadArt(scene==='market'?['stall','walk','npcs']:['house','pond','coop','walk','npcs','tree','stages','crops','soy','production','animals','actions','livingPond','livingCoop','coopYard','livingAnimals']);
 collision=new CollisionSystem(world);camera.isometric=true;camera.setWorld(world);camera.resize(innerWidth,innerHeight);player.place(x,y,direction);camera.snap(x,y);input?.clear();
 syncPhase5Collision();
 $('farmHud').classList.toggle('hidden',scene==='market');$('villagePlaces')?.classList.toggle('hidden',scene!=='market');$('marketHud').classList.toggle('hidden',scene!=='market');
@@ -109,14 +116,14 @@ function visitFarm(result){visiting=result.farm;closePanel();applyScene('farm',r
 async function returnHome(sendLeave=true){if(sendLeave&&socket?.connected)await new Promise(resolve=>socket.emit('social:leave',{},resolve));visiting=null;remoteMembers.clear();$('visitBanner').classList.add('hidden');for(const id of ['balance','historyButton','questsButton'])$(id).classList.remove('hidden');$('farmName').textContent=farm.name;closePanel();try{const state=await api('/farm');applyScene(state.player.scene||'farm',state.player.x,state.player.y,state.player.direction);lamp=state.objects.find(o=>o.object_id==='lamp')?.state||0;farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch(error){showError(error.message);}}
 function drawRemote(ctx){for(const m of remoteMembers.values()){m.drawX+=(m.x-m.drawX)*.25;m.drawY+=(m.y-m.drawY)*.25;const moving=Math.hypot(m.x-m.drawX,m.y-m.drawY)>1;drawAvatar(ctx,m.drawX,m.drawY,m.direction,moving?Math.sin(performance.now()/90)*4:0,m.name,m.role==='owner'?'#9b633e':'#567462');if(m.emote&&Date.now()-m.emote.at<2600){ctx.font='24px system-ui';ctx.textAlign='center';ctx.fillText({wave:'👋',hello:'🌾',thanks:'🙏',happy:'😊'}[m.emote.name],m.drawX,m.drawY-85);ctx.textAlign='start';}}}
 async function enter(existing){if(!existing){screen('create');return;}screen('loading');farm=existing;const state=await api('/farm');lamp=state.objects.find(o=>o.object_id==='lamp')?.state||0;
-$('farmName').textContent=farm.name;const me=await api('/me');selfId=me.user.id;$('userName').textContent=me.user.username;await loadArt((state.player.scene||'farm')==='market'?['stall','walk','npcs']:['house','pond','coop','walk','npcs','tree','stages','crops','soy']);
+$('farmName').textContent=farm.name;const me=await api('/me');selfId=me.user.id;$('userName').textContent=me.user.username;await loadArt((state.player.scene||'farm')==='market'?['stall','walk','npcs']:['house','pond','coop','walk','npcs','tree','stages','crops','soy','livingPond','livingCoop','coopYard','livingAnimals','animals']);
 onboarding=createOnboarding(selfId);
 const places=document.createElement('nav');places.id='villagePlaces';places.setAttribute('aria-label','Khu vực làng');for(const place of Object.values(VILLAGE_PLACES)){const button=document.createElement('button');button.textContent=place.label;button.onclick=()=>{closePanel();walkTo(place);};places.append(button);}document.getElementById('game').append(places);
 const canvas=$('canvas'),ctx=canvas.getContext('2d');player=new Player();player.place(state.player.x,state.player.y,state.player.direction);scene=state.player.scene||'farm';camera=new Camera(scene==='market'?MARKET_WORLD:farmWorld);camera.snap(player.x,player.y);
 camera.isometric=true;camera.snap(player.x,player.y);
 farming=new FarmingUI(api,showError,showNotice,panel);farming.setState(await api('/farming'));
 marketUi=new MarketUI(api,panel,showError,showNotice,async()=>farming.setState(await api('/farming')));marketUi.setState(await api('/market'));
-vacUi=new VacUI(api,panel,showError,showNotice,async()=>{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));});vacUi.setState(await api('/vac'));
+vacUi=new VacUI(api,panel,showError,showNotice,async()=>{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));},(intent,result,before)=>livingVisual.onAction(intent,result,before));vacUi.setState(await api('/vac'));
  phase5Ui=new Phase5UI(api,panel,closePanel,showNotice,showError,async()=>{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));});phase5Ui.refreshCollision=syncPhase5Collision;await phase5Ui.load();
  villageUi=new VillageUI(api,panel,showNotice,showError,async()=>{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));});await villageUi.load();
  const landLevel=document.createElement('span'),questProgress=document.createElement('span');landLevel.id='landLevel';questProgress.id='questProgress';landLevel.title='Cấp mở rộng đất hiện có';questProgress.title='Tiến độ năm nhiệm vụ chính, không phải điểm kinh nghiệm';$('worldHud').append(landLevel,questProgress);
@@ -139,7 +146,7 @@ utilityButton.onclick=()=>{const show=utilityMenu.classList.toggle('hidden')===f
 utilityMenu.addEventListener('click',e=>{if(e.target.closest('button')){utilityMenu.classList.add('hidden');utilityButton.setAttribute('aria-expanded','false');}});
 const contextMenu=document.createElement('div');contextMenu.id='contextMenu';contextMenu.className='hidden';contextMenu.setAttribute('role','dialog');contextMenu.setAttribute('aria-label','Thao tác ngữ cảnh');document.getElementById('game').append(contextMenu);
 const contextStatus=document.createElement('div');contextStatus.id='contextStatus';contextStatus.className='hidden';contextStatus.setAttribute('role','status');contextStatus.innerHTML='<span id="contextInstruction"></span><button id="contextDone" type="button">Xong</button><button id="contextCancel" type="button">Hủy</button>';document.getElementById('game').append(contextStatus);
-contextual=new ContextualInteraction({canvas,camera,farming,vac:vacUi,phase5:phase5Ui,input,notice:showNotice,error:showError,isOwner:()=>!visiting,isFarm:()=>scene==='farm',canReach:(point,max)=>Math.hypot(player.x-point.x,player.y-point.y)<=max,npcAt:point=>visiting?null:villageUi.npcs(scene).find(n=>Math.hypot(point.x-n.x,point.y-n.y)<38),onNpc:id=>interact(`npc:${id}`),openPanel:panel,onPan:point=>{input.target=point;}});
+contextual=new ContextualInteraction({canvas,camera,farming,vac:vacUi,phase5:phase5Ui,input,notice:showNotice,error:showError,isOwner:()=>!visiting,isFarm:()=>scene==='farm',canReach:(point,max)=>Math.hypot(player.x-point.x,player.y-point.y)<=max,npcAt:point=>visiting?null:villageUi.npcs(scene).find(n=>Math.hypot(point.x-n.x,point.y-n.y)<38),onNpc:id=>interact(`npc:${id}`),openPanel:panel,onPan:point=>{input.target=point;},approachObject:approach});
 input.onManual=()=>{if(contextual?.mode==='contextMenuOpen')contextual.cancel();};
 applyScene(scene,player.x,player.y,player.direction);
 if(Date.now()-new Date(farm.created_at).getTime()<10*60*1000)onboarding.start();
@@ -165,13 +172,14 @@ socket.on('farm:object',o=>{if(!visiting&&o.objectId==='lamp')lamp=o.state;});so
 setInterval(async()=>{if(document.visibilityState==='visible'&&!visiting)try{farming.setState(await api('/farming'));marketUi.setState(await api('/market'));vacUi.setState(await api('/vac'));await phase5Ui.load();await villageUi.load();}catch{}},30000);
 let saveAt=0,hudAt=0,moveSeq=0;loop=new GameLoop((dt)=>{input.active=$('panel').classList.contains('hidden')||autoApproaching>0;player.update(dt,input.vector(player),collision);camera.update(player,dt);autoTravel();const near=nearest();$('prompt').style.display=near?'block':'none';if(near)$('prompt').textContent=['farmGate','returnGate'].includes(near.id)?`Đi qua cổng · ${near.label}`:`E · ${near.label}`;const time=performance.now();if(time-hudAt>1000){hudAt=time;villageUi.updateHud();}if(socket.connected&&time-saveAt>180){saveAt=time;const seq=++moveSeq;socket.emit('player:move',{x:player.x,y:player.y,direction:player.direction,seq},r=>{if(seq===moveSeq&&r&&!r.ok&&r.player)player.place(r.player.x,r.player.y);});}},()=>draw(ctx));screen('game');loop.start();clientReady=true;if(socket.connected&&joinedReady)$('status').textContent='Đã kết nối';}
 function drawIsometricFarm(ctx){
-  drawSurroundings(ctx);
-  if(art.farmGround.complete&&art.farmGround.naturalWidth)ctx.drawImage(art.farmGround.bitmap||art.farmGround,0,0,farmWorld.width,farmWorld.height);
-  drawFarmFence(ctx);
+  if(!farmTerrain.drawSurroundings(ctx,art.terrain))drawSurroundings(ctx);
+  if(art.farmSurroundings?.naturalWidth)ctx.drawImage(art.farmSurroundings.bitmap||art.farmSurroundings,-1100,-1000,4300,3600);
+  if(!farmTerrain.draw(ctx,art.terrain)&&art.farmGround.complete&&art.farmGround.naturalWidth)ctx.drawImage(art.farmGround.bitmap||art.farmGround,0,0,farmWorld.width,farmWorld.height);
+  drawFarmFence(ctx,art.farmFence,upright);
   phase5Ui?.drawGround(ctx,camera);
   villageUi?.drawSeason(ctx,camera);
   drawDecorationGround(ctx,phase5Ui?.state?.decorations||[],art.decorations,upright);
-  farming.isometric=true;farming.draw(ctx);contextual?.draw(ctx);
+  farming.isometric=true;farming.soilArt=art.soilBeds;farming.terrainArt=art.terrain;farming.upright=upright;farming.draw(ctx);contextual?.draw(ctx);
   const cropLayers=[];
   for(const tile of farming.state?.tiles||[]){if(!tile.crop)continue;const rect=tileRect(tile.x,tile.y),growth=cropProgress(tile.crop,farming.serverNow()),x=rect.x+rect.w/2,y=rect.y+rect.h/2;
     cropLayers.push({y:depth(x,y),draw:()=>{
@@ -179,34 +187,32 @@ function drawIsometricFarm(ctx){
     else{const index=growth.stage==='GROWING'?1:0;upright(ctx,x,y,art.stages,growth.stage==='SEED'?36:52,growth.stage==='SEED'?26:43,[index*543,0,543,724]);}
     }});
   }
+  const livingLayoutNow=livingVisual.layout(phase5Ui?.state);
   const layers=[...cropLayers,
-    {y:depth(1165,480),draw:()=>upright(ctx,1165,480,art.coop,280,187)},
+    {y:depth(1165,480),draw:()=>livingLayoutNow.yard?upright(ctx,1280,500,art.coopYard,460,290):upright(ctx,1165,480,art.livingCoop,280,187)},
     {y:depth(710,350),draw:()=>upright(ctx,710,350,art.house,390,260)},
     {y:depth(550,740),draw:()=>upright(ctx,550,740,art.tree,115,115)},
-    {y:depth(1080,630),draw:()=>drawLife(ctx,1080,630,'shade',140,140,art,upright)},
-    {y:depth(1150,785),draw:()=>upright(ctx,1150,785,art.pond,335,223)},
+    {y:depth(1320,630),draw:()=>drawLife(ctx,1320,630,'shade',140,140,art,upright)},
+    livingVisual.pondLayer(ctx,art,upright,livingLayoutNow),
     {y:depth(player.x,player.y),draw:()=>drawIsoAvatar(ctx,player.x,player.y,player.direction,player.state==='walk', $('userName').textContent,actionEffect)}
   ];
   for(const building of phase5Ui?.state?.buildings||[]){const size=footprint(BUILDINGS[building.definitionId],building.rotation),x=(building.x+size.w/2)*TILE_SIZE,y=(building.y+size.h)*TILE_SIZE,index={mill:0,kitchen:1,rack:2}[building.definitionId]??0;layers.push({y:depth(x,y),draw:()=>upright(ctx,x,y,art.production,130,108,[index*724,0,724,724])});}
-  const t=performance.now()/700;if(vacUi?.state?.coop?.chickens?.length)layers.push({y:depth(1140,510),draw:()=>upright(ctx,1140+(villageUi?.reduced?0:Math.sin(t)*11),510,art.animals,42,43,[0,0,887,887])});
-  if(vacUi?.state?.pond?.fish?.length)layers.push({y:depth(1145,804),draw:()=>{ctx.save();ctx.globalAlpha=.77;upright(ctx,1145+(villageUi?.reduced?0:Math.sin(t*.7)*25),804,art.animals,31,23,[887,0,887,887]);ctx.restore();}});
+  layers.push(...livingVisual.fishLayers(ctx,art,upright,vacUi?.state,livingLayoutNow,villageUi?.reduced));
+  layers.push(...livingVisual.chickenLayers(ctx,art,upright,vacUi?.state,livingLayoutNow,villageUi?.reduced,player));
+  const egg= livingVisual.eggLayer(ctx,vacUi?.state,livingLayoutNow);if(egg)layers.push(egg);
+  layers.push(...livingVisual.effectLayers(ctx,art,upright,vacUi?.state,livingLayoutNow));
   for(const npc of villageUi?.npcs(scene)||[])layers.push({y:depth(npc.x,npc.y),draw:()=>drawIsoNpc(ctx,npc)});
   for(const member of remoteMembers.values()){member.drawX+=(member.x-member.drawX)*.25;member.drawY+=(member.y-member.drawY)*.25;layers.push({y:depth(member.drawX,member.drawY),draw:()=>drawIsoAvatar(ctx,member.drawX,member.drawY,member.direction,Math.hypot(member.x-member.drawX,member.y-member.drawY)>1,member.name)});}
   const occupied=[...(phase5Ui?.state?.buildings||[]),...(phase5Ui?.state?.decorations||[])].map(b=>{const z=footprint(BUILDINGS[b.definitionId]||DECORATIONS[b.definitionId],b.rotation);return {x:b.x*TILE_SIZE,y:b.y*TILE_SIZE,w:z.w*TILE_SIZE,h:z.h*TILE_SIZE};});
-  occupied.push({x:FIELD.x,y:FIELD.y,w:FIELD.columns*FIELD.stepX,h:FIELD.rows*FIELD.stepY});
+  occupied.push({x:FIELD.x,y:FIELD.y,w:FIELD.columns*FIELD.stepX,h:FIELD.rows*FIELD.stepY},livingLayoutNow.pond,...(livingLayoutNow.yard?[livingLayoutNow.yard]:[]));
   layers.push(...villageScenery('farm',art,upright,villageUi?.reduced,occupied).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
   layers.push(...sceneryLayers('farm',art,upright,villageUi?.reduced,occupied).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
-  const fixtures=[['farm_sign',343,700],['lantern',935,586],['bamboo_gate',720,855]].map(([definitionId,x,y])=>({definitionId,x:x/TILE_SIZE-.5,y:y/TILE_SIZE-1,rotation:0}));
+  layers.push(...fieldBoundaryLayers(ctx,farming.state?.tiles,art.farmFence,upright));
+  const fixtures=[['farm_sign',343,700],['lantern',935,586]].map(([definitionId,x,y])=>({definitionId,x:x/TILE_SIZE-.5,y:y/TILE_SIZE-1,rotation:0}));
   layers.push(...decorationLayers([...(phase5Ui?.state?.decorations||[]),...fixtures],art.decorations,upright).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
   paintLayers(ctx,layers);
+  drawFarmFence(ctx,art.farmFence,upright,true);
   phase5Ui?.draw(ctx,camera);drawActionFeedback(ctx);
-}
-function drawFarmFence(ctx){
-  ctx.save();ctx.lineCap='round';
-  const rail=(a,b)=>{for(const dy of [-17,-5]){ctx.beginPath();ctx.moveTo(a.x,a.y+dy);ctx.lineTo(b.x,b.y+dy);ctx.strokeStyle='#65452c';ctx.lineWidth=9;ctx.stroke();ctx.strokeStyle='#d2a569';ctx.lineWidth=5;ctx.stroke();}};
-  const post=(x,y)=>{ctx.fillStyle='#62452d';ctx.fillRect(x-6,y-33,13,36);ctx.fillStyle='#e4ba76';ctx.fillRect(x-4,y-33,7,27);ctx.beginPath();ctx.moveTo(x-7,y-33);ctx.lineTo(x,y-43);ctx.lineTo(x+7,y-33);ctx.fill();};
-  for(const [a,b] of [[{x:65,y:105},{x:1375,y:105}],[{x:65,y:905},{x:660,y:905}],[{x:780,y:905},{x:1375,y:905}],[{x:65,y:105},{x:65,y:905}],[{x:1375,y:105},{x:1375,y:905}]]){rail(a,b);const count=Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/72);for(let i=0;i<=count;i++)post(a.x+(b.x-a.x)*i/count,a.y+(b.y-a.y)*i/count);}
-  post(660,905);post(780,905);ctx.restore();
 }
 function drawIsoAvatar(ctx,x,y,direction,moving,name,action){const actionIndex={till:0,plant:1,water:2,harvest:3}[action?.kind],acting=actionIndex!==undefined&&performance.now()-action.at<750;if(acting)upright(ctx,x,y,art.actions,90,91,[actionIndex*543,0,543,724]);else{const row={down:0,up:1,left:2,right:3}[direction]??0,frame=moving?Math.floor(performance.now()/135)%4:1,w=art.walk.naturalWidth/4||315,h=art.walk.naturalHeight/4||312;const bob=moving?Math.sin(performance.now()/110)*1.5:0;upright(ctx,x,y+bob,art.walk,78,86,[frame*w,row*h,w,h]);}ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff8dd';ctx.strokeStyle='#38523f';ctx.lineWidth=3;ctx.strokeText(name,0,-95);ctx.fillText(name,0,-95);ctx.restore();}
 function drawIsoNpc(ctx,npc){npc={...npc,y:npc.y+(villageUi?.reduced?0:Math.sin(performance.now()/1400+npc.x)*.6)};const index={tu:0,lan:1,ba:2,na:3}[npc.id]??0;upright(ctx,npc.x,npc.y,art.npcs,72,92,[index*543,0,543,724]);ctx.save();ctx.translate(npc.x,npc.y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff8dd';ctx.strokeStyle='#38523f';ctx.lineWidth=3;ctx.strokeText(npc.name,0,-98);ctx.fillText(npc.name,0,-98);ctx.restore();}
