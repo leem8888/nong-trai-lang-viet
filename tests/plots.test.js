@@ -47,16 +47,17 @@ test('young crop has a dark soil mound and mature crop does not',()=>{
     FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,state:'PLANTED',crop:{cropId:'rice',plantedAt:100,durationMs:1000,bonusMs:0,wateredAt:null}}]},isometric:true,serverNow:()=>time,updateInfo(){}},ctx);assert.equal(ellipses,expected);
   }
 });
-test('owned untilled soil stays visible in isometric view',()=>{
-  const fills=[];const ctx={fillRect(...args){fills.push(args);},strokeRect(){}};
-  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,soilArt:{naturalWidth:4},upright(){},serverNow:()=>0,updateInfo(){}},ctx);
-  assert.deepEqual(fills[0],[FIELD.x,FIELD.y,FIELD.width,FIELD.height]);
+test('untilled owned soil uses the same grass art without changing its hitbox',()=>{
+  const draws=[];const image={naturalWidth:1024},ctx={};
+  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,grassArt:image,upright:(...args)=>draws.push(args),serverNow:()=>0,updateInfo(){}},ctx);
+  assert.equal(draws.length,1);assert.equal(draws[0][3],image);
+  assert.equal(draws[0][1],FIELD.x+FIELD.stepX);assert.equal(draws[0][2],FIELD.y+FIELD.stepY);
 });
-test('unbought plots leave terrain untouched until hovered',()=>{
-  const marks=[];const ctx={save(){},restore(){},strokeRect(...args){marks.push(args);}};
-  const tile={x:0,y:0,locked:true},ui={state:{tiles:[tile],plots:{unlocked:8}},selected:tile,serverNow:()=>0,updateInfo(){},tile:()=>tile};
+test('unbought plots use grass art with no permanent border',()=>{
+  const marks=[],draws=[];const ctx={save(){},restore(){},strokeRect(...args){marks.push(args);}};
+  const tile={x:0,y:0,locked:true},ui={state:{tiles:[tile],plots:{unlocked:8}},grassArt:{naturalWidth:1024},isometric:true,upright:(...args)=>draws.push(args),selected:tile,serverNow:()=>0,updateInfo(){},tile:()=>tile};
   FarmingUI.prototype.draw.call(ui,ctx);
-  assert.equal(marks.length,0);
+  assert.equal(draws.length,1);assert.equal(marks.length,0);
   ui.hover=tile;FarmingUI.prototype.draw.call(ui,ctx);
   assert.deepEqual(marks,[[FIELD.x+1,FIELD.y+1,FIELD.width-2,FIELD.height-2]]);
 });

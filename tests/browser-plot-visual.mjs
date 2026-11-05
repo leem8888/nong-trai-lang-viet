@@ -63,6 +63,16 @@ try{
   await edge.command('Input.dispatchMouseEvent',{type:'mouseMoved',x:900,y:50,button:'none'});
   await pause(150);
   await edge.screenshot(path.join(output,`${stage}-bought.png`));
+  const now=Date.now();
+  db.prepare('INSERT INTO farm_soil_tiles(farm_id,tile_x,tile_y,state,updated_at) VALUES (?,?,?,?,?)').run(farm.id,0,0,'TILLED',now);
+  db.prepare('INSERT INTO farm_soil_tiles(farm_id,tile_x,tile_y,state,updated_at) VALUES (?,?,?,?,?)').run(farm.id,1,0,'PLANTED',now);
+  db.prepare('INSERT INTO farm_crops(farm_id,tile_x,tile_y,crop_id,planted_at,duration_ms,bonus_ms,watered_at,yield_quantity) VALUES (?,?,?,?,?,?,?,?,?)').run(farm.id,1,0,'tomato',now-50*60000,45*60000,0,null,3);
+  await edge.navigate(url);
+  await edge.waitFor("!document.querySelector('#game').classList.contains('hidden')");
+  await edge.viewport(1920,1080);await pause(500);
+  await edge.screenshot(path.join(output,`${stage}-near.png`));
+  await edge.viewport(800,600);await pause(500);
+  await edge.screenshot(path.join(output,`${stage}-far.png`));
   assert.deepEqual(edge.errors,[]);
   console.log(`Plot browser QA ${stage}: hover, click, purchase passed`);
 }finally{

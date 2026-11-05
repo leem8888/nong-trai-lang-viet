@@ -78,6 +78,7 @@ export class FarmingUI {
     }
     for(const tile of this.state.tiles) {
       const r=tileRect(tile.x,tile.y);
+      if(this.isometric&&(tile.locked||tile.state==='EMPTY'&&!tile.crop)&&this.grassArt?.naturalWidth&&this.upright){this.upright(ctx,r.x+FIELD.stepX,r.y+FIELD.stepY,this.grassArt,FIELD.stepX*2*ISO_X,FIELD.stepY*2*ISO_Y,undefined,Boolean((tile.x+tile.y)%2));continue;}
       if(tile.locked)continue;
       if(this.isometric&&this.soilArt?.naturalWidth&&this.upright){
         if(tile.state==='EMPTY'&&!tile.crop){ctx.fillStyle='#8e6743';ctx.fillRect(r.x,r.y,r.w,r.h);ctx.fillStyle='#b08a5b';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*12,r.y+13+i%2*11,7,3);ctx.strokeStyle='#d3ad76';ctx.lineWidth=1.5;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}else{const image=this.soilArt,cw=image.naturalWidth/4,ch=image.naturalHeight/2,variant=(tile.x*3+tile.y*5)%4,wet=tile.state==='WATERED'||Boolean(tile.crop?.wateredAt),offset=56/(4*ISO_Y);ctx.save();ctx.beginPath();ctx.rect(r.x,r.y,r.w,r.h);ctx.clip();ctx.fillStyle=wet?'#4d4034':'#795b3b';ctx.fillRect(r.x,r.y,r.w,r.h);this.upright(ctx,r.x+r.w/2+offset,r.y+r.h/2+offset,image,76,56,[variant*cw,wet?ch:0,cw,ch]);ctx.restore();ctx.strokeStyle='#ae8a57';ctx.lineWidth=1;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}
