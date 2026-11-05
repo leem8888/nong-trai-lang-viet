@@ -1,7 +1,7 @@
 import {drawLife,villageScenery} from './villageScenery.js';
 import {FarmTerrain} from './terrain.js';
 import {LivingFarmVisual} from './livingVisual.js';
-import {drawFarmFence,fieldBoundaryLayers} from './farmFence.js';
+import {drawFarmFence} from './farmFence.js';
 import {findPath} from './systems/Pathfinding.js';
 import {depth,sceneryLayers,paintLayers,drawNightLights,decorationLayers,drawDecorationGround} from './scenery.js';
 ﻿import { GameLoop } from './core/GameLoop.js';
@@ -191,7 +191,7 @@ function drawIsometricFarm(ctx){
   const layers=[...cropLayers,
     {y:depth(1165,480),draw:()=>livingLayoutNow.yard?upright(ctx,1280,500,art.coopYard,460,290):upright(ctx,1165,480,art.livingCoop,280,187)},
     {y:depth(710,350),draw:()=>upright(ctx,710,350,art.house,390,260)},
-    {y:depth(550,740),draw:()=>upright(ctx,550,740,art.tree,115,115)},
+    {y:depth(670,560),draw:()=>upright(ctx,670,560,art.tree,115,115)},
     {y:depth(1320,630),draw:()=>drawLife(ctx,1320,630,'shade',140,140,art,upright)},
     livingVisual.pondLayer(ctx,art,upright,livingLayoutNow),
     {y:depth(player.x,player.y),draw:()=>drawIsoAvatar(ctx,player.x,player.y,player.direction,player.state==='walk', $('userName').textContent,actionEffect)}
@@ -207,8 +207,7 @@ function drawIsometricFarm(ctx){
   occupied.push({x:FIELD.x,y:FIELD.y,w:FIELD.columns*FIELD.stepX,h:FIELD.rows*FIELD.stepY},livingLayoutNow.pond,...(livingLayoutNow.yard?[livingLayoutNow.yard]:[]));
   layers.push(...villageScenery('farm',art,upright,villageUi?.reduced,occupied).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
   layers.push(...sceneryLayers('farm',art,upright,villageUi?.reduced,occupied).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
-  layers.push(...fieldBoundaryLayers(ctx,farming.state?.tiles,art.farmFence,upright));
-  const fixtures=[['farm_sign',343,700],['lantern',935,586]].map(([definitionId,x,y])=>({definitionId,x:x/TILE_SIZE-.5,y:y/TILE_SIZE-1,rotation:0}));
+  const fixtures=[['farm_sign',575,680],['lantern',935,586]].map(([definitionId,x,y])=>({definitionId,x:x/TILE_SIZE-.5,y:y/TILE_SIZE-1,rotation:0}));
   layers.push(...decorationLayers([...(phase5Ui?.state?.decorations||[]),...fixtures],art.decorations,upright).map(l=>({y:l.y,draw:()=>l.draw(ctx)})));
   paintLayers(ctx,layers);
   drawFarmFence(ctx,art.farmFence,upright,true);

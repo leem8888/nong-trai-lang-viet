@@ -25,7 +25,7 @@ test('soil rules, six crops, offline stages, watering and idempotent harvest',()
   try {
     const {user,farm,move,act}=setup(db);
     assert.equal(farmingState(db,user.id,start).inventory.find(i=>i.id==='seed_rice').quantity,4);
-    assert.equal(tileAt(105,730).x,0);
+    assert.equal(tileAt(FIELD.x,FIELD.y+10).x,0);
     assert.equal(tileAt(FIELD.x+FIELD.width,FIELD.y+10),null);
     assert.throws(()=>act('till',0,0),/xa/);
     move(0,0);

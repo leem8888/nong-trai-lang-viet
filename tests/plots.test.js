@@ -47,3 +47,8 @@ test('young crop has a dark soil mound and mature crop does not',()=>{
     FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,state:'PLANTED',crop:{cropId:'rice',plantedAt:100,durationMs:1000,bonusMs:0,wateredAt:null}}]},isometric:true,serverNow:()=>time,updateInfo(){}},ctx);assert.equal(ellipses,expected);
   }
 });
+test('owned untilled soil stays visible in isometric view',()=>{
+  const fills=[];const ctx={fillRect(...args){fills.push(args);},strokeRect(){}};
+  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,soilArt:{naturalWidth:4},upright(){},serverNow:()=>0,updateInfo(){}},ctx);
+  assert.deepEqual(fills[0],[FIELD.x,FIELD.y,FIELD.width,FIELD.height]);
+});

@@ -16,7 +16,7 @@ function drawNeighbor(ctx,x,y,variant){
 export function villageScenery(scene,art,upright,reduced,placed=[]){
   const layers=[],t=reduced?0:performance.now()/2000;
   const add=(x,y,id,w,h,sway=0)=>{
-    if(placed.some(r=>x>r.x-65&&x<r.x+r.w+65&&y>r.y-65&&y<r.y+r.h+65))return;
+    if(placed.some(r=>x>r.x-110&&x<r.x+r.w+110&&y>r.y-110&&y<r.y+r.h+110))return;
     layers.push({y:x+y,draw:ctx=>drawLife(ctx,x+Math.sin(t+x)*sway,y,id,w,h,art,upright)});
   };
   const addHome=(x,y,variant)=>{layers.push({y:x+y,draw:ctx=>{const image=art.neighbors;if(image?.naturalWidth){const cell=image.naturalWidth/3;upright(ctx,x,y,image,330,250,[variant%3*cell,0,cell,image.naturalHeight]);}else drawNeighbor(ctx,x,y,variant);}});};
