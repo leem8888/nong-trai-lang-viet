@@ -97,7 +97,7 @@ export class ContextualInteraction {
   async open(target){this.cancel();this.target=target;const generation=this.generation;
     if(this.isOwner()&&['pond','coop'].includes(target.kind)&&this.approachObject){this.mode='approaching';try{await this.approachObject(target.point,86);}catch(error){if(generation===this.generation){this.error(error.message);this.cancel();}return;}if(generation!==this.generation||!this.isFarm())return;}
     this.mode='contextMenuOpen';this.renderMenu();this.menu.classList.remove('hidden');this.placeMenu();this.menu.querySelector('button,select')?.focus();}
-  closeMenu(){this.menu.classList.add('hidden');if(this.mode==='contextMenuOpen')this.mode='idle';}
+  closeMenu(){this.menu.classList.add('hidden');this.farming.hover=null;if(this.mode==='contextMenuOpen')this.mode='idle';}
   cancel(){this.generation=(this.generation||0)+1;if(this.pointer?.timer)clearTimeout(this.pointer.timer);this.releasePointer();this.preview.clear();this.closeMenu();this.mode='idle';this.action=null;this.target=null;this.status.classList.add('hidden');this.touches.clear();}
   sceneChanged(){this.cancel();}
   renderMenu(){const target=this.target,owner=this.isOwner();let html='';
@@ -143,6 +143,6 @@ export class ContextualInteraction {
     this.farming.selected=tiles.at(-1);this.farming.updateInfo(true);this.notice(`${labels[action]}: ${ok} thành công${skipped?`, ${skipped} bỏ qua`:''}${failed?`, ${failed} lỗi · ${firstError}`:''}`,action);
     if(generation===this.generation){this.mode='actionArmed';this.renderStatus();}
   }
-  draw(ctx){if(!this.preview.size)return;ctx.save();ctx.fillStyle='#e8cf7470';ctx.strokeStyle='#fff2a8';ctx.lineWidth=2;for(const tile of this.preview.values()){const r=tileRect(tile.x,tile.y);ctx.fillRect(r.x+2,r.y+2,r.w-4,r.h-4);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);}ctx.restore();}
+  draw(ctx){if(this.mode==='contextMenuOpen'&&this.target?.kind==='soil'){const r=tileRect(this.target.tile.x,this.target.tile.y);ctx.save();ctx.strokeStyle='#fff1a2';ctx.lineWidth=1.5;ctx.strokeRect(r.x+1,r.y+1,r.w-2,r.h-2);ctx.restore();return;}if(!this.preview.size)return;ctx.save();ctx.fillStyle='#e8cf7470';ctx.strokeStyle='#fff2a8';ctx.lineWidth=2;for(const tile of this.preview.values()){const r=tileRect(tile.x,tile.y);ctx.fillRect(r.x+2,r.y+2,r.w-4,r.h-4);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);}ctx.restore();}
   destroy(){this.cancel();this.controller.abort();}
 }

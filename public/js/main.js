@@ -151,7 +151,7 @@ input.onManual=()=>{if(contextual?.mode==='contextMenuOpen')contextual.cancel();
 applyScene(scene,player.x,player.y,player.direction);
 if(Date.now()-new Date(farm.created_at).getTime()<10*60*1000)onboarding.start();
 input.onPoint=(point,event)=>{if(!visiting){const gate=scene==='farm'?FARM_GATE:MARKET_POINTS.returnGate;if(Math.hypot(point.x-gate.x,point.y-gate.y)<65){walkTo(gate);return true;}}if(scene==='farm'&&phase5Ui?.mode)return visiting?true:phase5Ui.point(point);if(contextual.down(point,event))return true;if(!visiting){const entry=Object.entries(nearbyObjects()).find(([,o])=>Math.hypot(point.x-o.x,point.y-o.y)<38);if(entry){void interact(entry[0]);return true;}}walkTo(point);return true;};
-canvas.addEventListener('pointermove',e=>{const point=camera.toWorld(e.clientX,e.clientY);farming.hover=scene==='farm'&&!phase5Ui?.mode?tileAt(point.x,point.y):null;if(phase5Ui)phase5Ui.hover=point;});canvas.addEventListener('pointerleave',()=>{farming.hover=null;});
+canvas.addEventListener('pointermove',e=>{const point=camera.toWorld(e.clientX,e.clientY);farming.hover=scene==='farm'&&!phase5Ui?.mode&&contextual?.mode!=='contextMenuOpen'?tileAt(point.x,point.y):null;if(phase5Ui)phase5Ui.hover=point;});canvas.addEventListener('pointerleave',()=>{farming.hover=null;});
 function resize(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(innerWidth*dpr);canvas.height=Math.round(innerHeight*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);camera.resize(innerWidth,innerHeight);}addEventListener('resize',resize);resize();
 socket=io({withCredentials:true});socialUi.setSocket(socket);
 let clientReady=false,joinedReady=false;

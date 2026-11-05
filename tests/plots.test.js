@@ -52,3 +52,11 @@ test('owned untilled soil stays visible in isometric view',()=>{
   FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,soilArt:{naturalWidth:4},upright(){},serverNow:()=>0,updateInfo(){}},ctx);
   assert.deepEqual(fills[0],[FIELD.x,FIELD.y,FIELD.width,FIELD.height]);
 });
+test('unbought plots leave terrain untouched until hovered',()=>{
+  const marks=[];const ctx={save(){},restore(){},strokeRect(...args){marks.push(args);}};
+  const tile={x:0,y:0,locked:true},ui={state:{tiles:[tile],plots:{unlocked:8}},selected:tile,serverNow:()=>0,updateInfo(){},tile:()=>tile};
+  FarmingUI.prototype.draw.call(ui,ctx);
+  assert.equal(marks.length,0);
+  ui.hover=tile;FarmingUI.prototype.draw.call(ui,ctx);
+  assert.deepEqual(marks,[[FIELD.x+1,FIELD.y+1,FIELD.width-2,FIELD.height-2]]);
+});
