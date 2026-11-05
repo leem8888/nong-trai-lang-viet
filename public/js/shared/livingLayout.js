@@ -11,18 +11,18 @@ export function animalAccess(kind,player,layout=livingLayout(),collision){
     }
   }else{
     // The coop entrance faces down toward the farm. Keep the approach point
-    // outside the front fence so the farmer remains visible while feeding.
+    // outside the front or side fence so the farmer remains visible while feeding.
     if(layout.yard){
       const r=layout.yard;
-      for(let i=0;i<=8;i++){const t=i/8;points.push({x:r.x+t*r.w,y:r.y+r.h+34});}
+      for(let i=0;i<=8;i++){const t=i/8;points.push({x:r.x+t*r.w,y:r.y+r.h+34},{x:r.x-30,y:r.y+t*r.h},{x:r.x+r.w+30,y:r.y+t*r.h});}
     }else{
       const r={x:1080,y:115,w:230,h:140};
       for(let i=0;i<=8;i++){const t=i/8;points.push({x:r.x-25,y:r.y+t*r.h},{x:r.x+r.w+25,y:r.y+t*r.h},{x:r.x+t*r.w,y:r.y-25},{x:r.x+t*r.w,y:r.y+r.h+25});}
     }
   }
-  if(collision){const free=points.filter(p=>!collision.blocked(p.x,p.y));if(free.length)points=free;}
+  if(collision)points=points.filter(p=>!collision.blocked(p.x,p.y));
   points.sort((a,b)=>Math.hypot(player.x-a.x,player.y-a.y)-Math.hypot(player.x-b.x,player.y-b.y));
-  return {point:points[0],distance:Math.hypot(player.x-points[0].x,player.y-points[0].y)};
+  return {points,point:points[0]||null,distance:points.length?Math.hypot(player.x-points[0].x,player.y-points[0].y):Infinity};
 }
 
 // Match the upright pond artwork in projected screen space, rather than its old world rectangle.

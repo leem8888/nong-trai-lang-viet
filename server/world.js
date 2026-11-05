@@ -1,21 +1,12 @@
+import {HOUSE_DOOR} from '../public/js/shared/house.js';
 import { CollisionSystem, overlaps } from '../public/js/systems/CollisionSystem.js';
 import { MARKET_WORLD, MARKET_POINTS, FARM_GATE } from '../public/js/shared/marketMap.js';
 import { VAC_POINTS } from '../public/js/shared/vac.js';
 import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from '../public/js/shared/phase5.js';
 import {livingLayout,yardObstacles,pondObstacles,animalAccess} from '../public/js/shared/livingLayout.js';
 
-export const world = {
-  width: 1740, height: 1024, minY: -300, margin: { left: 0, right: 0, top: -300, bottom: 0 },
-  obstacles: [
-    { x: 540, y: -70, w: 340, h: 260 }, // house reaches the north fence; no hidden playable land behind it
-    { x: 50, y: -225, w: 1640, h: 15 }, { x: 50, y: 920, w: 1640, h: 15 },
-    { x: 50, y: -225, w: 15, h: 1160 }, { x: 1675, y: -225, w: 15, h: 1160 },
-    { x: 1300, y: 610, w: 40, h: 35 },
-    { x: 215, y: 460, w: 70, h: 25 },
-    { x: 1080, y: 115, w: 230, h: 130 },
-    { x: 508, y: 248, w: 25, h: 15 }, { x: 910, y: 289, w: 20, h: 20 }
-  ]
-};
+export { FARM_WORLD as world } from '../public/js/shared/farmWorld.js';
+import { FARM_WORLD as world } from '../public/js/shared/farmWorld.js';
 const collision = new CollisionSystem(world);
 const marketCollision = new CollisionSystem(MARKET_WORLD);
 export function validPosition(x,y,scene='farm',db=null,farmId=null) {
@@ -34,7 +25,7 @@ export function validMovement(from,x,y,elapsedMs,scene='farm',db=null,farmId=nul
   for(let i=1;i<=steps;i++) if(!validPosition(from.x+(x-from.x)*i/steps,from.y+(y-from.y)*i/steps,scene,db,farmId)) return false;
   return true;
 }
-export const interactions = { board: { x: 570, y: 430 }, door: { x: 712, y: 225 }, lamp: { x: 920, y: 300 }, farmGate: FARM_GATE, ...VAC_POINTS };
+export const interactions = { board: { x: 570, y: 430 }, door: { ...HOUSE_DOOR }, lamp: { x: 920, y: 300 }, farmGate: FARM_GATE, ...VAC_POINTS };
 export function inRange(player,objectId,layout) {
   if(player.scene==='farm'&&['pond','coop'].includes(objectId))return animalAccess(objectId,player,layout).distance<=110;
   const o = player.scene==='market' ? MARKET_POINTS[objectId] : interactions[objectId];

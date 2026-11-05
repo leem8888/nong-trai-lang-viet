@@ -1,3 +1,5 @@
+import { onboardingState, skipOnboarding } from './onboarding.js';
+import { mangoState, harvestMango } from './mango.js';
 import http from 'node:http';
 import path from 'node:path';
 import express from 'express';
@@ -33,6 +35,17 @@ export function createApp(db = openDatabase(),{worldNow=Date.now,questNow=Date.n
   const csrf = (req,res,next) => req.get('x-csrf-token') === req.auth.csrf ? next() : res.status(403).json({error:'CSRF token không hợp lệ.'});
   const ownerAction = (req,res,next) => social.isVisiting(req.auth.user_id) ? res.status(403).json({error:'Hãy về nông trại của bạn trước khi thao tác.'}) : next();
   const fail = (res,error) => res.status(400).json({error:error.message});
+  app.get('/api/onboarding',guard,(req,res)=>res.json(onboardingState(db,req.auth.user_id)));
+  app.post('/api/onboarding/skip',guard,csrf,ownerAction,(req,res)=>res.json(skipOnboarding(db,req.auth.user_id)));
+  app.get('/api/mango',guard,(req,res)=>{const state=mangoState(db,req.auth.user_id);return state?res.json(state):res.status(404).json({error:'Chưa tạo nông trại.'});});
+  app.post('/api/mango/action',guard,csrf,ownerAction,(req,res)=>{
+    try{const result=harvestMango(db,req.auth.user_id,req.body);
+      io.to(`farm:${result.state.farmId}`).emit('farm:mango',result.state);
+      io.to(`farm:${result.state.farmId}`).emit('farm:farming',farmingState(db,req.auth.user_id));
+      io.to(`farm:${result.state.farmId}`).emit('farm:market',marketState(db,req.auth.user_id));
+      social.broadcastFarm(result.state.farmId);res.json({ok:true,...result});
+    }catch(error){fail(res,error);}
+  });
   app.get('/api/health',(_req,res) => res.json({ok:true}));
   for (const route of ['register','login']) app.post(`/api/${route}`,(req,res) => {
     const ip = req.ip, entry = attempts.get(ip) || { count: 0, until: 0 };

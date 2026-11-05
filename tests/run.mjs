@@ -18,3 +18,9 @@ import './fishMotion.test.js';
 import './chickenMotion.test.js';
 import './soilEffects.test.js';
 import './terrainCoverage.test.js';
+
+import './onboarding.test.js';
+
+import './mango.test.js';
+
+import './houseCollision.test.js';

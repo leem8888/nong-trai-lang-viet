@@ -1,5 +1,9 @@
 # NÔNG TRẠI LÀNG VIỆT — PROJECT MASTER CONTEXT
 
+## Trạng thái bổ sung — 06/11/2026
+
+Đã cập nhật nhà v4, va chạm/điểm cửa, đường sân và cổng, bảng tên nhỏ, HUD responsive, xoài non xanh/chín vàng không nhãn nổi, cá trưởng thành sáng hơn và thẻ thông tin cây trồng có ảnh/tên/đếm ngược tự cập nhật. Schema vẫn v11, không reset dữ liệu. Node suite gần nhất 85/85 đạt; browser từng luồng và giới hạn kiểm thử ở [báo cáo cập nhật hiện tại](UI_GAMEPLAY_UPDATES_2026-11-06.md). Nội dung cũ phía dưới giữ theo giai đoạn; dùng báo cáo mới khi có mô tả khác nhau.
+
 > **Version:** 1.1  
 > **Date:** 2026-11-03  
 > **Status:** Approved product direction; implementation status **unknown until repository inspection**.  

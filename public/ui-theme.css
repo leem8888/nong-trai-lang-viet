@@ -1,4 +1,4 @@
-﻿/* Làng Việt: one visual language for every screen and panel. */
+/* Làng Việt: one visual language for every screen and panel. */
 :root{
   --pine:#173e3a;--pine-2:#28645b;--pine-3:#3e806d;
   --leaf:#7cae67;--cream:#fff8e9;--paper:#f8ebcf;--paper-deep:#ead7ad;
@@ -177,3 +177,6 @@ body:has(#panel:not(.hidden))::after{content:'';position:fixed;inset:0;z-index:4
 
 
 #contextMenu.animal-tools:has(.fish-caption){display:flex;align-items:center;gap:10px}.fish-caption{display:grid;gap:3px;padding:8px 11px;background:#284d40ed;border:1px solid #d9bf7c;border-radius:12px;box-shadow:0 3px 8px #13281e50;pointer-events:none;white-space:nowrap}#contextMenu .fish-caption strong{font:700 13px system-ui;color:#fff0c6}.fish-caption span{font:600 11px system-ui;color:#e6ddb8}#contextMenu .fish-caption small{font:10px system-ui;color:#c8d8c8}
+
+.mango-info{display:grid;gap:9px;max-width:min(310px,calc(100vw - 48px));padding:12px;background:#254b3fed;color:#fff3d3;border:1px solid #d9ba75;border-radius:12px}.mango-info strong{font-size:15px}.mango-info span{font-size:13px}.mango-info small{font-size:12px;color:#d6ddb6}.mango-info button:disabled{opacity:.55;cursor:default}
+#contextMenu .mango-info{background:#fff5db;color:#3e4c32;border-color:#c9ac70}#contextMenu .mango-info strong{font:700 15px/1.4 system-ui,sans-serif;color:#28583f}#contextMenu .mango-info span{font:13px/1.4 system-ui,sans-serif;color:#4d5038}#contextMenu .mango-info small{font:12px/1.4 system-ui,sans-serif;color:#6c674a}

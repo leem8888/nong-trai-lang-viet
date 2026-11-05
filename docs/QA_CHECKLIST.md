@@ -1,5 +1,18 @@
 # QA cập nhật — 2026-11-05
 
+## Đợt cập nhật giao diện/tương tác — 06/11/2026
+
+Kết quả gần nhất và lệnh chạy cho HUD, nhà, cổng, xoài, vật nuôi và thẻ cây trồng ở [báo cáo cập nhật](UI_GAMEPLAY_UPDATES_2026-11-06.md). Node suite 85/85 đạt. Giữ kết quả Phase cũ phía dưới làm lịch sử; không suy ra tất cả browser suite cũ vẫn đạt sau thay đổi selector/giao diện.
+
+Kiểm tra thủ công khi phát hành:
+
+- [ ] Restart server + Ctrl+F5; nhà v4, cổng/rào/lối vào khớp; đi vòng nhà và bấm cổng ra chợ.
+- [ ] Bảng gỗ nhỏ, tên đúng farm; HUD và dock không tràn/chồng ở 320/390/900/1920px.
+- [ ] Xoài non xanh nhỏ, chín vàng lớn; hái xong về xanh; không có nhãn nổi; menu và tiến trình giữ qua reload.
+- [ ] Cá đủ tuổi sáng rõ hơn cá non, cả hai chế độ hiệu ứng; thao tác thu hoạch vẫn theo server.
+- [ ] Bấm ô có cây: tên/ảnh/thời gian/tiến độ/tưới đúng; đếm ngược chạy khi hover; chín tự đổi thông báo và nút.
+- [ ] Khách thăm xem thông tin nhưng không chăm/thu hoạch farm người khác; kiểm tra điện thoại cảm ứng thật.
+
 Bản `main` tại `d0df3d9b30509cf32916d2a379a687af49666245`: `npm test` 53/53; browser contextual 14/14, browser chung 14/14, VAC 5/5, Phase 5 13/13, Phase 6 12/12, Phase 7 multiplayer 4/4. Đã kiểm tra thao tác từ xa tự đi tới, di chuyển quanh công trình, cửa hàng không đổi kích thước giữa ba nhóm và ảnh farm desktop/mobile. Xem `CONTEXTUAL_UX_REPORT.md`; các bảng bên dưới là nghiệm thu lịch sử tại thời điểm ghi.
 
 # Nghiệm thu lịch sử Phase 1–5 — 2026-11-03

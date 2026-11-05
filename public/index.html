@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nông Trại Làng Việt</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/ui-theme.css"><link rel="stylesheet" href="/village-life.css"></head>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nông Trại Làng Việt</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/ui-theme.css"><link rel="stylesheet" href="/village-life.css"><link rel="stylesheet" href="/farm-hud.css"></head>
 <body>
 <section id="loading" role="status" aria-live="polite"><div class="loading-card"><div class="loading-spinner" aria-hidden="true"></div><h1>Nông Trại Làng Việt</h1><p id="loadingMessage">Đang mở lối về làng…</p><button id="loadingRetry" class="hidden" type="button">Thử lại</button></div></section>
 <main id="welcome" class="card hidden"><h1>🌾 Nông Trại Làng Việt</h1><p>Một góc vườn quê đang chờ bạn chăm sóc.</p><div class="tabs" role="tablist" aria-label="Tài khoản"><button id="loginTab" type="button" role="tab" aria-selected="true" aria-controls="authForm">Đăng nhập</button><button id="registerTab" type="button" role="tab" aria-selected="false" aria-controls="authForm">Đăng ký</button></div><form id="authForm"><label>Tên tài khoản<input name="username" autocomplete="username" required></label><label>Mật khẩu<input name="password" type="password" autocomplete="current-password" required></label><button id="authSubmit">Đăng nhập</button></form><p class="hint">Mật khẩu đăng ký cần ít nhất 5 ký tự.</p></main>
@@ -9,5 +9,5 @@
 <div id="panel" class="card hidden" role="dialog" aria-modal="true"><button id="closePanel" class="close">Đóng</button><div id="panelContent"></div></div>
 <p id="error" role="alert" class="hidden"></p>
 <p id="notice" role="status" class="hidden"></p>
-<script src="/socket.io/socket.io.js"></script><script type="module" src="/js/main.js"></script>
+<script src="/socket.io/socket.io.js"></script><script type="module" src="/js/main.js"></script><script type="module" src="/js/hud-layout.js"></script>
 </body></html>

@@ -1,5 +1,9 @@
 # Tiến độ hiện tại — 2026-11-05
 
+## Trạng thái bổ sung — 06/11/2026
+
+Đã cập nhật nhà v4, va chạm/điểm cửa, đường sân và cổng, bảng tên nhỏ, HUD responsive, xoài non xanh/chín vàng không nhãn nổi, cá trưởng thành sáng hơn và thẻ thông tin cây trồng có ảnh/tên/đếm ngược tự cập nhật. Schema vẫn v11, không reset dữ liệu. Node suite gần nhất 85/85 đạt; browser từng luồng và giới hạn kiểm thử ở [báo cáo cập nhật hiện tại](UI_GAMEPLAY_UPDATES_2026-11-06.md). Nội dung cũ phía dưới giữ theo giai đoạn; dùng báo cáo mới khi có mô tả khác nhau.
+
 **Living Farm + Terrain:** INCOMPLETE, bắt đầu từ `main` baseline `7021933` và được chia sẻ để review theo yêu cầu. Đã có asset ao/sân gà/cá/gà mới; server VAC vẫn giữ schema và kinh tế cũ. Test 55/55, browser chung 14/14, contextual 16/16, VAC 5/5, Phase 5 13/13, Phase 6 12/12, Phase 7 4/4. Đã đo 10 phút và chụp chuỗi frame cá/gà. Các gate còn lại ghi tại `LIVING_FARM_IMPLEMENTATION_REPORT.md` và `TERRAIN_LAND_FENCE_QA_REPORT.md`; không deploy.
 
 **Điều chỉnh sau review:** Khi sân gà hiện diện, tự đi tới điểm ngoài cạnh trước của hàng rào trước khi thao tác VAC để nhân vật không bị khuất trong sân lúc cho gà ăn. Đã thêm `tests/animalAccess.test.js`; chưa chạy kiểm thử hoặc xác minh browser cho điều chỉnh này. Trạng thái tổng thể vẫn **INCOMPLETE**.

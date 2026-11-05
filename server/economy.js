@@ -1,3 +1,4 @@
+import { onboardingEvent } from './onboarding.js';
 import { createHash } from 'node:crypto';
 import { inventory, addItem, spendItem } from './crops.js';
 import { inRange } from './world.js';
@@ -108,6 +109,8 @@ export function performMarketAction(db,userId,payload,at=now()) {
         message=`Đã giao đơn ${order.title}.`;
       }
     }
+    if(payload.action==='sell' && payload.itemId==='mustard')onboardingEvent(db,farmId,'sell',at);
+    if(payload.action==='buy' && payload.itemId.startsWith('seed_'))onboardingEvent(db,farmId,'buy',at);
     const receipt={message,transactionId};
     db.prepare('INSERT INTO economy_request_receipts VALUES (?,?,?,?,?,?)').run(userId,payload.requestId,payload.action,hash,JSON.stringify(receipt),at);
     return {...receipt,replayed:false,state:marketState(db,userId,at)};

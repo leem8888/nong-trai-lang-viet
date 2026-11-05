@@ -3,8 +3,36 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
-  "scripts": { "start": "node server/index.js", "dev": "node --watch server/dev.js", "test": "node tests/run.mjs", "qa:browser": "node tests/browser-qa.mjs", "qa:vac": "node tests/browser-vac-qa.mjs", "qa:phase5": "node tests/browser-phase5-qa.mjs", "qa:phase6": "node tests/browser-phase6-qa.mjs", "qa:phase7": "node tests/browser-phase7-qa.mjs", "backup": "node server/backup.js", "economy:report": "node scripts/economy-report.mjs", "economy:phase5": "node scripts/phase5-economy-report.mjs" },
-  "dependencies": { "better-sqlite3": "12.8.0", "express": "^5.3.0", "socket.io": "^4.8.4" },
-  "devDependencies": { "socket.io-client": "^4.8.4" }
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/dev.js",
+    "test": "node tests/run.mjs",
+    "qa:browser": "node tests/browser-qa.mjs",
+    "qa:vac": "node tests/browser-vac-qa.mjs",
+    "qa:phase5": "node tests/browser-phase5-qa.mjs",
+    "qa:phase6": "node tests/browser-phase6-qa.mjs",
+    "qa:phase7": "node tests/browser-phase7-qa.mjs",
+    "backup": "node server/backup.js",
+    "economy:report": "node scripts/economy-report.mjs",
+    "economy:phase5": "node scripts/phase5-economy-report.mjs",
+    "qa:first5": "node tests/browser-first5-qa.mjs",
+    "qa:collision-vac": "node tests/browser-collision-vac-qa.mjs",
+    "qa:onboarding-migration": "node scripts/onboarding-migration-check.mjs",
+    "qa:pond-rim": "node tests/browser-pond-rim-qa.mjs",
+    "qa:animal-motion": "node tests/browser-animal-motion-qa.mjs",
+    "qa:mango": "node tests/browser-mango-qa.mjs",
+    "qa:mango-migration": "node scripts/mango-migration-check.mjs",
+    "qa:house-collision": "node tests/browser-house-collision-qa.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "12.8.0",
+    "express": "^5.3.0",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
+  }
 }

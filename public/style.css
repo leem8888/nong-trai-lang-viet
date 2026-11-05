@@ -38,3 +38,11 @@ body.low-effects button{transition:none}
 #contextMenu button:focus-visible,#contextMenu select:focus-visible,#contextStatus button:focus-visible,#farmUtilityButton:focus-visible{outline:3px solid #e9af43;outline-offset:2px}
 @media(max-width:700px){#farmHud{bottom:max(8px,env(safe-area-inset-bottom));right:max(8px,env(safe-area-inset-right));width:auto;max-height:none;padding:4px;overflow:visible}#joystick{bottom:max(90px,calc(env(safe-area-inset-bottom) + 82px))}#prompt{bottom:105px}#contextStatus{left:auto;right:120px;transform:none;max-width:calc(100vw - 140px);bottom:max(8px,env(safe-area-inset-bottom));font-size:11px}#contextStatus button{padding:3px 5px}#contextMenu{max-height:55dvh;overflow:auto}}
 @media(max-width:380px){#farmHud{max-height:none}#joystick{bottom:90px}}
+
+/* Compact guidance leaves the joystick, dock and world interaction usable. */
+#onboarding{top:150px;padding:10px 12px;width:min(320px,calc(100vw - 24px))}
+#onboarding p{font-size:13px}#onboarding button{padding:7px 12px}
+@media(max-width:700px){#onboarding{top:158px;left:8px;width:calc(100vw - 16px);padding:8px 10px}#onboardingTitle{font-size:16px}#onboarding p{font-size:12px;line-height:1.3}#onboardingStep{font-size:11px}#onboarding button{min-height:38px;padding:6px 12px}}
+
+#contextMenu .tutorial-choice{outline:3px solid #ffe599;outline-offset:3px}
+#onboardingTitle{font-family:system-ui,sans-serif;font-size:17px;line-height:1.35}

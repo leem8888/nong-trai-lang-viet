@@ -17,7 +17,7 @@ test('every side of either pond can be used from its bank',()=>{
   assert.equal(inRange({x:300,y:500,scene:'farm'},'pond'),false);
 });
 test('coop entrance and yard perimeter both allow care',()=>{
-  for(const p of [{x:1025,y:260},{x:1110,y:430},{x:1240,y:490}])
+  for(const p of [{x:1130,y:300},{x:1200,y:449},{x:1465,y:350}])
     assert.ok(inRange({...p,scene:'farm'},'coop'));
   assert.equal(inRange({x:300,y:500,scene:'farm'},'coop'),false);
 });

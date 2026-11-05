@@ -1,0 +1,63 @@
+/* Quiet parchment and timber HUD; game controls retain their original IDs. */
+#hud{top:max(16px,env(safe-area-inset-top));left:18px;right:18px;gap:16px}
+#hud>div{border:1px solid #dec79b;border-radius:16px;background:linear-gradient(135deg,#fff8e9f7,#ecdbbdf5);color:#493b28;box-shadow:inset 0 1px #fff,0 5px 18px #182d2633;text-shadow:none;padding:10px 14px}
+#hud>div:first-child{min-width:210px;max-width:300px;border-left:4px solid #62836a;padding-left:53px;position:relative}
+#hud>div:first-child::before{content:'✾';position:absolute;left:13px;top:10px;font-size:29px;color:#6b8656}
+#farmName{display:block;color:#344f3a;font:700 19px/1.25 Georgia,serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#userName{color:#8a7659;font-size:11px;margin-top:3px;letter-spacing:.04em}
+#hud>div:last-child{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px;max-width:740px;min-height:60px}
+#hud #status{font-size:10px;color:#56704f;margin:0 5px 0 0;white-space:nowrap}
+#hud #balance{display:inline-flex;align-items:center;gap:6px;background:#365b47;color:#fff1c6;border:1px solid #294c3b;border-radius:10px;margin:0 5px 0 0;padding:8px 11px;font-size:14px;white-space:nowrap;box-shadow:inset 0 1px #ffffff25}
+#hud #balance::before{background:#e7bc69;color:#725125;border:1px solid #f6dea2;box-shadow:none;width:21px;height:21px}
+#hud button{min-height:36px;padding:7px 11px;border:1px solid #d2b98f;border-radius:9px;background:#fffaf0;color:#665238;font-size:11px;box-shadow:0 2px 0 #d6bf98,inset 0 1px #fff}
+#hud button:hover{background:#f4e4c6;transform:translateY(-1px)}
+#hud #menuButton{background:#805c3b;color:#fff3d8;border-color:#705034;box-shadow:0 2px 0 #553c28}
+#worldHud{top:98px;left:18px;right:auto;padding:4px 6px;gap:0;border:1px solid #dec79b;border-radius:10px;background:#fff7e7f0;color:#65563c;box-shadow:0 4px 12px #182d2626;font-size:11px}
+#worldHud span{padding:5px 9px;border-radius:0}
+#worldHud span+span{border-left:1px solid #d9c7a6}
+#worldClock{font-weight:800;color:#35563e}
+#farmHud{bottom:max(18px,env(safe-area-inset-bottom));padding:7px;gap:5px;border:1px solid #bd9566;border-radius:20px;background:linear-gradient(#f9edD5f7,#e2cbA6f7);box-shadow:inset 0 1px #fff9e8,0 4px 0 #765537,0 10px 24px #132a2845}
+#farmHud>button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:66px;min-height:59px;padding:7px 10px;border:1px solid transparent;border-radius:12px;background:transparent;color:#6d583c;box-shadow:none}
+#farmHud>button:hover{background:#fff8e9;border-color:#d6ba8e;transform:translateY(-2px)}
+#farmHud>button:active{transform:translateY(1px)}
+#farmHud .quick-label{display:block;font-size:10px;font-weight:700;white-space:nowrap}
+#farmHud .dock-icon{width:22px;height:22px;flex:0 0 22px}
+#farmHud #farmUtilityButton{min-width:94px;background:linear-gradient(#53775a,#36563e);color:#fff5d9;border:1px solid #33503a;box-shadow:inset 0 1px #ffffff38,0 2px 0 #29452f;font-size:11px}
+#farmUtilityButton[aria-expanded=true]{outline:2px solid #c79852;outline-offset:2px}
+#farmUtilityMenu{background:#fff6e4;color:#5c4c33;border:1px solid #c9a779;border-radius:16px;box-shadow:0 10px 30px #20322955;padding:14px}
+#farmUtilityMenu #cropInfo,#farmUtilityMenu #vacStatus,#farmUtilityMenu #craftStatus{color:#675b40}
+#help{border:1px solid #cfb98b;background:#fff6e4e8;color:#65563c;border-radius:11px;box-shadow:0 3px 12px #20322922;padding:10px 12px}
+#prompt{border:1px solid #c7a675;box-shadow:0 3px 12px #20322933;border-radius:10px;bottom:112px;font-size:13px}
+@media(min-width:701px) and (max-width:1150px){#hud>div:last-child{max-width:58%;gap:5px}#hud #status{display:none}#hud #balance{font-size:12px}#hud button{padding:6px 8px}}
+@media(max-width:700px){
+ #hud{top:max(10px,env(safe-area-inset-top));left:10px;right:10px;gap:8px}
+ #hud>div:first-child{flex:1;max-width:46%;min-width:0;padding:10px 9px;border-left-width:3px}
+ #hud>div:first-child::before{display:none}
+ #farmName{font-size:15px}#userName{font-size:10px}
+ #hud>div:last-child{flex:1;max-width:54%;min-height:0;padding:7px;gap:5px}
+ #hud #status{display:none}#hud #balance{width:100%;justify-content:center;margin:0;font-size:11px;padding:5px;gap:4px}
+ #hud #balance::before{width:17px;height:17px;font-size:12px}
+ #hud #socialButton,#hud #menuButton{min-height:32px;padding:5px 8px;font-size:10px}
+ #worldHud{top:116px;left:10px;right:10px;max-width:none;justify-content:center;padding:4px 2px;font-size:10px}
+ #worldHud span{padding:4px 6px}
+ #farmHud{bottom:max(12px,env(safe-area-inset-bottom));max-width:calc(100vw - 20px);gap:2px;padding:5px;border-radius:17px}
+ #farmHud>button,#farmHud>button.quick-action{width:auto;min-width:52px;min-height:55px;padding:6px}
+ #farmHud #farmUtilityButton{min-width:78px;font-size:10px}
+ #farmHud .quick-label{font-size:9px}#farmHud .dock-icon{width:21px;height:21px;flex-basis:21px}
+ #farmUtilityMenu{width:min(286px,calc(100vw - 24px));max-height:48dvh}
+ #joystick{bottom:105px}#prompt{bottom:112px}#onboarding{top:165px}
+}
+@media(max-width:360px){#worldHud span{padding:4px;font-size:9px}#farmHud>button,#farmHud>button.quick-action{min-width:47px}#farmHud #farmUtilityButton{min-width:70px}}
+@media(prefers-reduced-motion:reduce){#farmHud>button{transition:none}}
+
+#worldHud{top:calc(var(--hud-bottom,88px) + 10px)}
+#visitBanner{top:calc(var(--hud-bottom,88px) + 58px)}
+#onboarding{top:calc(var(--hud-bottom,88px) + 62px)}
+#contextMenu.soil-tools:has(.crop-caption){width:258px;max-width:calc(100vw - 24px);background:#fff5df;border:1px solid #c6a16a;padding:12px;gap:9px}
+#contextMenu .crop-caption{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;align-items:center;width:100%;color:#4b4f32}
+#contextMenu .crop-caption img{width:64px;height:64px;object-fit:contain;background:radial-gradient(#ead6a3,transparent 72%)}
+#contextMenu .crop-caption>div{display:grid;gap:5px;min-width:0}#contextMenu .crop-caption strong{font-size:15px;color:#36583c}
+#contextMenu .crop-caption span{font-size:12px;line-height:1.4;color:#6c512d}#contextMenu .crop-caption small{font-size:10px;color:#7b7054}
+#contextMenu .crop-caption progress{grid-column:1/-1;width:100%;height:6px;border:0;border-radius:6px;overflow:hidden;accent-color:#719455}
+#contextMenu .crop-caption progress::-webkit-progress-bar{background:#e4d6b8}#contextMenu .crop-caption progress::-webkit-progress-value{background:#719455}
+#contextMenu .crop-caption.is-ready span{color:#417b38;font-weight:700}

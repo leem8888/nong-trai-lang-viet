@@ -13,11 +13,15 @@ function buildFence(art,upright){cachedSource=art;
     [{x:780,y:905},{x:1675,y:905}]
   ];
   for(const [a,b] of segments){const dx=b.x-a.x,dy=b.y-a.y,n=Math.ceil(Math.hypot(dx,dy)/90),g=a.y===905?frontCtx:backCtx;for(let i=0;i<n;i++){const t=(i+.5)/n,x=a.x+dx*t,y=a.y+dy*t;upright(g,x,y,art,94,62,railSource,dx!==0);}}
-  // Remove fence posts behind the gate sprite so its own pillars remain unobstructed.
-  frontCtx.save();frontCtx.setTransform(1,0,0,1,0,0);
-  const gateX=1024*ISO_X+300+(720-905)*ISO_X,gateY=200+(720+905)*ISO_Y;
-  frontCtx.clearRect(gateX-86,gateY-150,172,165);frontCtx.restore();
-  upright(frontCtx,720,905,art,155,145,gateSource);
+  // Match the gate baseline to the south fence (screen slope ISO_Y / ISO_X).
+  // Shear only the upright image plane: posts stay vertical, feet land on the rails.
+  // The source feet sit 50px above the crop bottom; align that contact line to y=905.
+  frontCtx.save();frontCtx.translate(720,905);
+  frontCtx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
+  frontCtx.transform(1,ISO_Y/ISO_X,0,1,0,0);
+  const image=art.bitmap||art,scaleX=image.width/art.naturalWidth,scaleY=image.height/art.naturalHeight;
+  frontCtx.drawImage(image,gateSource[0]*scaleX,gateSource[1]*scaleY,gateSource[2]*scaleX,gateSource[3]*scaleY,-82,-133,155,145);
+  frontCtx.restore();
 }
 export function drawFarmFence(ctx,art,upright,front=false){if(!art?.naturalWidth)return;if(cachedSource!==art)buildFence(art,upright);const cache=front?cachedFront:cachedBack;ctx.save();ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.translate(-1024*ISO_X-300,-200);ctx.drawImage(cache,0,0);ctx.restore();
 }

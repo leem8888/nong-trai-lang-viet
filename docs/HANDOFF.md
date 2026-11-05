@@ -1,5 +1,9 @@
 # Handoff hiện tại — 2026-11-05
 
+## Trạng thái bổ sung — 06/11/2026
+
+Đã cập nhật nhà v4, va chạm/điểm cửa, đường sân và cổng, bảng tên nhỏ, HUD responsive, xoài non xanh/chín vàng không nhãn nổi, cá trưởng thành sáng hơn và thẻ thông tin cây trồng có ảnh/tên/đếm ngược tự cập nhật. Schema vẫn v11, không reset dữ liệu. Node suite gần nhất 85/85 đạt; browser từng luồng và giới hạn kiểm thử ở [báo cáo cập nhật hiện tại](UI_GAMEPLAY_UPDATES_2026-11-06.md). Nội dung cũ phía dưới giữ theo giai đoạn; dùng báo cáo mới khi có mô tả khác nhau.
+
 **Living Farm update:** Ao và sân gà được triển khai cùng Terrain/Land/Fence/Gate và chia sẻ trên `main` để review theo yêu cầu. Trạng thái chung **INCOMPLETE**. Test Node 55/55, browser chung 14/14, contextual 16/16 (thả/cho ăn/thu hoạch VAC trực tiếp), VAC 5/5, Phase 5 13/13, Phase 6 12/12, Phase 7 4/4. Ảnh, chuỗi frame và benchmark 10 phút tại `D:\farm-terrain-qa\living`. Xem `LIVING_FARM_IMPLEMENTATION_REPORT.md`, `LIVING_FARM_VISUAL_QA.md`, `REFERENCE_CODE_AUDIT.md`, `PATHFINDING_COMPARISON.md`. So sánh Terrain trước/sau đã chạy lại cùng giờ/thời tiết; zoom Edge 125% thật còn chưa xác minh. Các số liệu cũ bên dưới là lịch sử.
 
 Đợt CP0–CP5 địa hình/đất/rào/cổng bắt đầu từ baseline `7021933` và vẫn **INCOMPLETE**. Ảnh QA ở `D:\farm-terrain-qa`; ảnh trước/sau đã chụp lại cùng giờ/thời tiết, còn zoom Edge 125% thật chưa xác minh. Các số liệu test cũ nằm trong `TERRAIN_LAND_FENCE_QA_REPORT.md`; không coi phần lịch sử dưới đây là trạng thái Git hiện tại.

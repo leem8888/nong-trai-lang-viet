@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {openDatabase} from '../server/db.js';
+import {createApp} from '../server/index.js';
+import {MANGO_TREE} from '../public/js/shared/mango.js';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const db=openDatabase(':memory:'),{server,io}=createApp(db);await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
+let browser;const errors=[],results=[];mkdirSync('.qa/mango',{recursive:true});
+async function until(fn,ms=25000){const end=Date.now()+ms;while(Date.now()<end){if(await fn())return;await new Promise(r=>setTimeout(r,100));}throw Error('Mango UI state timed out');}
+try{
+ browser=await chromium.launch({headless:true,executablePath:process.env.EDGE_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+ const context=await browser.newContext({viewport:{width:1366,height:900}});await context.route('**/js/main.js',route=>route.fulfill({contentType:'text/javascript',body:readFileSync('public/js/main.js','utf8')+'\nwindow.__mangoQA={get camera(){return camera},get mango(){return mangoUi},get player(){return player}};'}));
+ const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base);await page.locator('#registerTab').click();const name='mango_ui_'+Date.now();await page.locator('[name=username]').fill(name);await page.locator('[name=password]').fill('password123');await page.locator('#authSubmit').click();await page.locator('[name=name]').fill('Vườn xoài bốn mùa');await page.locator('#farmForm button').click();await page.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});await page.locator('#onboardingSkip').click();
+ const user=db.prepare('SELECT id FROM users WHERE username=?').get(name),farm=db.prepare('SELECT id FROM farms WHERE owner_id=?').get(user.id);
+ async function clickTree(){const p=await page.evaluate(({x,y})=>{const q=__mangoQA.camera.toScreen(x,y);q.y-=__mangoQA.mango.size()*.6;return q;},MANGO_TREE);await page.mouse.click(p.x,p.y);await page.locator('[data-mango-harvest]').waitFor();}
+ async function reload(){await page.reload();await page.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});await until(async()=>page.evaluate(()=>!!window.__mangoQA?.mango?.state));}
+ await clickTree();assert.equal(await page.locator('[data-mango-harvest]').isDisabled(),true);assert.match(await page.locator('[data-mango-time]').textContent(),/Chín sau/);await page.screenshot({path:'.qa/mango/stage-1-wait.png'});await page.keyboard.press('Escape');console.log('PASS new mango waits four hours and shows countdown');
+ const tab=await context.newPage();await tab.goto(base);await tab.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});
+ for(const [count,stage,yieldCount] of [[4,2,3],[14,3,5],[29,4,8]]){
+   // Only the disposable QA database is advanced to a boundary; production has no shortcut endpoint.
+   await page.goto('about:blank');db.prepare('UPDATE farm_mango_trees SET harvest_count=?,ready_at=? WHERE farm_id=?').run(count,Date.now()-1,farm.id);await page.goto(base);await page.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});await until(async()=>page.evaluate(()=>!!window.__mangoQA?.mango?.state));
+   await clickTree();assert.equal(await page.locator('[data-mango-harvest]').isDisabled(),false);const before=db.prepare("SELECT quantity FROM inventory_items WHERE farm_id=? AND item_id='mango'").get(farm.id)?.quantity||0;
+   await page.locator('[data-mango-harvest]').click();try{await until(async()=>db.prepare('SELECT harvest_count n FROM farm_mango_trees WHERE farm_id=?').get(farm.id).n===count+1);}catch(e){console.log(await page.evaluate(()=>({error:document.querySelector('#error').textContent,notice:document.querySelector('#notice').textContent,busy:__mangoQA.mango.busy,p:{x:__mangoQA.player.x,y:__mangoQA.player.y},state:__mangoQA.mango.state})));await page.screenshot({path:'.qa/mango/failure.png'});throw e;}
+   assert.equal(db.prepare("SELECT quantity FROM inventory_items WHERE farm_id=? AND item_id='mango'").get(farm.id).quantity,before+yieldCount);await until(async()=>page.evaluate(stage=>__mangoQA.mango.state.stage===stage,stage));await until(async()=>tab.evaluate(stage=>__mangoQA.mango.state.stage===stage,stage));
+   await page.screenshot({path:`.qa/mango/stage-${stage}.png`});console.log('PASS harvest and stage',stage,'synchronized to second tab');
+ }
+ await tab.close();await reload();assert.equal(await page.evaluate(()=>__mangoQA.mango.state.stage),4);await clickTree();assert.equal(await page.locator('[data-mango-harvest]').isDisabled(),true);await page.keyboard.press('Escape');
+ await page.goto('about:blank');db.prepare("UPDATE player_states SET x=600,y=380,scene='market' WHERE user_id=?").run(user.id);await page.goto(base);await page.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});await page.keyboard.press('e');await page.locator('[data-market-product=mango]').click();await page.locator('[data-market-form=sell] input[name=quantity]').fill('2');const before=db.prepare('SELECT balance FROM wallets WHERE user_id=?').get(user.id).balance;await page.locator('[data-market-form=sell] button[type=submit]').click();await until(async()=>db.prepare('SELECT balance FROM wallets WHERE user_id=?').get(user.id).balance===before+20);await page.screenshot({path:'.qa/mango/market-sale.png'});console.log('PASS sell mango through market UI');
+ await page.goto('about:blank');db.prepare("UPDATE player_states SET x=590,y=340,scene='farm' WHERE user_id=?").run(user.id);await page.setViewportSize({width:390,height:844});await page.goto(base);await page.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});await until(async()=>page.evaluate(()=>!!window.__mangoQA?.mango?.state));await clickTree();const box=await page.locator('#contextMenu').boundingBox();assert.ok(box.x>=0&&box.x+box.width<=391);await page.screenshot({path:'.qa/mango/mobile-menu.png'});
+ assert.deepEqual(errors,[]);results.push({ok:true,fourStages:true,harvest:true,multiTab:true,reload:true,marketSale:true,mobile:true});
+}catch(e){console.error(e);results.push({ok:false,error:e.stack});process.exitCode=1;}
+finally{writeFileSync('.qa/mango/results.json',JSON.stringify({results,errors},null,2));await browser?.close();await new Promise(r=>io.close(r));if(server.listening)await new Promise(r=>server.close(r));db.close();}

@@ -13,12 +13,12 @@ function row(db,userId,q,at){return db.prepare('SELECT status,progress,claimed_a
 export function questState(db,userId,at=Date.now()){
   const farmId=farmOf(db,userId);if(!farmId)return null;
   let priorClaimed=true;
-  const quests=QUESTS.map(q=>{const saved=row(db,userId,q,at);const status=saved?.status||(q.kind==='side'||priorClaimed?'ACTIVE':'LOCKED');if(q.kind==='main')priorClaimed=status==='CLAIMED';return {...q,status,progress:saved?.progress||0,claimedAt:saved?.claimedAt||null};});
+  const quests=QUESTS.map(q=>{const saved=row(db,userId,q,at);const status=q.kind==='main'&&!priorClaimed?'LOCKED':saved?.status||'ACTIVE';if(q.kind==='main')priorClaimed=status==='CLAIMED';return {...q,status,progress:saved?.progress||0,claimedAt:saved?.claimedAt||null};});
   return {farmId,serverTime:at,resetDay:dayKey(at),balance:balance(db,userId),quests};
 }
 export function recordQuestEvent(db,userId,event,at=Date.now()){
   const state=questState(db,userId,at);if(!state)return;
-  for(const q of state.quests.filter(q=>q.status==='ACTIVE'&&q.event===event)){
+  for(const q of state.quests.filter(q=>(q.status==='ACTIVE'||q.id==='first_harvest'&&q.status==='LOCKED')&&q.event===event)){
     const next=Math.min(q.target,q.progress+1),status=next>=q.target?'COMPLETED':'ACTIVE',key=q.kind==='main'?'story':dayKey(at);
     db.prepare(`INSERT INTO player_quests(user_id,quest_id,day_key,status,progress,updated_at) VALUES (?,?,?,?,?,?)
       ON CONFLICT(user_id,quest_id,day_key) DO UPDATE SET status=excluded.status,progress=excluded.progress,updated_at=excluded.updated_at`).run(userId,q.id,key,status,next,at);

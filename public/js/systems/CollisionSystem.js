@@ -1,3 +1,4 @@
+import {circleOverlapsPolygon} from './geometry.js';
 import {ISO_X,ISO_Y} from '../core/IsoProjection.js';
 const MARGIN = { left: 50, top: 70, right: 50, bottom: 50 };
 const R = (x, y, w, h) => ({ x, y, w, h }), E = (x, y, rx, ry) => ({ shape: 'ellipse', x, y, rx, ry });
@@ -27,6 +28,7 @@ export function collidersFor(map) {
   return list;
 }
 export function overlaps(x, y, radius, o) {
+  if(o.shape==='polygon')return circleOverlapsPolygon({x,y},radius,o.points);
   if(o.shape==='projectedEllipse'){
     const dx=((x-o.x)-(y-o.y))*ISO_X,dy=((x-o.x)+(y-o.y))*ISO_Y;
     return (dx/(o.rx+radius*Math.SQRT2*ISO_X))**2+(dy/(o.ry+radius*Math.SQRT2*ISO_Y))**2<1;

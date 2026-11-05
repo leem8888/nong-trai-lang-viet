@@ -103,7 +103,7 @@ test('migration from v1 preserves farm and starter has no user data',()=>{
     old.close();
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT name FROM farms WHERE id=?').get('f').name,'Old farm');
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,9);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,11);
     assert.equal(db.prepare('SELECT count(*) n FROM inventory_items WHERE farm_id=?').get('f').n,6);
     db.close();db=null;
     db=openDatabase(file);
@@ -121,6 +121,7 @@ test('planted crop survives database reopen and grows while offline',()=>{
   try {
     db=openDatabase(file);
     const {user,move,act}=setup(db);
+    db.prepare("UPDATE farm_onboarding SET status='SKIPPED'").run(); // normal 15-minute crop, not the first-use tutorial
     move(0,0);act('till',0,0);act('plant',0,0,{cropId:'mustard'});
     assert.equal(farmingState(db,user.id,start+5*60000).tiles[0].crop.stage,'SPROUT');
     db.close();db=null;

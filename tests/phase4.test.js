@@ -55,7 +55,7 @@ test('carp and chickens grow offline, eggs cap, collection and feed cycle',()=>{
     move(990,780);const carp=act('stock_fish',{fishId:'carp',quantity:1}).state.pond.fish[0];
     assert.equal(carp.fishId,'carp');assert.ok(vacState(db,user.id,at+2*3600000).pond.fish[0].remainingMs>0);
     assert.equal(act('harvest_fish',{entityId:carp.id},at+3*3600000).state.inventory.find(i=>i.id==='carp').quantity,2);
-    move(1040,255);const chickens=act('add_chicken',{quantity:4}).state.coop.chickens;
+    move(1200,449);const chickens=act('add_chicken',{quantity:4}).state.coop.chickens;
     assert.equal(chickens.length,4);assert.throws(()=>act('add_chicken',{quantity:1}),/đầy/);
     const youngFed=act('feed_chicken',{entityId:chickens[0].id},at+5*60000);
     assert.equal(youngFed.state.coop.chickens[0].growthFed,true);
@@ -89,13 +89,13 @@ test('resource conversion is bounded, authorized and transactional',()=>{
     assert.equal(act('convert',{recipeId:'soy_feed',quantity:2},at,key).replayed,true);
     assert.throws(()=>act('convert',{recipeId:'soy_feed',quantity:1},at,key),/đã dùng/);
     assert.throws(()=>act('convert',{recipeId:'soy_feed',quantity:1}),/Không đủ/);
-    move(1040,255);db.prepare('INSERT INTO inventory_items VALUES (?,?,999)').run(farm.id,'chicken_feed');
+    move(1200,449);db.prepare('INSERT INTO inventory_items VALUES (?,?,999)').run(farm.id,'chicken_feed');
     assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:1}),/đầy/);
     assert.equal(vacState(db,user.id).inventory.find(i=>i.id==='corn').quantity,1);
     assert.throws(()=>performVacAction(db,other.id,{action:'convert',farmId:farm.id,requestId:randomUUID(),recipeId:'corn_feed',quantity:1},at),/Không có quyền/);
-    move(1040,255,'market');assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:1}),/gần/);
+    move(1200,449,'market');assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:1}),/gần/);
     assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:-1}),/gần/);
-    move(1040,255);assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:-1}),/không hợp lệ/);
+    move(1200,449);assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:-1}),/không hợp lệ/);
     assert.throws(()=>performVacAction(db,user.id,{action:'convert',farmId:farm.id,requestId:randomUUID(),recipeId:'corn_feed',quantity:1,clientTime:0},at),/không hợp lệ/);
     db.prepare("UPDATE inventory_items SET quantity=0 WHERE farm_id=? AND item_id='chicken_feed'").run(farm.id);
     addItem(db,farm.id,'rice',1);assert.equal(act('convert',{recipeId:'rice_feed',quantity:1}).state.inventory.find(i=>i.id==='chicken_feed').quantity,2);
@@ -143,7 +143,7 @@ test('migration v3 to v4 preserves account, crop, inventory, wallet and order',(
       INSERT INTO farm_crops VALUES(1,'f',0,0,'rice',0,5400000,0,NULL,NULL,3);`);
     old.exec("CREATE TABLE farm_soil_tiles(farm_id TEXT,tile_x INTEGER,tile_y INTEGER,state TEXT,updated_at INTEGER,PRIMARY KEY(farm_id,tile_x,tile_y));INSERT INTO farm_soil_tiles VALUES('f',0,0,'PLANTED',0);");
     old.close();db=openDatabase(file);
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,9);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,11);
     assert.equal(db.prepare('SELECT count(*) n FROM farm_ponds').get().n,1);
     assert.equal(db.prepare('SELECT count(*) n FROM farm_coops').get().n,1);
     assert.deepEqual(db.prepare("SELECT x,y FROM player_states WHERE user_id='u'").get(),{x:990,y:780});
@@ -198,7 +198,7 @@ test('pond and coop production survive database reopen',()=>{
     db=openDatabase(file);const {user,farm,move,act}=setup(db);
     addItem(db,farm.id,'fingerling_tilapia',1);addItem(db,farm.id,'chick',1);addItem(db,farm.id,'chicken_feed',1);
     move(990,780);act('stock_fish',{fishId:'tilapia',quantity:1});
-    move(1040,255);const chicken=act('add_chicken',{quantity:1}).state.coop.chickens[0];
+    move(1200,449);const chicken=act('add_chicken',{quantity:1}).state.coop.chickens[0];
     act('feed_chicken',{entityId:chicken.id},at+CHICKEN.growthMs);
     db.close();db=null;db=openDatabase(file);
     const state=vacState(db,user.id,at+3*86400000);

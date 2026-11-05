@@ -25,7 +25,7 @@ const connect=(base,cookie)=>new Promise((resolve,reject)=>{const socket=client(
 test('database, auth, ownership, persistence and socket access',async()=>{
   const f=await fixture();
   try {
-    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,9);
+    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,11);
     assert.equal((await request(f.base,'/health')).status,200);
     assert.equal((await request(f.base,'/farm')).status,401);
     const a=await request(f.base,'/register',{username:'farmer_a',password:'strong-pass-123'});
@@ -69,8 +69,9 @@ test('database, auth, ownership, persistence and socket access',async()=>{
 
 test('movement, collision, range and time rules',()=>{
   assert.equal(validPosition(720,650),true);
-  assert.equal(validPosition(700,190),false);
-  assert.equal(validPosition(700,-130),true);
+  assert.equal(validPosition(700,190),true);
+  assert.equal(validPosition(650,100),false);
+  assert.equal(validPosition(400,-130),true);
   assert.equal(validPosition(700,-230),false);
   assert.equal(validMovement({x:720,y:650},730,650,200),true);
   assert.equal(validMovement({x:720,y:650},900,650,200),false);
@@ -89,7 +90,7 @@ test('SQLite survives reopen and migration is idempotent',()=>{
     db.close(); db=null;
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT username FROM users WHERE id=?').get('u').username,'test_user');
-    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,9);
+    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,11);
   } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });
 

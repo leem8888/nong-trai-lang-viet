@@ -1,3 +1,4 @@
+import { MANGO_CYCLE_MS } from '../public/js/shared/mango.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
@@ -272,6 +273,28 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
       SELECT f.id,MAX(5,COALESCE((SELECT MAX(tile_y*8+tile_x+1) FROM farm_soil_tiles WHERE farm_id=f.id),0),
         COALESCE((SELECT MAX(tile_y*8+tile_x+1) FROM farm_crops WHERE farm_id=f.id),0)),0,strftime('%s','now')*1000 FROM farms f;`);
     db.prepare('INSERT INTO schema_migrations VALUES (9, ?, ?)').run('square field and paid plot unlocks',Date.now());
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 10').get()) db.transaction(() => {
+    db.exec(`CREATE TABLE farm_onboarding (
+      farm_id TEXT PRIMARY KEY REFERENCES farms(id) ON DELETE CASCADE,
+      step INTEGER NOT NULL DEFAULT 0 CHECK(step BETWEEN 0 AND 7),
+      status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE','SKIPPED','DONE')),
+      fast_crop_id INTEGER REFERENCES farm_crops(id),updated_at INTEGER NOT NULL);`);
+    db.prepare('INSERT INTO schema_migrations VALUES (10, ?, ?)').run('persistent first harvest tutorial',Date.now());
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 11').get()) db.transaction(() => {
+    db.exec(`CREATE TABLE farm_mango_trees (
+      farm_id TEXT PRIMARY KEY REFERENCES farms(id) ON DELETE CASCADE,
+      harvest_count INTEGER NOT NULL DEFAULT 0 CHECK(harvest_count>=0),
+      ready_at INTEGER NOT NULL,updated_at INTEGER NOT NULL);
+      CREATE TABLE mango_receipts (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      request_key TEXT NOT NULL,farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+      quantity INTEGER NOT NULL CHECK(quantity>0),created_at INTEGER NOT NULL,
+      PRIMARY KEY(user_id,request_key));`);
+    const at=Date.now();
+    db.prepare('INSERT INTO farm_mango_trees(farm_id,ready_at,updated_at) SELECT id,?,? FROM farms').run(at+MANGO_CYCLE_MS,at);
+    db.prepare('INSERT INTO schema_migrations VALUES (11, ?, ?)').run('four-hour mango tree growth and harvests',at);
   })();
   if (file !== ':memory:' && path.resolve(file) !== path.resolve('data/starter.sqlite') &&
       db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='farm_objects'").get()) seedAdmin(db);

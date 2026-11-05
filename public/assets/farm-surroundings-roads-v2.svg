@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4300" height="3600" viewBox="0 0 4300 3600">
+<!-- World offset (1100,1000). Roads follow the outside of the farm fence. -->
+<defs><path id="lanes" d="M0 715H4300 M1070 0V2000Q1070 2000 1170 2000H4300 M2870 715V2000 M1820 1905V2000"/></defs>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<use href="#lanes" stroke="#8f845a" stroke-width="100" opacity=".28"/>
+<use href="#lanes" stroke="#bdab7c" stroke-width="86"/>
+<use href="#lanes" stroke="#e0c494" stroke-width="64"/>
+<path d="M3700 0Q3400 1000 3780 2200T3400 3600" stroke="#b4c78e" stroke-width="165"/>
+<path d="M3700 0Q3400 1000 3780 2200T3400 3600" stroke="#7cafa2" stroke-width="130"/>
+</g></svg>

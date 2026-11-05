@@ -1,3 +1,4 @@
+import {rectangleOverlapsObstacle} from '../public/js/systems/geometry.js';
 import { createHash } from 'node:crypto';
 import { RECIPES, BUILDINGS, DECORATIONS, EXPANSIONS, TILE_SIZE, footprint, unlockedTile } from '../public/js/shared/phase5.js';
 import { inventory, addItem, spendItem } from './crops.js';
@@ -42,7 +43,7 @@ function validPlace(db,farmId,definitionId,x,y,rotation,kind,skipType,skipId){
   // A central 3-tile route keeps the house, entrance and market gate reachable.
   const route=rect(14,10,4,9),field=rect(2,15,9,4);
   if(overlaps(area,route)||overlaps(area,field))throw Error('Vị trí chặn lối đi hoặc ruộng.');
-  for(const obstacle of world.obstacles)if(overlaps(area,obstacle))throw Error('Vị trí có vật cản.');
+  for(const obstacle of world.obstacles)if(rectangleOverlapsObstacle(area,obstacle))throw Error('Vị trí có vật cản.');
   // A new placement may occupy only the pond/yard extension. Recompute the
   // layout with that placement so old buildable tiles retain their use.
   const objects=placed(db,farmId);

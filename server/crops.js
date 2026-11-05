@@ -1,4 +1,5 @@
 import { CROPS, CROP_IDS, ITEMS, FIELD, STARTER_PLOTS, MAX_PLOTS, plotIndex, plotUnlockPrice, tileCenter, cropProgress } from '../public/js/shared/crops.js';
+import { onboardingEvent, TUTORIAL_DURATION_MS } from './onboarding.js';
 import { now } from './time.js';
 import { validPosition } from './world.js';
 import { recordQuestEvent } from './quests.js';
@@ -104,15 +105,24 @@ export function performFarmAction(db, userId, payload, at = now()) {
     if (action==='till') {
       if (state!=='EMPTY') throw new Error('Ô đất đã được chuẩn bị.');
       db.prepare('INSERT INTO farm_soil_tiles VALUES (?,?,?,?,?)').run(farmId,x,y,'TILLED',at);
+      onboardingEvent(db,farmId,'till',at);
       message='Đã cuốc đất.';
     } else if (action==='plant') {
       if (!['TILLED','WATERED'].includes(state) || crop) throw new Error('Cần một ô đất đã cuốc và chưa có cây.');
       if (typeof payload.cropId!=='string' || !Object.hasOwn(CROPS,payload.cropId)) throw new Error('Loại hạt không hợp lệ.');
       const definition=CROPS[payload.cropId];
+      const tutorial=db.prepare("SELECT * FROM farm_onboarding WHERE farm_id=? AND status='ACTIVE'").get(farmId);
+      // Server grants exactly one short mustard crop, even across tabs and retries.
+      const fast=tutorial && tutorial.fast_crop_id===null && payload.cropId==='mustard';
+      const durationMs=fast?TUTORIAL_DURATION_MS:definition.durationMs;
       spendItem(db,farmId,definition.seed,1);
       const watered=state==='WATERED' ? at : null;
       db.prepare(`INSERT INTO farm_crops(farm_id,tile_x,tile_y,crop_id,planted_at,duration_ms,bonus_ms,watered_at,yield_quantity)
-        VALUES (?,?,?,?,?,?,?,?,?)`).run(farmId,x,y,payload.cropId,at,definition.durationMs,watered?Math.floor(definition.durationMs*.1):0,watered,definition.yield);
+        VALUES (?,?,?,?,?,?,?,?,?)`).run(farmId,x,y,payload.cropId,at,durationMs,watered?Math.floor(durationMs*.1):0,watered,definition.yield);
+      if(fast){
+        const cropId=db.prepare('SELECT last_insert_rowid() AS id').get().id;
+        db.prepare("UPDATE farm_onboarding SET fast_crop_id=?,step=?,updated_at=? WHERE farm_id=? AND status='ACTIVE' AND fast_crop_id IS NULL").run(cropId,watered?3:2,at,farmId);
+      } else if(tutorial?.step===6)onboardingEvent(db,farmId,'replant',at);
       db.prepare('UPDATE farm_soil_tiles SET state=?,updated_at=? WHERE farm_id=? AND tile_x=? AND tile_y=?').run('PLANTED',at,farmId,x,y);
       message=`Đã gieo ${definition.name.toLowerCase()}.`;
     } else if (action==='water') {
@@ -121,6 +131,7 @@ export function performFarmAction(db, userId, payload, at = now()) {
       } else if (state==='PLANTED' && crop && crop.watered_at===null) {
         db.prepare('UPDATE farm_crops SET watered_at=?,bonus_ms=? WHERE id=? AND watered_at IS NULL').run(at,Math.floor(crop.duration_ms*.1),crop.id);
       } else throw new Error('Ô này không cần tưới thêm.');
+      if(crop && db.prepare('SELECT 1 FROM farm_onboarding WHERE farm_id=? AND fast_crop_id=?').get(farmId,crop.id))onboardingEvent(db,farmId,'water',at);
       message='Đã tưới cây. Thời gian trưởng thành giảm 10% một lần.';
     } else if (action==='harvest') {
       if (!crop || state!=='PLANTED') throw new Error('Ô này chưa có cây để thu hoạch.');
@@ -130,6 +141,10 @@ export function performFarmAction(db, userId, payload, at = now()) {
       if (!changed.changes) throw new Error('Cây đã được thu hoạch.');
       addItem(db,farmId,CROPS[crop.crop_id].produce,crop.yield_quantity);
       recordQuestEvent(db,userId,'harvest',at);
+      if(db.prepare('SELECT 1 FROM farm_onboarding WHERE farm_id=? AND fast_crop_id=?').get(farmId,crop.id)){
+        // Harvest without watering is still legitimate once the short crop matures.
+        db.prepare("UPDATE farm_onboarding SET step=4,updated_at=? WHERE farm_id=? AND status='ACTIVE' AND step IN (2,3)").run(at,farmId);
+      }
       db.prepare('UPDATE farm_soil_tiles SET state=?,updated_at=? WHERE farm_id=? AND tile_x=? AND tile_y=?').run('TILLED',at,farmId,x,y);
       message=`Thu hoạch ${crop.yield_quantity} ${CROPS[crop.crop_id].name.toLowerCase()}.`;
     }
