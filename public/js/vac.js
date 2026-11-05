@@ -8,7 +8,7 @@ export class VacUI {
     panel.addEventListener('submit',event=>{
       const form=event.target.closest('[data-vac-form]');if(!form)return;
       event.preventDefault();const fields=Object.fromEntries(new FormData(form));
-      this.act({action:form.dataset.vacForm,quantity:Number(fields.quantity),...(fields.fishId?{fishId:fields.fishId}:{}),...(fields.recipeId?{recipeId:fields.recipeId}:{})},form.querySelector('button[type=submit]'));
+      this.act({action:form.dataset.vacForm,quantity:Number(fields.quantity),...(fields.fishId?{fishId:fields.fishId}:{}),...(fields.recipeId?{recipeId:fields.recipeId}:{})},event.submitter||form.querySelector('button:not([type=button])'));
     });
     panel.addEventListener('click',event=>{
       const button=event.target.closest('[data-vac-action]');if(!button)return;

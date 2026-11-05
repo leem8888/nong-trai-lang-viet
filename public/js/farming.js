@@ -1,7 +1,12 @@
 import { CROPS, CROP_IDS, FIELD, tileAt, tileRect, cropProgress } from './shared/crops.js';
 import { ISO_X, ISO_Y } from './core/IsoProjection.js';
+import { itemArtwork } from './itemArtwork.js';
 
 const stageNames = { SEED:'Hạt mới gieo', SPROUT:'Nảy mầm', GROWING:'Đang lớn', MATURE:'Đã trưởng thành' };
+export function soilIsDry(tile,time){
+  if(tile.locked||tile.state==='EMPTY'||tile.state==='WATERED'||tile.crop?.wateredAt!=null)return false;
+  return !tile.crop||cropProgress(tile.crop,time).stage!=='MATURE';
+}
 export class FarmingUI {
   constructor(api, showError, showNotice, openPanel) {
     this.api=api; this.showError=showError; this.showNotice=showNotice; this.openPanel=openPanel;
@@ -23,7 +28,7 @@ export class FarmingUI {
   }
   setState(state) { this.state=state; this.receivedAt=performance.now(); this.updateInfo(true); this.updateSeeds();const p=state.plots;if(p)document.getElementById('plotsButton').textContent=`Ô ruộng ${p.unlocked}/${p.max}`; }
   showPlots(){const p=this.state?.plots;if(!p)return;this.openPanel(`<h2>Mở rộng ruộng</h2><p>Đã mở <b>${p.unlocked}/${p.max}</b> ô. Mỗi ô vuông 48×48, mở lần lượt từng ô.</p>${p.nextPrice===null?'<p>Đã mở toàn bộ ô ruộng.</p>':`<p>Mở ô số ${p.unlocked+1}: <b>${p.nextPrice.toLocaleString('vi-VN')} Đồng Làng</b></p><button data-unlock-plot ${this.unlocking?'disabled':''}>Xác nhận mở thêm 1 ô</button>`}<p class="hint">Giá các lần mở: 100, 175, 300, 475… Đồng Làng. Giá tăng theo số lần bạn đã mua ô.</p>`);}
-  async unlockPlot(){if(this.unlocking)return;this.unlocking=true;this.unlockRequestId??=crypto.randomUUID();this.unlockIntent??={action:'unlock_plot',farmId:this.state.farmId,requestId:this.unlockRequestId,expectedCount:this.state.plots.unlocked+1};document.querySelector('[data-unlock-plot]')?.setAttribute('disabled','');try{const r=await this.api('/farming/action',{method:'POST',body:JSON.stringify(this.unlockIntent)});this.unlockRequestId=null;this.unlockIntent=null;this.setState(r.state);this.showNotice(r.message);this.showPlots();}catch(e){if(e.status>=400&&e.status<500){this.unlockRequestId=null;this.unlockIntent=null;}this.showError(e.message);try{this.setState(await this.api('/farming'));this.showPlots();}catch{}}finally{this.unlocking=false;document.querySelector('[data-unlock-plot]')?.removeAttribute('disabled');}}
+  async unlockPlot(){if(this.unlocking)return;this.unlocking=true;this.unlockRequestId??=crypto.randomUUID();this.unlockIntent??={action:'unlock_plot',farmId:this.state.farmId,requestId:this.unlockRequestId,expectedCount:this.state.plots.unlocked+1};document.querySelector('[data-unlock-plot]')?.setAttribute('disabled','');try{const r=await this.api('/farming/action',{method:'POST',body:JSON.stringify(this.unlockIntent)});this.unlockRequestId=null;this.unlockIntent=null;this.setState(r.state);this.showNotice(r.message);document.getElementById('closePanel')?.click();}catch(e){if(e.status>=400&&e.status<500){this.unlockRequestId=null;this.unlockIntent=null;}this.showError(e.message);try{this.setState(await this.api('/farming'));this.showPlots();}catch{}}finally{this.unlocking=false;document.querySelector('[data-unlock-plot]')?.removeAttribute('disabled');}}
   updateSeeds() {
     if(!this.state)return;
     const select=document.getElementById('seedSelect');
@@ -66,8 +71,14 @@ export class FarmingUI {
   }
   showInventory() {
     if(!this.state)return;
-    const rows=this.state.inventory.filter(item=>item.quantity>0).map(item=>`<li><span style="color:${item.color}">${item.icon||'◆'}</span> ${item.name}: <b>${item.quantity}</b><small>${item.description}</small></li>`).join('');
-    this.openPanel(`<h2>Túi đồ</h2><ul class="inventory-list">${rows||'<li>Chưa có vật phẩm. Hãy cuốc đất, nhận hạt miễn phí nếu đã hết, rồi gieo và thu hoạch.</li>'}</ul><p>Chạm ô đã cuốc để chọn hạt giống và gieo. Khi có nông sản, đến Chợ Quê để bán.</p>`);
+    const items=this.state.inventory.filter(item=>item.quantity>0);
+    const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const groups=[['seed','Hạt giống'],['stock','Con giống'],['produce','Nông sản'],['feed','Thức ăn'],['decoration','Trang trí']];
+    const render=item=>`<li class="bag-slot" tabindex="0" title="${escape(item.description)}" aria-label="${escape(item.name)}: ${item.quantity}"><div class="bag-picture">${itemArtwork(item.id,item.name)}<span class="bag-quantity" aria-label="Số lượng">${item.quantity.toLocaleString('vi-VN')}</span></div><span class="bag-item-name">${escape(item.name)}</span></li>`;
+    const known=new Set(groups.map(([id])=>id));
+    if(items.some(item=>!known.has(item.category)))groups.push(['other','Vật phẩm khác']);
+    const sections=groups.map(([id,label])=>{const rows=items.filter(item=>id==='other'?!known.has(item.category):item.category===id);return rows.length?`<section class="bag-group"><h3>${label}<span>${rows.length}</span></h3><ul class="bag-grid">${rows.map(render).join('')}</ul></section>`:'';}).join('');
+    this.openPanel(`<div class="inventory-bag"><div class="bag-heading"><span class="bag-emblem" aria-hidden="true">🎒</span><div><h2>Túi đồ</h2><p>${items.length} loại vật phẩm đang có</p></div></div>${sections||'<div class="bag-empty">Túi đang trống.<br><small>Gieo trồng và thu hoạch để nhận vật phẩm.</small></div>'}<p class="bag-footer">Số lượng hiển thị ở góc mỗi vật phẩm.</p></div>`);
   }
   draw(ctx) {
     if(!this.state)return;
@@ -82,7 +93,8 @@ export class FarmingUI {
       if(tile.locked)continue;
       if(this.isometric&&tile.state==='EMPTY'&&!tile.crop&&this.terrainArt?.naturalWidth){const image=this.terrainArt;ctx.drawImage(image,0,image.naturalHeight*.5,image.naturalWidth*.25,image.naturalHeight*.25,r.x,r.y,FIELD.stepX,FIELD.stepY);continue;}
       if(this.isometric&&this.soilArt?.naturalWidth&&this.upright){
-        if(tile.state==='EMPTY'&&!tile.crop){ctx.fillStyle='#8e6743';ctx.fillRect(r.x,r.y,r.w,r.h);ctx.fillStyle='#b08a5b';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*12,r.y+13+i%2*11,7,3);ctx.strokeStyle='#d3ad76';ctx.lineWidth=1.5;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}else{const image=this.soilArt,cw=image.naturalWidth/4,ch=image.naturalHeight/2,variant=(tile.x*3+tile.y*5)%4,wet=tile.state==='WATERED'||Boolean(tile.crop?.wateredAt),offset=56/(4*ISO_Y);ctx.save();ctx.beginPath();ctx.rect(r.x,r.y,r.w,r.h);ctx.clip();ctx.fillStyle=wet?'#4d4034':'#795b3b';ctx.fillRect(r.x,r.y,r.w,r.h);this.upright(ctx,r.x+r.w/2+offset,r.y+r.h/2+offset,image,76,56,[variant*cw,wet?ch:0,cw,ch]);ctx.restore();ctx.strokeStyle='#ae8a57';ctx.lineWidth=1;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}
+        if(tile.state==='EMPTY'&&!tile.crop){ctx.fillStyle='#8e6743';ctx.fillRect(r.x,r.y,r.w,r.h);ctx.fillStyle='#b08a5b';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*12,r.y+13+i%2*11,7,3);ctx.strokeStyle='#d3ad76';ctx.lineWidth=1.5;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}else{this.drawRaisedBed(ctx,r,tile,time);}
+
         continue;
       }
       ctx.fillStyle=tile.state==='EMPTY'?'#795b3b':tile.state==='WATERED'?'#4d4034':'#644d35';
@@ -94,11 +106,84 @@ export class FarmingUI {
       if(tile.crop&&cropProgress(tile.crop,time).stage!=='MATURE'){ctx.save();ctx.fillStyle='#332217ed';ctx.shadowColor='#21170ed0';ctx.shadowBlur=3;ctx.beginPath();ctx.ellipse(r.x+r.w/2,r.y+r.h/2,r.w*.34,r.h*.34,0,0,Math.PI*2);ctx.fill();ctx.restore();}
       if(tile.crop&&!this.isometric) this.drawCrop(ctx,r,tile.crop,time);
     }
+    this.drawFieldBorders(ctx);
     const next=this.state.tiles.find(tile=>tile.locked&&tile.y*FIELD.columns+tile.x===this.state.plots?.unlocked);
-    if(next){const r=tileRect(next.x,next.y);ctx.save();ctx.translate(r.x+r.w/2,r.y+r.h/2);if(this.isometric)ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.fillStyle='#76502d';ctx.fillRect(-1.5,-7,3,17);ctx.fillStyle='#a36b3d';ctx.strokeStyle='#e1b77d';ctx.lineWidth=1.3;ctx.beginPath();ctx.roundRect(-27,-22,54,17,2);ctx.fill();ctx.stroke();ctx.strokeStyle='#bd8550';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-23,-18);ctx.lineTo(23,-18);ctx.moveTo(-23,-9);ctx.lineTo(23,-9);ctx.stroke();ctx.fillStyle='#fff0cb';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Mua đất',0,-13);ctx.restore();}
+    if(next){const r=tileRect(next.x,next.y);ctx.save();ctx.translate(r.x+r.w/2,r.y+r.h/2);if(this.isometric)ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.scale(.7,.7);ctx.fillStyle='#76502d';ctx.fillRect(-1.5,-7,3,17);ctx.fillStyle='#a36b3d';ctx.strokeStyle='#e1b77d';ctx.lineWidth=1.3;ctx.beginPath();ctx.roundRect(-27,-22,54,17,2);ctx.fill();ctx.stroke();ctx.strokeStyle='#bd8550';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-23,-18);ctx.lineTo(23,-18);ctx.moveTo(-23,-9);ctx.lineTo(23,-9);ctx.stroke();ctx.fillStyle='#fff0cb';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Mua đất',0,-13);ctx.restore();}
     if(this.preview?.size){ctx.save();ctx.fillStyle='#e8cf7470';ctx.strokeStyle='#fff2a8';ctx.lineWidth=2;for(const tile of this.preview.values()){const r=tileRect(tile.x,tile.y);ctx.fillRect(r.x+2,r.y+2,r.w-4,r.h-4);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);}ctx.restore();}
     if(this.hover){const r=tileRect(this.hover.x,this.hover.y),locked=this.tile(this.hover.x,this.hover.y)?.locked;ctx.save();ctx.strokeStyle=locked?'#d8e9be':'#fff1a2';ctx.lineWidth=1.5;ctx.strokeRect(r.x+1,r.y+1,r.w-2,r.h-2);ctx.restore();}
     this.updateInfo();
+  }
+  drawRaisedBed(ctx,r,tile,time=this.serverNow()) {
+    const x=r.x+3,y=r.y+3,w=r.w-6,h=r.h-6;
+    const shape=(left,top,width,height,radius)=>{ctx.beginPath();ctx.roundRect(left,top,width,height,radius);};
+    ctx.save();
+    ctx.fillStyle='#231a14a0';shape(x-1,y+1,w+3,h+3,13);ctx.fill();
+    // Curved contours gradually rise to the crown instead of outlining a flat lid.
+    for(let i=0;i<=24;i++){
+      const t=i/24,inset=t*15,lift=Math.sin(t*Math.PI/2)*9;
+      const brown=ctx.createLinearGradient(x,y,x+w,y+h),light=Math.round(66+38*Math.sin(t*Math.PI/2));
+      brown.addColorStop(0,`rgb(${light+12},${Math.round(light*.69)},${Math.round(light*.43)})`);
+      brown.addColorStop(1,`rgb(${light-6},${Math.round(light*.55)},${Math.round(light*.33)})`);
+      ctx.fillStyle=brown;
+      shape(x+inset-lift,y+inset-lift,w-inset*2,h-inset*2,Math.min(14,(w-inset*2)/2));ctx.fill();
+    }
+    // Moist clods follow the mound's curved surface; every bed uses the same texture.
+    for(let i=0;i<65;i++){
+      const u=((i*17)%61)/61,v=((i*29+7)%67)/67;
+      const crown=Math.max(0,1-((u-.5)*2)**2-((v-.5)*2)**2),lift=Math.sqrt(crown)*9;
+      const px=x+3+u*(w-6)-lift,py=y+3+v*(h-6)-lift;
+      ctx.fillStyle=i%3===0?'#ac805147':'#21180e70';
+      ctx.beginPath();ctx.ellipse(px,py,.6+i%4*.24,.45+i%3*.16,-.4,0,Math.PI*2);ctx.fill();
+      if(i%7===0){ctx.fillStyle='#bea17d52';ctx.beginPath();ctx.ellipse(px-.3,py-.5,.8,.35,-.4,0,Math.PI*2);ctx.fill();}
+    }
+    this.drawSoilCracks(ctx,r,tile,time);
+    if(tile.state==='WATERED'||tile.crop?.wateredAt!=null){
+      ctx.strokeStyle='#b8d9d0b3';ctx.lineWidth=1;
+      for(const [dx,dy] of [[9,12],[28,26],[18,32]]){ctx.beginPath();ctx.ellipse(x+dx,y+dy,2.5,1.2,-.4,0,Math.PI*2);ctx.stroke();}
+    }
+    ctx.restore();
+  }
+  drawSoilCracks(ctx,r,tile,time){
+    const x=r.x+3,y=r.y+3,w=r.w-6,h=r.h-6;
+    if(soilIsDry(tile,time)){
+      const cracks=[[[4,17],[8,13],[12,15],[13,9]],[[8,13],[7,8]],[[27,7],[30,12],[35,13],[37,18]],[[30,12],[27,17]],[[6,28],[10,31],[9,36]],[[10,31],[17,33],[18,37]],[[26,34],[30,30],[35,31],[38,27]],[[30,30],[28,25]]];
+      const surface=([px,py])=>{const u=px/w,v=py/h,lift=Math.sqrt(Math.max(0,1-((u-.5)*2)**2-((v-.5)*2)**2))*9;return [x+px-lift,y+py-lift];};
+      ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+      for(const [color,width,offset] of [['#dbb57b9c',3.2,1],['#20130eef',1.9,0]]){
+        ctx.beginPath();for(const crack of cracks)crack.forEach((p,i)=>{const [px,py]=surface(p);if(i)ctx.lineTo(px,py+offset);else ctx.moveTo(px,py+offset);});ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+  drawFieldBorders(ctx) {
+    const inside=[],outside=[];
+    const x=FIELD.x-1,y=FIELD.y-1;
+    const right=x+FIELD.columns*FIELD.stepX,bottom=y+FIELD.rows*FIELD.stepY;
+    for(let column=1;column<FIELD.columns;column++){
+      const lineX=x+column*FIELD.stepX;
+      inside.push([lineX,y,lineX,bottom]);
+    }
+    for(let row=1;row<FIELD.rows;row++){
+      const lineY=y+row*FIELD.stepY;
+      inside.push([x,lineY,right,lineY]);
+    }
+    outside.push([x,y,right,y],[right,y,right,bottom],[right,bottom,x,bottom],[x,bottom,x,y]);
+    ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+    const stroke=(edges,color,width,offset=0)=>{
+      ctx.beginPath();
+      for(const [x1,y1,x2,y2] of edges){ctx.moveTo(x1,y1+offset);ctx.lineTo(x2,y2+offset);}
+      ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+    };
+    // Light earthen shoulders and a dark groove remain visible over grass and wet soil.
+    stroke(inside,'#c29a61',6);
+    stroke(inside,'#50351f',3.5);
+    stroke(inside,'#936638',1.5);
+    // The outer trench encloses every plot, including land not purchased yet.
+    stroke(outside,'#44301e',10);
+    stroke(outside,'#b48b53',7);
+    stroke(outside,'#79502e',5);
+    stroke(outside,'#50351f',2.5);
+    ctx.restore();
   }
   drawCrop(ctx,r,crop,time) {
     const definition=CROPS[crop.cropId], growth=cropProgress(crop,time);

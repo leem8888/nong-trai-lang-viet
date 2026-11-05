@@ -1,6 +1,6 @@
 import {ISO_X,ISO_Y} from './core/IsoProjection.js';
 export const LIFE_IDS=['banyan','well','bamboo','shade','flame','cottage','pavilion','ducks','pets'];
-export function drawLife(ctx,x,y,id,w,h,art,upright){const index=LIFE_IDS.indexOf(id);if(index<0)return;upright(ctx,x,y,art.villageLife,w,h,[index*384,0,384,384]);}
+export function drawLife(ctx,x,y,id,w,h,art,upright){const index=LIFE_IDS.indexOf(id);if(index<0)return;const sourceWidth=id==='flame'?336:384;upright(ctx,x,y,art.villageLife,w*sourceWidth/384,h,[index*384,0,sourceWidth,384]);}
 function drawNeighbor(ctx,x,y,variant){
   const colors=[['#f5dfad','#a84e39','#5d3d2d'],['#d8ddbc','#5d8062','#704c35'],['#f0d2a9','#bb7852','#68412c']][variant%3];
   ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
@@ -22,7 +22,7 @@ export function villageScenery(scene,art,upright,reduced,placed=[]){
   const addHome=(x,y,variant)=>{layers.push({y:x+y,draw:ctx=>{const image=art.neighbors;if(image?.naturalWidth){const cell=image.naturalWidth/3;upright(ctx,x,y,image,330,250,[variant%3*cell,0,cell,image.naturalHeight]);}else drawNeighbor(ctx,x,y,variant);}});};
   if(scene==='farm'){
     for(const [x,y,id,w,h] of [[180,180,'bamboo',170,220],[355,160,'flame',210,210],[1240,175,'shade',245,245],[180,440,'bamboo',125,175],[1330,570,'shade',185,185],[560,910,'flame',140,145]])add(x,y,id,w,h,1);
-    [[260,-150],[1020,-170],[-160,380],[1620,550],[1560,1190],[650,1290],[-120,1110]].forEach(([x,y],i)=>addHome(x,y,i));
+    [[260,-540],[1020,-560],[-340,380],[1980,550],[1860,1310],[650,1410],[-340,1110]].forEach(([x,y],i)=>addHome(x,y,i));
     add(-180,820,'bamboo',190,240);add(1750,1050,'shade',240,240);
   }else{
     add(1450,400,'banyan',380,340);add(1180,930,'well',175,185);add(1670,1060,'pavilion',350,245);

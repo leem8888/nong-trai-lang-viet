@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { FISH, CHICKEN, VAC_RECIPES } from '../public/js/shared/vac.js';
 import { inventory, addItem, spendItem } from './crops.js';
 import { inRange } from './world.js';
+import {livingLayout} from '../public/js/shared/livingLayout.js';
 import { now } from './time.js';
 
 const POND_CAPACITY=6, COOP_CAPACITY=4;
@@ -18,6 +19,8 @@ export function vacState(db,userId,at=now()) {
     coop:{capacity:COOP_CAPACITY,chickens:chickens.map(row=>{
       const ready=eggsReady(row,at),adult=at>=row.ready_at;
       return {id:row.id,readyAt:row.ready_at,remainingMs:Math.max(0,row.ready_at-at),
+        growthFed:row.ready_at<row.added_at+row.growth_ms,
+        growthProgress:Math.min(1,Math.max(0,(at-row.added_at)/(row.ready_at-row.added_at||1))),
         status:!adult?'GROWING':row.feed_started_at===null||ready===row.max_eggs&&row.eggs_claimed===ready?'WAITING_FOR_FEED':'PRODUCING',
         eggsReady:Math.max(0,ready-row.eggs_claimed),eggsClaimed:row.eggs_claimed,maxEggs:row.max_eggs,
         nextEggAt:adult&&row.feed_started_at!==null&&ready<row.max_eggs?row.feed_started_at+(ready+1)*row.egg_ms:null};
@@ -51,7 +54,8 @@ export function performVacAction(db,userId,payload,at=now()) {
     }
     const player=db.prepare('SELECT x,y,scene FROM player_states WHERE user_id=? AND farm_id=?').get(userId,farmId);
     const point=['stock_fish','feed_fish','harvest_fish'].includes(payload.action)||payload.action==='convert'&&VAC_RECIPES[payload.recipeId]?.output==='fish_feed'?'pond':'coop';
-    if(!player||player.scene!=='farm'||!inRange(player,point))throw new Error('Hãy đến gần ao hoặc chuồng gà.');
+    const layout=livingLayout(db.prepare('SELECT definition_id,tile_x,tile_y,rotation FROM farm_buildings WHERE farm_id=?').all(farmId),db.prepare('SELECT definition_id,tile_x,tile_y,rotation FROM farm_decorations WHERE farm_id=?').all(farmId));
+    if(!player||player.scene!=='farm'||!inRange(player,point,layout))throw new Error('Hãy đến gần ao hoặc chuồng gà.');
     let itemId=null,quantity=null,entityId=null,message;
     if(payload.action==='stock_fish'){
       const definition=FISH[payload.fishId];quantity=payload.quantity;
@@ -94,11 +98,17 @@ export function performVacAction(db,userId,payload,at=now()) {
       const chicken=db.prepare('SELECT * FROM coop_chickens WHERE id=? AND farm_id=?').get(entityId,farmId);
       if(!chicken)throw new Error('Gà không tồn tại trong chuồng.');
       if(at<chicken.added_at)throw new Error('Thời gian không hợp lệ.');
-      if(at<chicken.ready_at)throw new Error('Gà chưa trưởng thành.');
+      if(at<chicken.ready_at){
+        if(chicken.ready_at<chicken.added_at+chicken.growth_ms)throw new Error('Gà con đã được cho ăn.');
+        spendItem(db,farmId,'chicken_feed',1);
+        db.prepare('UPDATE coop_chickens SET ready_at=? WHERE id=?').run(Math.max(at,chicken.ready_at-Math.floor(chicken.growth_ms*.1)),entityId);
+        itemId='chicken_feed';quantity=1;message='Gà con đã ăn; thời gian trưởng thành giảm 12 phút.';
+      }else{
       if(chicken.feed_started_at!==null&&(eggsReady(chicken,at)<chicken.max_eggs||chicken.eggs_claimed<chicken.max_eggs))throw new Error('Gà vẫn còn chu kỳ trứng hoặc trứng chưa nhặt.');
       spendItem(db,farmId,'chicken_feed',1);
       db.prepare('UPDATE coop_chickens SET feed_started_at=?,eggs_claimed=0 WHERE id=?').run(at,entityId);
       itemId='chicken_feed';quantity=1;message='Đã cho gà ăn; bắt đầu chu kỳ đẻ tối đa 3 trứng.';
+      }
     }else if(payload.action==='collect_eggs'){
       const chickens=db.prepare('SELECT * FROM coop_chickens WHERE farm_id=?').all(farmId);
       quantity=chickens.reduce((total,row)=>total+Math.max(0,eggsReady(row,at)-row.eggs_claimed),0);

@@ -30,8 +30,16 @@ try{
   await edge.evaluate("document.querySelector('#onboardingSkip')?.click()");
   const user=db.prepare("SELECT id FROM users WHERE username='plot_visual'").get(),farm=db.prepare('SELECT id FROM farms WHERE owner_id=?').get(user.id);
   db.prepare('UPDATE farm_plot_expansions SET unlocked_count=21,purchased_count=16 WHERE farm_id=?').run(farm.id);
+  if(stage==='raised-beds')for(let x=0;x<6;x++)db.prepare('INSERT INTO farm_soil_tiles(farm_id,tile_x,tile_y,state,updated_at) VALUES (?,?,?,?,?)').run(farm.id,x,0,x===5?'WATERED':'TILLED',Date.now());
   db.prepare("UPDATE player_states SET x=300,y=740,scene='farm' WHERE user_id=?").run(user.id);
   db.prepare('UPDATE wallets SET balance=10000 WHERE user_id=?').run(user.id);
+  if(stage==='crop-centered'){
+    const now=Date.now();
+    for(const [x,id,age] of [[0,'mustard',1.1],[1,'carrot',1.1],[2,'rice',.5],[3,'rice',.12]]){
+      db.prepare("INSERT INTO farm_soil_tiles VALUES (?,?,?,'PLANTED',?)").run(farm.id,x,0,now);
+      db.prepare('INSERT INTO farm_crops(farm_id,tile_x,tile_y,crop_id,planted_at,duration_ms,bonus_ms,watered_at,yield_quantity) VALUES (?,?,?,?,?,?,0,NULL,3)').run(farm.id,x,0,id,now-age*600000,600000);
+    }
+  }
   await edge.navigate(url);
   await edge.waitFor("!document.querySelector('#game').classList.contains('hidden')");
   await pause(800);
@@ -39,6 +47,7 @@ try{
   const point=camera.toScreen(FIELD.x+5*FIELD.stepX+FIELD.width/2,FIELD.y+2*FIELD.stepY+FIELD.height/2);
   await edge.command('Input.dispatchMouseEvent',{type:'mouseMoved',x:900,y:50,button:'none'});
   await edge.screenshot(path.join(output,`${stage}-idle.png`));
+  if(stage==='crop-centered'){assert.deepEqual(edge.errors,[]);console.log('Crop alignment visual captured without browser errors');}else{
   await edge.command('Input.dispatchMouseEvent',{type:'mouseMoved',x:point.x,y:point.y,button:'none'});
   await pause(150);
   await edge.screenshot(path.join(output,`${stage}-hover.png`));
@@ -64,8 +73,8 @@ try{
   await pause(150);
   await edge.screenshot(path.join(output,`${stage}-bought.png`));
   const now=Date.now();
-  db.prepare('INSERT INTO farm_soil_tiles(farm_id,tile_x,tile_y,state,updated_at) VALUES (?,?,?,?,?)').run(farm.id,0,0,'TILLED',now);
-  db.prepare('INSERT INTO farm_soil_tiles(farm_id,tile_x,tile_y,state,updated_at) VALUES (?,?,?,?,?)').run(farm.id,1,0,'PLANTED',now);
+  db.prepare('INSERT INTO farm_soil_tiles(farm_id,tile_x,tile_y,state,updated_at) VALUES (?,?,?,?,?) ON CONFLICT(farm_id,tile_x,tile_y) DO UPDATE SET state=excluded.state').run(farm.id,0,0,'TILLED',now);
+  db.prepare('INSERT INTO farm_soil_tiles(farm_id,tile_x,tile_y,state,updated_at) VALUES (?,?,?,?,?) ON CONFLICT(farm_id,tile_x,tile_y) DO UPDATE SET state=excluded.state').run(farm.id,1,0,'PLANTED',now);
   db.prepare('INSERT INTO farm_crops(farm_id,tile_x,tile_y,crop_id,planted_at,duration_ms,bonus_ms,watered_at,yield_quantity) VALUES (?,?,?,?,?,?,?,?,?)').run(farm.id,1,0,'tomato',now-50*60000,45*60000,0,null,3);
   await edge.navigate(url);
   await edge.waitFor("!document.querySelector('#game').classList.contains('hidden')");
@@ -75,6 +84,7 @@ try{
   await edge.screenshot(path.join(output,`${stage}-far.png`));
   assert.deepEqual(edge.errors,[]);
   console.log(`Plot browser QA ${stage}: hover, click, purchase passed`);
+  }
 }finally{
   edge?.close();
   await new Promise(resolve=>io.close(resolve));

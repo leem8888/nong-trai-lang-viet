@@ -12,7 +12,7 @@ export function sceneryLayers(scene,art,upright,reduced,placed=[]){
   // Trees are authored in villageScenery with distinct species.
   const gardens=scene==='market'?[[130,300],[1080,335],[340,680],[875,685]]:[[400,488],[515,505],[940,505],[1190,590],[100,690],[435,920],[1255,885]];
   for(const [x,y] of gardens)add(x,y,'garden',130,47,.4);
-  for(const [x,y] of scene==='market'?[[1050,600],[175,410]]:[[930,520],[320,480]])add(x,y,'props',115,80);
+  for(const [x,y] of scene==='market'?[[1050,600],[175,410]]:[[420,220],[280,350]])add(x,y,'props',115,80);
   if(!reduced)for(let i=0;i<3;i++){const x=(scene==='market'?220:290)+i*250+Math.sin(t*.8+i)*24,y=600+Math.cos(t+i)*36;add(x,y,'butterfly',19,16+Math.sin(t*7+i)*4);}
   if(!reduced)for(let i=0;i<2;i++)add(410+i*170+Math.sin(t*.3+i)*95,210+Math.sin(t*.5+i)*24,'bird',28,17+Math.sin(t*4+i)*5);
   return layers;

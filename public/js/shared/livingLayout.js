@@ -1,10 +1,42 @@
 import {BUILDINGS,DECORATIONS,TILE_SIZE,footprint} from './phase5.js';
+import {ISO_X,ISO_Y} from '../core/IsoProjection.js';
 
-export const POND_OLD=Object.freeze({x:1010,y:710,w:280,h:145});
-export const POND_LARGE=Object.freeze({x:900,y:675,w:390,h:180});
+export function animalAccess(kind,player,layout=livingLayout(),collision){
+  let points=[];
+  if(kind==='pond'){
+    const [p]=pondObstacles(layout.pond);
+    for(let i=0;i<64;i++){
+      const a=i*Math.PI/32,sx=Math.cos(a)*(p.rx+22),sy=Math.sin(a)*(p.ry+15);
+      points.push({x:p.x+(sx/ISO_X+sy/ISO_Y)/2,y:p.y+(sy/ISO_Y-sx/ISO_X)/2});
+    }
+  }else{
+    // The coop entrance faces down toward the farm. Keep the approach point
+    // outside the front fence so the farmer remains visible while feeding.
+    if(layout.yard){
+      const r=layout.yard;
+      for(let i=0;i<=8;i++){const t=i/8;points.push({x:r.x+t*r.w,y:r.y+r.h+34});}
+    }else{
+      const r={x:1080,y:115,w:230,h:140};
+      for(let i=0;i<=8;i++){const t=i/8;points.push({x:r.x-25,y:r.y+t*r.h},{x:r.x+r.w+25,y:r.y+t*r.h},{x:r.x+t*r.w,y:r.y-25},{x:r.x+t*r.w,y:r.y+r.h+25});}
+    }
+  }
+  if(collision){const free=points.filter(p=>!collision.blocked(p.x,p.y));if(free.length)points=free;}
+  points.sort((a,b)=>Math.hypot(player.x-a.x,player.y-a.y)-Math.hypot(player.x-b.x,player.y-b.y));
+  return {point:points[0],distance:Math.hypot(player.x-points[0].x,player.y-points[0].y)};
+}
+
+// Match the upright pond artwork in projected screen space, rather than its old world rectangle.
+export function pondObstacles(pond){
+  const large=pond.w>300,anchorX=large?1195:1250,anchorY=large?720:705;
+  const offset=(large?118:100)/(2*ISO_Y);
+  return [{shape:'projectedEllipse',x:anchorX-offset,y:anchorY-offset,rx:large?230:158,ry:large?102:85}];
+}
+
+export const POND_OLD=Object.freeze({x:1110,y:630,w:280,h:145});
+export const POND_LARGE=Object.freeze({x:1000,y:595,w:390,h:180});
 export const YARD_CANDIDATES=Object.freeze([
-  Object.freeze({x:1130,y:500,w:190,h:105}),
-  Object.freeze({x:1055,y:500,w:220,h:105})
+  Object.freeze({x:1160,y:255,w:275,h:160}),
+  Object.freeze({x:1085,y:255,w:275,h:160})
 ]);
 const hits=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 const rect=row=>{const def=BUILDINGS[row.definitionId??row.definition_id]||DECORATIONS[row.definitionId??row.definition_id];if(!def)return null;const size=footprint(def,row.rotation);return {x:(row.x??row.tile_x)*TILE_SIZE,y:(row.y??row.tile_y)*TILE_SIZE,w:size.w*TILE_SIZE,h:size.h*TILE_SIZE};};

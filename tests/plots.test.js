@@ -44,18 +44,18 @@ test('farm client hides NPCs even when a stale server returns old farm NPC data'
 });
 test('young crop has a dark soil mound and mature crop does not',()=>{
   for(const [time,expected] of [[100,1],[1100,0]]){let ellipses=0;const ctx={fillRect(){},strokeRect(){},save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},fill(){},ellipse(){ellipses++;}};
-    FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,state:'PLANTED',crop:{cropId:'rice',plantedAt:100,durationMs:1000,bonusMs:0,wateredAt:null}}]},isometric:true,serverNow:()=>time,updateInfo(){}},ctx);assert.equal(ellipses,expected);
+    FarmingUI.prototype.draw.call({drawFieldBorders(){},state:{tiles:[{x:0,y:0,state:'PLANTED',crop:{cropId:'rice',plantedAt:100,durationMs:1000,bonusMs:0,wateredAt:null}}]},isometric:true,serverNow:()=>time,updateInfo(){}},ctx);assert.equal(ellipses,expected);
   }
 });
 test('each untilled owned tile uses the same earth swatch',()=>{
   const draws=[],image={naturalWidth:1024,naturalHeight:1024},ctx={save(){},beginPath(){},rect(){},fill(){},clip(){},fillRect(){},restore(){},drawImage(...args){draws.push(args);}};
-  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null},{x:1,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,terrainArt:image,meadowSource:image,meadowPattern:'grass',grassArt:{naturalWidth:1024},upright(){},serverNow:()=>0,updateInfo(){}},ctx);
+  FarmingUI.prototype.draw.call({drawFieldBorders(){},state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null},{x:1,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,terrainArt:image,meadowSource:image,meadowPattern:'grass',grassArt:{naturalWidth:1024},upright(){},serverNow:()=>0,updateInfo(){}},ctx);
   assert.deepEqual(draws.slice(-2).map(d=>d.slice(0,5)),Array(2).fill([image,0,512,256,256]));
   assert.deepEqual(draws.slice(-2).map(d=>d.slice(5)),[[FIELD.x,FIELD.y,FIELD.stepX,FIELD.stepY],[FIELD.x+FIELD.stepX,FIELD.y,FIELD.stepX,FIELD.stepY]]);
 });
-test('unbought plots use grass art with no permanent border',()=>{
+test('unbought plot grass and hover are drawn independently of the field grid',()=>{
   const marks=[],draws=[];const ctx={save(){},restore(){},strokeRect(...args){marks.push(args);}};
-  const tile={x:0,y:0,locked:true},ui={state:{tiles:[tile],plots:{unlocked:8}},grassArt:{naturalWidth:1024},isometric:true,upright:(...args)=>draws.push(args),selected:tile,serverNow:()=>0,updateInfo(){},tile:()=>tile};
+  const tile={x:0,y:0,locked:true},ui={drawFieldBorders(){},state:{tiles:[tile],plots:{unlocked:8}},grassArt:{naturalWidth:1024},isometric:true,upright:(...args)=>draws.push(args),selected:tile,serverNow:()=>0,updateInfo(){},tile:()=>tile};
   FarmingUI.prototype.draw.call(ui,ctx);
   assert.equal(draws.length,1);assert.equal(marks.length,0);
   ui.hover=tile;FarmingUI.prototype.draw.call(ui,ctx);

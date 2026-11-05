@@ -27,7 +27,7 @@ function setup(db){
 test('pond capacity, feeding, offline fish harvest, retry and rollback',()=>{
   const db=openDatabase(':memory:');try{
     const {user,farm,move,act}=setup(db);assert.equal(db.prepare('SELECT count(*) n FROM farm_ponds WHERE farm_id=?').get(farm.id).n,1);
-    addItem(db,farm.id,'fingerling_tilapia',6);addItem(db,farm.id,'fish_feed',2);
+    addItem(db,farm.id,'fingerling_tilapia',6);addItem(db,farm.id,'fish_feed',2);move(300,500);
     assert.throws(()=>act('stock_fish',{fishId:'tilapia',quantity:1}),/gần/);
     move(990,780);const key=randomUUID();const first=act('stock_fish',{fishId:'tilapia',quantity:6},at,key);
     assert.equal(first.state.pond.fish.length,6);assert.equal(act('stock_fish',{fishId:'tilapia',quantity:6},at,key).replayed,true);
@@ -55,9 +55,12 @@ test('carp and chickens grow offline, eggs cap, collection and feed cycle',()=>{
     move(990,780);const carp=act('stock_fish',{fishId:'carp',quantity:1}).state.pond.fish[0];
     assert.equal(carp.fishId,'carp');assert.ok(vacState(db,user.id,at+2*3600000).pond.fish[0].remainingMs>0);
     assert.equal(act('harvest_fish',{entityId:carp.id},at+3*3600000).state.inventory.find(i=>i.id==='carp').quantity,2);
-    move(1010,425);const chickens=act('add_chicken',{quantity:4}).state.coop.chickens;
+    move(1040,255);const chickens=act('add_chicken',{quantity:4}).state.coop.chickens;
     assert.equal(chickens.length,4);assert.throws(()=>act('add_chicken',{quantity:1}),/đầy/);
-    assert.throws(()=>act('feed_chicken',{entityId:chickens[0].id},at+5*60000),/chưa trưởng thành/);
+    const youngFed=act('feed_chicken',{entityId:chickens[0].id},at+5*60000);
+    assert.equal(youngFed.state.coop.chickens[0].growthFed,true);
+    assert.equal(youngFed.state.coop.chickens[0].readyAt,at+CHICKEN.growthMs*.9);
+    assert.throws(()=>act('feed_chicken',{entityId:chickens[0].id},at+6*60000),/đã được cho ăn/);
     const fed=act('feed_chicken',{entityId:chickens[0].id},at+2*3600000);
     assert.equal(fed.state.coop.chickens[0].status,'PRODUCING');
     assert.equal(vacState(db,user.id,at+2*3600000+45*60000).coop.chickens[0].eggsReady,1);
@@ -86,13 +89,13 @@ test('resource conversion is bounded, authorized and transactional',()=>{
     assert.equal(act('convert',{recipeId:'soy_feed',quantity:2},at,key).replayed,true);
     assert.throws(()=>act('convert',{recipeId:'soy_feed',quantity:1},at,key),/đã dùng/);
     assert.throws(()=>act('convert',{recipeId:'soy_feed',quantity:1}),/Không đủ/);
-    move(1010,425);db.prepare('INSERT INTO inventory_items VALUES (?,?,999)').run(farm.id,'chicken_feed');
+    move(1040,255);db.prepare('INSERT INTO inventory_items VALUES (?,?,999)').run(farm.id,'chicken_feed');
     assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:1}),/đầy/);
     assert.equal(vacState(db,user.id).inventory.find(i=>i.id==='corn').quantity,1);
     assert.throws(()=>performVacAction(db,other.id,{action:'convert',farmId:farm.id,requestId:randomUUID(),recipeId:'corn_feed',quantity:1},at),/Không có quyền/);
-    move(1010,425,'market');assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:1}),/gần/);
+    move(1040,255,'market');assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:1}),/gần/);
     assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:-1}),/gần/);
-    move(1010,425);assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:-1}),/không hợp lệ/);
+    move(1040,255);assert.throws(()=>act('convert',{recipeId:'corn_feed',quantity:-1}),/không hợp lệ/);
     assert.throws(()=>performVacAction(db,user.id,{action:'convert',farmId:farm.id,requestId:randomUUID(),recipeId:'corn_feed',quantity:1,clientTime:0},at),/không hợp lệ/);
     db.prepare("UPDATE inventory_items SET quantity=0 WHERE farm_id=? AND item_id='chicken_feed'").run(farm.id);
     addItem(db,farm.id,'rice',1);assert.equal(act('convert',{recipeId:'rice_feed',quantity:1}).state.inventory.find(i=>i.id==='chicken_feed').quantity,2);
@@ -163,6 +166,7 @@ test('VAC HTTP enforces CSRF, ownership and scene; two tabs retry once and recei
     const farmB=(await request('/farms',{name:'Farm B'},b.cookie,b.data.csrf)).data.farm;
     addItem(db,farmA.id,'fingerling_tilapia',2);
     const intent={action:'stock_fish',farmId:farmA.id,requestId:randomUUID(),fishId:'tilapia',quantity:1};
+    db.prepare('UPDATE player_states SET x=300,y=500 WHERE user_id=?').run(a.data.user.id);
     assert.equal((await request('/vac')).status,401);
     assert.equal((await request('/vac/action',intent,a.cookie)).status,403);
     assert.equal((await request('/vac/action',intent,a.cookie,a.data.csrf)).status,400);
@@ -194,7 +198,7 @@ test('pond and coop production survive database reopen',()=>{
     db=openDatabase(file);const {user,farm,move,act}=setup(db);
     addItem(db,farm.id,'fingerling_tilapia',1);addItem(db,farm.id,'chick',1);addItem(db,farm.id,'chicken_feed',1);
     move(990,780);act('stock_fish',{fishId:'tilapia',quantity:1});
-    move(1010,425);const chicken=act('add_chicken',{quantity:1}).state.coop.chickens[0];
+    move(1040,255);const chicken=act('add_chicken',{quantity:1}).state.coop.chickens[0];
     act('feed_chicken',{entityId:chicken.id},at+CHICKEN.growthMs);
     db.close();db=null;db=openDatabase(file);
     const state=vacState(db,user.id,at+3*86400000);

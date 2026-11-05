@@ -31,7 +31,7 @@ export class InputManager {
     else while (this.target) {
       const waypoint = this.path?.[0] || this.target;
       x = waypoint.x - player.x; y = waypoint.y - player.y; const len = Math.hypot(x, y);
-      if (len <= 4) { if (this.path?.length > 1) this.path.shift(); else this.cancelPath(); x = 0; y = 0; continue; }
+      if (len <= .5) { if (this.path?.length > 1) this.path.shift(); else this.cancelPath(); x = 0; y = 0; continue; }
       return { x: x / len, y: y / len, maxDistance: len };
     }
     return { x, y };

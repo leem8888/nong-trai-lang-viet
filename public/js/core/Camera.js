@@ -9,10 +9,11 @@ export class Camera {
   constrain() {
     if (this.isometric) {
       const center = project(this.x, this.y, this.world.height);
-      const bounds = { width: (this.world.width + this.world.height) * ISO_X, height: (this.world.width + this.world.height) * ISO_Y };
+      const minY=this.world.minY||0;
+      const bounds = { width: (this.world.width + this.world.height-minY) * ISO_X, height: (this.world.width + this.world.height) * ISO_Y };
       const hw = this.width / this.zoom / 2, hh = this.height / this.zoom / 2;
       center.x = hw >= bounds.width / 2 ? bounds.width / 2 : clamp(center.x, hw, bounds.width - hw);
-      center.y = hh >= bounds.height / 2 ? bounds.height / 2 : clamp(center.y, hh, bounds.height - hh);
+      center.y = hh >= (bounds.height-minY*ISO_Y) / 2 ? (bounds.height+minY*ISO_Y) / 2 : clamp(center.y, minY*ISO_Y+hh, bounds.height - hh);
       const worldPoint = unproject(center.x, center.y, this.world.height);
       this.x = worldPoint.x; this.y = worldPoint.y;
       return;

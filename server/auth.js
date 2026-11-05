@@ -16,7 +16,7 @@ export function verifyPassword(password, stored) {
 }
 export function register(db, username, password) {
   const clean = String(username ?? '').trim();
-  if (!/^[a-zA-Z0-9_]{3,24}$/.test(clean) || typeof password !== 'string' || password.length < 10 || password.length > 128) throw new Error('Tên tài khoản 3–24 ký tự; mật khẩu ít nhất 10 ký tự.');
+  if (!/^[a-zA-Z0-9_]{3,24}$/.test(clean) || typeof password !== 'string' || password.length < 5 || password.length > 128) throw new Error('Tên tài khoản 3–24 ký tự; mật khẩu ít nhất 5 ký tự.');
   const id = randomUUID();
   db.transaction(()=>{
     db.prepare('INSERT INTO users(id,username,password_hash,created_at) VALUES (?,?,?,?)').run(id,clean,passwordHash(password),now());

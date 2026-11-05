@@ -1,8 +1,22 @@
 // A* uses the same live collision instance as movement, including player buildings.
 export function clearSegment(collision,a,b){
   const steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/7));
-  for(let i=1;i<=steps;i++)if(collision.blocked(a.x+(b.x-a.x)*i/steps,a.y+(b.y-a.y)*i/steps))return false;
+  for(let i=1;i<=steps;i++)if(collision.blocked(a.x+(b.x-a.x)*i/steps,a.y+(b.y-a.y)*i/steps,17))return false;
   return true;
+}
+export function findReachablePath(collision,start,goal,range=0){
+  const candidates=[];
+  if(!collision.blocked(goal.x,goal.y))candidates.push({...goal});
+  const limit=range||96;
+  for(let radius=12;radius<=limit;radius+=12)for(let i=0;i<32;i++){
+    const angle=i*Math.PI/16,p={x:goal.x+Math.cos(angle)*radius,y:goal.y+Math.sin(angle)*radius};
+    if(!collision.blocked(p.x,p.y))candidates.push(p);
+  }
+  candidates.sort((a,b)=>range?Math.hypot(a.x-start.x,a.y-start.y)-Math.hypot(b.x-start.x,b.y-start.y):Math.hypot(a.x-goal.x,a.y-goal.y)-Math.hypot(b.x-goal.x,b.y-goal.y));
+  // Bound work per click so unreachable destinations cannot freeze the render loop.
+  const shortlist=candidates.slice(0,24);
+  for(const step of [24,12])for(const p of shortlist){const route=findPath(collision,start,p,step);if(route)return route;}
+  return null;
 }
 export function findPath(collision,start,goal,step=24){
   if(collision.blocked(goal.x,goal.y))return null;
@@ -20,7 +34,7 @@ export function findPath(collision,start,goal,step=24){
     if(node.x===b.x&&node.y===b.y){const path=[{...goal}];for(let n=node;n;n=n.parent)path.push(point(n.x,n.y));path.reverse();return path;}
     for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){
       const x=node.x+dx,y=node.y+dy,k=key(x,y),p=point(x,y),g=node.g+Math.hypot(dx,dy);
-      if(x<0||y<0||p.x>collision.world.width||p.y>collision.world.height||closed.has(k)||g>=(best.get(k)??Infinity)||!clearSegment(collision,point(node.x,node.y),p))continue;
+      if(x<0||p.y<(collision.world.minY||0)||p.x>collision.world.width||p.y>collision.world.height||closed.has(k)||g>=(best.get(k)??Infinity)||!clearSegment(collision,point(node.x,node.y),p))continue;
       best.set(k,g);push({x,y,g,f:g+heuristic(x,y),parent:node});
     }
   }

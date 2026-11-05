@@ -6,6 +6,8 @@
 
 ## Implemented
 
+- Coop auto-approach now selects a point outside the front edge of the yard fence when a yard exists. This keeps the farmer visible while feeding chickens instead of routing into the yard. The no-yard fallback retains perimeter access points. Added `tests/animalAccess.test.js` for access range; this interaction adjustment has not yet been browser-verified.
+
 - Enlarged original-style pond sprite with no painted fish. Server VAC rows now determine which fish appear; their size follows `progress`. An empty pond has no fish.
 - Empty coop and combined low-fence yard art with gate, feed trough and water trough. Server coop rows determine which chickens and egg indicators appear. Chickens walk, pause/peck and move near the coop locally.
 - `livingLayout()` chooses pond/yard footprints around existing placements, reuses the old pond if the larger footprint is occupied and does not move or delete saved objects. Shared geometry feeds client collision, server movement and Phase 5 placement validation.
