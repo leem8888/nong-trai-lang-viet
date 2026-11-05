@@ -47,11 +47,10 @@ test('young crop has a dark soil mound and mature crop does not',()=>{
     FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,state:'PLANTED',crop:{cropId:'rice',plantedAt:100,durationMs:1000,bonusMs:0,wateredAt:null}}]},isometric:true,serverNow:()=>time,updateInfo(){}},ctx);assert.equal(ellipses,expected);
   }
 });
-test('untilled owned soil uses the same grass art without changing its hitbox',()=>{
-  const draws=[];const image={naturalWidth:1024},ctx={};
-  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,grassArt:image,upright:(...args)=>draws.push(args),serverNow:()=>0,updateInfo(){}},ctx);
-  assert.equal(draws.length,1);assert.equal(draws[0][3],image);
-  assert.equal(draws[0][1],FIELD.x+FIELD.stepX);assert.equal(draws[0][2],FIELD.y+FIELD.stepY);
+test('untilled owned soil uses earth while unbought soil uses grass art',()=>{
+  const fills=[],draws=[],ctx={fillRect(...args){fills.push(args);}};
+  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,untilledPattern:'earth',grassArt:{naturalWidth:1024},upright:(...args)=>draws.push(args),serverNow:()=>0,updateInfo(){}},ctx);
+  assert.deepEqual(fills,[[FIELD.x,FIELD.y,FIELD.stepX,FIELD.stepY]]);assert.equal(draws.length,0);
 });
 test('unbought plots use grass art with no permanent border',()=>{
   const marks=[],draws=[];const ctx={save(){},restore(){},strokeRect(...args){marks.push(args);}};
