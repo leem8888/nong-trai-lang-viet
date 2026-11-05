@@ -47,10 +47,11 @@ test('young crop has a dark soil mound and mature crop does not',()=>{
     FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,state:'PLANTED',crop:{cropId:'rice',plantedAt:100,durationMs:1000,bonusMs:0,wateredAt:null}}]},isometric:true,serverNow:()=>time,updateInfo(){}},ctx);assert.equal(ellipses,expected);
   }
 });
-test('untilled owned soil uses earth while unbought soil uses grass art',()=>{
-  const fills=[],draws=[],ctx={fillRect(...args){fills.push(args);}};
-  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,untilledPattern:'earth',grassArt:{naturalWidth:1024},upright:(...args)=>draws.push(args),serverNow:()=>0,updateInfo(){}},ctx);
-  assert.deepEqual(fills,[[FIELD.x,FIELD.y,FIELD.stepX,FIELD.stepY]]);assert.equal(draws.length,0);
+test('each untilled owned tile uses the same earth swatch',()=>{
+  const draws=[],image={naturalWidth:1024,naturalHeight:1024},ctx={save(){},beginPath(){},rect(){},fill(){},clip(){},fillRect(){},restore(){},drawImage(...args){draws.push(args);}};
+  FarmingUI.prototype.draw.call({state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null},{x:1,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,terrainArt:image,meadowSource:image,meadowPattern:'grass',grassArt:{naturalWidth:1024},upright(){},serverNow:()=>0,updateInfo(){}},ctx);
+  assert.deepEqual(draws.slice(-2).map(d=>d.slice(0,5)),Array(2).fill([image,0,512,256,256]));
+  assert.deepEqual(draws.slice(-2).map(d=>d.slice(5)),[[FIELD.x,FIELD.y,FIELD.stepX,FIELD.stepY],[FIELD.x+FIELD.stepX,FIELD.y,FIELD.stepX,FIELD.stepY]]);
 });
 test('unbought plots use grass art with no permanent border',()=>{
   const marks=[],draws=[];const ctx={save(){},restore(){},strokeRect(...args){marks.push(args);}};

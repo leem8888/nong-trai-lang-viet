@@ -75,13 +75,12 @@ export class FarmingUI {
     if(this.isometric&&this.terrainArt?.naturalWidth){
       if(this.meadowSource!==this.terrainArt){const image=this.terrainArt,c=document.createElement('canvas');c.width=c.height=128;c.getContext('2d').drawImage(image,image.naturalWidth*.75,image.naturalHeight*.25,image.naturalWidth*.25,image.naturalHeight*.25,0,0,128,128);this.meadowPattern=ctx.createPattern(c,'repeat');this.meadowSource=image;}
       const owned=this.state.tiles.filter(tile=>!tile.locked);ctx.save();ctx.beginPath();for(const tile of owned){const r=tileRect(tile.x,tile.y);ctx.rect(r.x-6,r.y-6,FIELD.stepX+12,FIELD.stepY+12);}ctx.fillStyle='#aa925e';ctx.globalAlpha=.32;ctx.shadowColor='#3a5135';ctx.shadowBlur=12;ctx.fill();ctx.clip();ctx.shadowBlur=0;ctx.globalAlpha=.72;ctx.fillStyle=this.meadowPattern;ctx.fillRect(FIELD.x-10,FIELD.y-10,FIELD.columns*FIELD.stepX+20,FIELD.rows*FIELD.stepY+20);ctx.restore();
-      if(this.untilledSource!==this.terrainArt){const image=this.terrainArt,c=document.createElement('canvas');c.width=c.height=128;c.getContext('2d').drawImage(image,0,image.naturalHeight*.5,image.naturalWidth*.25,image.naturalHeight*.25,0,0,128,128);this.untilledPattern=ctx.createPattern(c,'repeat');this.untilledSource=image;}
     }
     for(const tile of this.state.tiles) {
       const r=tileRect(tile.x,tile.y);
       if(this.isometric&&tile.locked&&this.grassArt?.naturalWidth&&this.upright){this.upright(ctx,r.x+FIELD.stepX,r.y+FIELD.stepY,this.grassArt,FIELD.stepX*2*ISO_X,FIELD.stepY*2*ISO_Y,undefined,Boolean((tile.x+tile.y)%2));continue;}
       if(tile.locked)continue;
-      if(this.isometric&&tile.state==='EMPTY'&&!tile.crop&&this.untilledPattern){ctx.fillStyle=this.untilledPattern;ctx.fillRect(r.x,r.y,FIELD.stepX,FIELD.stepY);continue;}
+      if(this.isometric&&tile.state==='EMPTY'&&!tile.crop&&this.terrainArt?.naturalWidth){const image=this.terrainArt;ctx.drawImage(image,0,image.naturalHeight*.5,image.naturalWidth*.25,image.naturalHeight*.25,r.x,r.y,FIELD.stepX,FIELD.stepY);continue;}
       if(this.isometric&&this.soilArt?.naturalWidth&&this.upright){
         if(tile.state==='EMPTY'&&!tile.crop){ctx.fillStyle='#8e6743';ctx.fillRect(r.x,r.y,r.w,r.h);ctx.fillStyle='#b08a5b';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*12,r.y+13+i%2*11,7,3);ctx.strokeStyle='#d3ad76';ctx.lineWidth=1.5;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}else{const image=this.soilArt,cw=image.naturalWidth/4,ch=image.naturalHeight/2,variant=(tile.x*3+tile.y*5)%4,wet=tile.state==='WATERED'||Boolean(tile.crop?.wateredAt),offset=56/(4*ISO_Y);ctx.save();ctx.beginPath();ctx.rect(r.x,r.y,r.w,r.h);ctx.clip();ctx.fillStyle=wet?'#4d4034':'#795b3b';ctx.fillRect(r.x,r.y,r.w,r.h);this.upright(ctx,r.x+r.w/2+offset,r.y+r.h/2+offset,image,76,56,[variant*cw,wet?ch:0,cw,ch]);ctx.restore();ctx.strokeStyle='#ae8a57';ctx.lineWidth=1;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}
         continue;
