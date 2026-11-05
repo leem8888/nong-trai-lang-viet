@@ -31,7 +31,7 @@ Người chơi thường đăng ký qua giao diện luôn có role `USER` và 20
 
 ## Trồng trọt
 
-Đi tới khu ruộng ở góc tây nam, chạm hoặc nhấp một ô để xem thao tác hợp lệ. Chọn **Cuốc**, **Gieo** (chọn giống trong menu), **Tưới** hoặc **Thu hoạch** theo trạng thái ô. Sau khi chọn thao tác, chạm một ô để làm ngay; giữ và kéo qua nhiều ô để làm liên tiếp. Trên điện thoại, giữ khoảng 0,38 giây trước khi kéo. **Esc** hoặc **Hủy** thoát chế độ thao tác. Phím **1–4** vẫn chọn nhanh thao tác. Dock nhỏ dưới màn hình mở **Túi đồ**, **Nhiệm vụ**, **Xây dựng**, **Bạn bè**; nút **Nông trại** mở thêm chế biến, trang trí, mở đất và nhận hạt khi hết. Server vẫn kiểm quyền, khoảng cách, hạt giống và trạng thái từng ô. Cây lớn theo thời gian thực kể cả khi đóng trình duyệt.
+Chạm hoặc nhấp ô ruộng để xem thao tác hợp lệ. Chọn **Cuốc**, **Gieo** (chọn giống trong menu), **Tưới** hoặc **Thu hoạch**; nhân vật tự tìm đường đến ô và thực hiện. Giữ và kéo qua nhiều ô để làm liên tiếp. Trên điện thoại, giữ khoảng 0,38 giây trước khi kéo. **Esc** hoặc **Hủy** thoát chế độ thao tác. Phím **1–4** vẫn chọn nhanh thao tác. Dock nhỏ dưới màn hình mở **Túi đồ**, **Nhiệm vụ**, **Xây dựng**, **Bạn bè**; nút **Nông trại** mở thêm chế biến, trang trí, mở đất và nhận hạt khi hết. Server vẫn kiểm quyền, khoảng cách tại lúc thực hiện, hạt giống và trạng thái từng ô. Cây lớn theo thời gian thực kể cả khi đóng trình duyệt.
 
 ## Chợ quê
 
@@ -51,9 +51,9 @@ Người chơi thường đăng ký qua giao diện luôn có role `USER` và 20
 
 ## Phase 5 — chế biến, xây dựng và mở đất
 
-Ở farm, dùng **Chế biến** để xem 6 công thức và hàng đợi. Đứng gần cối xay, bếp quê hoặc giàn phơi để bắt đầu mẻ; nguyên liệu trừ ngay, thành phẩm nhận sau khi đồng hồ server hoàn thành, kể cả khi offline. Công trình có lần lượt 1/2/1 chỗ chế biến. Kho đầy thì mẻ vẫn chờ nhận.
+Ở farm, dùng **Chế biến** để xem 6 công thức và hàng đợi. Chọn công thức hoặc nhận thành phẩm; nhân vật tự đi tới cối xay, bếp quê hoặc giàn phơi tương ứng. Nguyên liệu trừ khi bắt đầu mẻ, thành phẩm nhận sau khi đồng hồ server hoàn thành, kể cả khi offline. Công trình có lần lượt 1/2/1 chỗ chế biến. Kho đầy thì mẻ vẫn chờ nhận.
 
-**Xây dựng** hoặc phím **B** mở danh sách 3 công trình. Chọn vật, đến gần vị trí, rê chuột để xem vùng chiếm rồi nhấp để đặt; **R** xoay, **Esc** hủy. Công trình đầu tiên trả Đồng Làng, cất vào túi rồi đặt lại không trả thêm. Chỉ di chuyển/cất khi đã nhận hết mẻ. **Trang trí** có 15 loại; mua tại quầy Cô Mai, chọn tại farm rồi đặt/di chuyển/cất tương tự. Vật trong túi và vật đã đặt là hai trạng thái loại trừ nhau.
+**Xây dựng** hoặc phím **B** mở danh sách 3 công trình. Chọn vật, rê chuột để xem vùng chiếm rồi nhấp để đặt; nhân vật tự đi tới điểm thao tác. **R** xoay, **Esc** hủy. Công trình đầu tiên trả Đồng Làng, cất vào túi rồi đặt lại không trả thêm. Chỉ di chuyển/cất khi đã nhận hết mẻ. **Trang trí** có 15 loại; mua tại quầy Cô Mai, chọn tại farm rồi đặt/di chuyển/cất tương tự. Vật trong túi và vật đã đặt là hai trạng thái loại trừ nhau.
 
 **Mở đất** có hai cấp, giá thử nghiệm 180 rồi 280 Đồng Làng. Vùng phủ màu nhẹ trên Canvas là khu chưa mở khóa; mở đất chỉ cho phép đặt vật trên khu đó, không đổi kích thước map hay di chuyển ao/chuồng. Server xác nhận vị trí, va chạm, lối đi, tiền, kho và quyền sở hữu; màu preview là gợi ý.
 

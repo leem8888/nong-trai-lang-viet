@@ -50,10 +50,10 @@ try{
   if(pa&&pb){
     await run('keyboard movement and collision',async()=>{const user=db.prepare('SELECT id FROM users WHERE username=?').get(ua);const before=db.prepare('SELECT x,y FROM player_states WHERE user_id=?').get(user.id);await pa.page.locator('#canvas').click({position:{x:640,y:400}});await pa.page.keyboard.down('a');await pa.page.waitForTimeout(500);await pa.page.keyboard.up('a');await pa.page.waitForTimeout(400);const after=db.prepare('SELECT x,y FROM player_states WHERE user_id=?').get(user.id);assert.ok(after.x<before.x-20,`${JSON.stringify({before,after})}`);return JSON.stringify({before,after});});
     await run('house collision and farm interactions',async()=>{
-      await position(pa.page,ua,450,350);await pa.page.keyboard.down('d');await pa.page.waitForTimeout(400);await pa.page.keyboard.up('d');await pa.page.waitForTimeout(250);
-      const user=db.prepare('SELECT id FROM users WHERE username=?').get(ua),x=db.prepare('SELECT x FROM player_states WHERE user_id=?').get(user.id).x;assert.ok(x<480,`x=${x}`);
+      await position(pa.page,ua,510,250);await pa.page.keyboard.down('d');await pa.page.waitForTimeout(400);await pa.page.keyboard.up('d');await pa.page.waitForTimeout(250);
+      const user=db.prepare('SELECT id FROM users WHERE username=?').get(ua),x=db.prepare('SELECT x FROM player_states WHERE user_id=?').get(user.id).x;assert.ok(x<540,`x=${x}`);
       await position(pa.page,ua,343,700);await pa.page.keyboard.press('e');await pa.page.locator('#panel h2').getByText(`Farm ${ua}`).waitFor();await pa.page.locator('#closePanel').click();
-      await position(pa.page,ua,712,520);await pa.page.keyboard.press('e');await pa.page.locator('#panel h2').getByText('Ngôi nhà mái ngói').waitFor();await pa.page.locator('#closePanel').click();
+      await position(pa.page,ua,712,385);await pa.page.keyboard.press('e');await pa.page.locator('#panel h2').getByText('Ngôi nhà mái ngói').waitFor();await pa.page.locator('#closePanel').click();
       await position(pa.page,ua,935,586);const old=db.prepare("SELECT state FROM farm_objects WHERE farm_id=(SELECT id FROM farms WHERE owner_id=?) AND object_id='lamp'").get(user.id).state;await pa.page.keyboard.press('e');await pa.page.waitForTimeout(200);const next=db.prepare("SELECT state FROM farm_objects WHERE farm_id=(SELECT id FROM farms WHERE owner_id=?) AND object_id='lamp'").get(user.id).state;assert.notEqual(next,old);return `house stop x=${x}, lamp ${old}->${next}`;
     });
     await run('browser console',async()=>{assert.deepEqual(pa.errors,[]);assert.deepEqual(pb.errors,[]);});
@@ -73,9 +73,9 @@ try{
     });
     await run('farm to market and buy seeds',async()=>{
       await position(pa.page,ua,720,850);await pa.page.keyboard.press('e');await pa.page.locator('#marketHud:not(.hidden)').waitFor();await pa.page.screenshot({path:'.qa/isometric-market-world.png'});
-      await position(pa.page,ua,300,445,'market');await pa.page.keyboard.press('e');await pa.page.locator('[data-market-form=buy]').waitFor();
+      await position(pa.page,ua,300,445,'market');await pa.page.keyboard.press('e');await pa.page.locator('[data-market-product=seed_mustard]').click();await pa.page.locator('[data-market-form=buy]').waitFor();
       await pa.page.screenshot({path:'.qa/market.png'});
-      await pa.page.locator('[data-market-form=buy] select').selectOption('seed_mustard');await pa.page.locator('[data-market-form=buy] button').click();
+      await pa.page.locator('[data-market-form=buy] [type=submit]').click();
       await pa.page.getByText('Đã mua', {exact:false}).first().waitFor();const state=await pa.page.evaluate(async()=>await(await fetch('/api/market')).json());assert.equal(state.balance,186);return `balance ${state.balance}`;
     });
     await run('same account two tabs, duplicate request and live balance',async()=>{
@@ -86,14 +86,11 @@ try{
       await tab.locator('#balance').getByText('172 Đồng Làng').waitFor();assert.equal((await pa.page.evaluate(async()=>await(await fetch('/api/market')).json())).balance,172);await tab.close();return 'one debit, one replay, tab balance 172';
     });
     await run('shop error leaves balance unchanged',async()=>{
-      await pa.page.keyboard.press('e');await pa.page.locator('[data-market-form=buy]').waitFor();
-      await pa.page.locator('[data-market-form=buy] select').selectOption('seed_rice');await pa.page.locator('[data-market-form=buy] input').fill('99');await pa.page.locator('[data-market-form=buy] button').click();
-      await pa.page.locator('#error').getByText('Không đủ Đồng Làng.').waitFor();
+      await pa.page.keyboard.press('e');await pa.page.locator('[data-market-product=seed_rice]').click();await pa.page.locator('[data-market-form=buy] input[name=quantity]').fill('99');assert.ok(await pa.page.locator('[data-market-form=buy] [type=submit]').isDisabled());
       assert.equal((await pa.page.evaluate(async()=>await(await fetch('/api/market')).json())).balance,172);return 'insufficient funds rejected';
     });
     await run('sell produce and market history',async()=>{
-      await position(pa.page,ua,600,445,'market');await pa.page.keyboard.press('e');await pa.page.locator('[data-market-form=sell]').waitFor();
-      await pa.page.locator('[data-market-form=sell] select').selectOption('mustard');await pa.page.locator('[data-market-form=sell] input').fill('2');await pa.page.locator('[data-market-form=sell] button').click();
+      await position(pa.page,ua,600,445,'market');await pa.page.keyboard.press('e');await pa.page.locator('[data-market-product=mustard]').click();await pa.page.locator('[data-market-form=sell] input[name=quantity]').fill('2');await pa.page.locator('[data-market-form=sell] [type=submit]').click();
       await pa.page.getByText('Đã bán', {exact:false}).first().waitFor();const state=await pa.page.evaluate(async()=>await(await fetch('/api/market')).json());assert.ok(state.balance>186);await pa.page.locator('#closePanel').click();await pa.page.locator('#historyButton').click();await pa.page.getByText('Lịch sử Đồng Làng').waitFor();assert.match(await pa.page.locator('#panel').textContent(),/starter|buy|sell/);return `balance ${state.balance}`;
     });
     await run('accept and complete one NPC order',async()=>{

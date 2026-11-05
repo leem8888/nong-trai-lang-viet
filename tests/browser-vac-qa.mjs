@@ -31,9 +31,9 @@ try{
   const user=db.prepare('SELECT id FROM users WHERE username=?').get(name),farm=db.prepare('SELECT id FROM farms WHERE owner_id=?').get(user.id);
   await run('buy fish, chick and feed from NPC shop',async()=>{
     await relocate(page,user,720,850);await page.keyboard.press('e');await page.locator('#marketHud:not(.hidden)').waitFor();
-    await relocate(page,user,300,445,'market');await page.keyboard.press('e');await page.locator('[data-market-form=buy]').waitFor();
+    await relocate(page,user,300,445,'market');await page.keyboard.press('e');await page.locator('[data-market-group=animals]').click();
     for(const id of ['fingerling_tilapia','chick','fish_feed','chicken_feed']){
-      await page.locator('[data-market-form=buy] select').selectOption(id);await page.locator('[data-market-form=buy] button').click();
+      await page.locator(`[data-market-product=${id}]`).click();await page.locator('[data-market-form=buy] [type=submit]').click();
       await page.getByText('Đã mua',{exact:false}).first().waitFor();await page.waitForTimeout(150);
     }
     const state=await page.evaluate(async()=>await(await fetch('/api/market')).json());assert.equal(state.balance,84);
@@ -65,10 +65,10 @@ try{
   });
   await run('sell fish and eggs, return farm, reload and mobile layout',async()=>{
     await relocate(page,user,720,850);await page.keyboard.press('e');await page.locator('#marketHud:not(.hidden)').waitFor();
-    await relocate(page,user,600,445,'market');await page.keyboard.press('e');await page.locator('[data-market-form=sell]').waitFor();
+    await relocate(page,user,600,445,'market');await page.keyboard.press('e');await page.locator('[data-market-product=tilapia]').waitFor();
     for(const [id,quantity] of [['tilapia','2'],['egg','3']]){
-      await page.locator('[data-market-form=sell] select').selectOption(id);await page.locator('[data-market-form=sell] input').fill(quantity);
-      await page.locator('[data-market-form=sell] button').click();await page.getByText('Đã bán',{exact:false}).first().waitFor();await page.waitForTimeout(150);
+      await page.locator(`[data-market-product=${id}]`).click();await page.locator('[data-market-form=sell] input[name=quantity]').fill(quantity);
+      await page.locator('[data-market-form=sell] [type=submit]').click();await page.getByText('Đã bán',{exact:false}).first().waitFor();await page.waitForTimeout(150);
     }
     const balance=(await page.evaluate(async()=>await(await fetch('/api/market')).json())).balance;assert.equal(balance,217);
     await relocate(page,user,600,690,'market');await page.keyboard.press('e');await page.locator('#farmHud:not(.hidden)').waitFor();

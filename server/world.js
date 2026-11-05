@@ -1,4 +1,4 @@
-import { CollisionSystem } from '../public/js/systems/CollisionSystem.js';
+import { CollisionSystem, overlaps } from '../public/js/systems/CollisionSystem.js';
 import { MARKET_WORLD, MARKET_POINTS, FARM_GATE } from '../public/js/shared/marketMap.js';
 import { VAC_POINTS } from '../public/js/shared/vac.js';
 import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from '../public/js/shared/phase5.js';
@@ -6,7 +6,7 @@ import { BUILDINGS, DECORATIONS, footprint, TILE_SIZE } from '../public/js/share
 export const world = {
   width: 1440, height: 1024, margin: { left: 0, right: 0, top: 0, bottom: 0 },
   obstacles: [
-    { x: 480, y: 265, w: 460, h: 220 }, // house
+    { x: 540, y: 90, w: 340, h: 260 }, // house reaches the north fence; no hidden playable land behind it
     { x: 50, y: 75, w: 1340, h: 15 }, { x: 50, y: 920, w: 1340, h: 15 },
     { x: 50, y: 75, w: 15, h: 860 }, { x: 1375, y: 75, w: 15, h: 860 },
     { x: 520, y: 720, w: 45, h: 35 }, { x: 1060, y: 610, w: 40, h: 35 },
@@ -21,7 +21,7 @@ export function validPosition(x,y,scene='farm',db=null,farmId=null) {
   if(!Number.isFinite(x)||!Number.isFinite(y)||(scene==='market'?marketCollision:collision).blocked(x,y))return false;
   if(scene!=='farm'||!db||!farmId)return true;
   const rows=[...db.prepare('SELECT definition_id,tile_x,tile_y,rotation FROM farm_buildings WHERE farm_id=?').all(farmId).map(o=>({...o,def:BUILDINGS[o.definition_id]})),...db.prepare('SELECT definition_id,tile_x,tile_y,rotation FROM farm_decorations WHERE farm_id=?').all(farmId).filter(o=>DECORATIONS[o.definition_id]?.blocking).map(o=>({...o,def:DECORATIONS[o.definition_id]}))];
-  return !rows.some(o=>{const size=footprint(o.def,o.rotation),left=o.tile_x*TILE_SIZE,top=o.tile_y*TILE_SIZE;return x>=left-14&&x<=left+size.w*TILE_SIZE+14&&y>=top-14&&y<=top+size.h*TILE_SIZE+14;});
+  return !rows.some(o=>{const size=footprint(o.def,o.rotation),left=o.tile_x*TILE_SIZE,top=o.tile_y*TILE_SIZE;return overlaps(x,y,14,{x:left,y:top,w:size.w*TILE_SIZE,h:size.h*TILE_SIZE});});
 }
 export function validMovement(from,x,y,elapsedMs,scene='farm',db=null,farmId=null) {
   if (!validPosition(x,y,scene,db,farmId) || Math.hypot(x-from.x,y-from.y) > 180*Math.min(Math.max(elapsedMs,0)/1000,.5)+12) return false;
@@ -29,7 +29,7 @@ export function validMovement(from,x,y,elapsedMs,scene='farm',db=null,farmId=nul
   for(let i=1;i<=steps;i++) if(!validPosition(from.x+(x-from.x)*i/steps,from.y+(y-from.y)*i/steps,scene,db,farmId)) return false;
   return true;
 }
-export const interactions = { board: { x: 343, y: 700 }, door: { x: 712, y: 520 }, lamp: { x: 935, y: 586 }, farmGate: FARM_GATE, ...VAC_POINTS };
+export const interactions = { board: { x: 343, y: 700 }, door: { x: 712, y: 385 }, lamp: { x: 935, y: 586 }, farmGate: FARM_GATE, ...VAC_POINTS };
 export function inRange(player,objectId) {
   const o = player.scene==='market' ? MARKET_POINTS[objectId] : interactions[objectId];
   return !!o && Math.hypot(player.x-o.x,player.y-o.y) <= 96;

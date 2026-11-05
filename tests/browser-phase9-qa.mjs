@@ -83,7 +83,7 @@ try{
     await waitFor(`!document.querySelector('#panel').classList.contains('hidden')`);await screenshot(`interact-${name}`);
     assert.ok(await evaluate(`!!document.querySelector('${name==='seed'?'[data-market-form=buy]':name==='buyer'?'[data-market-form=sell]':'.order-list'}')`));checks.push(`market ${name} interaction`);
   }
-  for(const [name,x,y] of [['house',712,520],['pond',990,780],['coop',1010,425]]){
+  for(const [name,x,y] of [['house',712,385],['pond',990,780],['coop',1010,425]]){
     db.prepare("UPDATE player_states SET scene='farm',x=?,y=? WHERE user_id=?").run(x,y,user.id);await load();
     const p=await evaluate(`__phase9.camera.toScreen(${x},${y})`);await mouse('mousePressed',p,true);await mouse('mouseReleased',p);
     // VAC uses a contextual menu; the house opens directly.

@@ -665,5 +665,10 @@
     "schemaMigration": 9,
     "packaging": "node tests/browser-plots-shop.mjs package",
     "itemManifest": "/assets/items-v11/manifest.json"
+  },
+  "neighborHomes": {
+    "path": "/assets/neighbor-homes.png",
+    "source": "Original three-house sprite sheet generated for this project with OpenAI image generation on 2026-11-05",
+    "license": "Project use under the applicable OpenAI output terms"
   }
 }

@@ -40,6 +40,10 @@ export class CollisionSystem {
   move(p, dx, dy) {
     // Substeps prevent tunnelling even when a frame arrives late.
     const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 7));
-    for (let i = 0; i < steps; i++) { if (!this.blocked(p.x + dx / steps, p.y)) p.x += dx / steps; if (!this.blocked(p.x, p.y + dy / steps)) p.y += dy / steps; }
+    for (let i = 0; i < steps; i++) {
+      const sx=dx/steps,sy=dy/steps;
+      if (!this.blocked(p.x+sx,p.y+sy)) { p.x+=sx; p.y+=sy; }
+      else { if (!this.blocked(p.x+sx,p.y)) p.x+=sx; if (!this.blocked(p.x,p.y+sy)) p.y+=sy; }
+    }
   }
 }
