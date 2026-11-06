@@ -32,6 +32,7 @@ test('soil rules, six crops, offline stages, watering and idempotent harvest',()
     assert.throws(()=>act('plant',0,0,{cropId:'rice'}),/đã cuốc/);
     assert.throws(()=>act('till',8,0),/không hợp lệ/);
     act('till',0,0);
+    assert.throws(()=>act('water',0,0),/không cần tưới/);
     assert.throws(()=>act('till',0,0),/đã được chuẩn bị/);
     assert.throws(()=>act('plant',0,0,{cropId:'__proto__'}),/không hợp lệ/);
     act('plant',0,0,{cropId:'rice'});
@@ -58,6 +59,7 @@ test('soil rules, six crops, offline stages, watering and idempotent harvest',()
     assert.equal(farmingState(db,user.id,start+2*3600000).tiles[0].state,'TILLED');
     act('plant',0,0,{cropId:'mustard'},start+2*3600000+1);
     assert.equal(farmingState(db,user.id,start+2*3600000+1).tiles[0].crop.cropId,'mustard');
+    assert.throws(()=>act('water',0,0,{},start+2*3600000+1+CROPS.mustard.durationMs),/không cần tưới/);
     for(let i=1;i<CROP_IDS.length;i++) {
       const x=i,y=0;if(i===5)performFarmAction(db,user.id,{farmId:farm.id,action:'unlock_plot',requestId:crypto.randomUUID()},start+2*3600000+1);move(x,y);act('till',x,y,{},start+2*3600000+1);act('plant',x,y,{cropId:CROP_IDS[i]},start+2*3600000+1);
       assert.equal(farmingState(db,user.id,start+2*3600000+1).tiles.find(t=>t.x===x&&t.y===y).crop.cropId,CROP_IDS[i]);
@@ -166,10 +168,12 @@ test('HTTP ownership, CSRF and client clock are rejected',async()=>{
       }
       const updates=sockets.map(socket=>new Promise(resolve=>socket.once('farm:farming',resolve)));
       await new Promise(resolve=>setTimeout(resolve,130));
-      assert.equal((await request('/farming/action',{farmId:farmA.id,action:'water',x:0,y:0},a.cookie,a.data.csrf)).status,200);
+      assert.equal((await request('/farming/action',{farmId:farmA.id,action:'water',x:0,y:0},a.cookie,a.data.csrf)).status,400);
+      await new Promise(resolve=>setTimeout(resolve,130));
+      assert.equal((await request('/farming/action',{farmId:farmA.id,action:'plant',cropId:'mustard',x:0,y:0},a.cookie,a.data.csrf)).status,200);
       const [first,second]=await Promise.all(updates);
-      assert.equal(first.tiles[0].state,'WATERED');
-      assert.equal(second.tiles[0].state,'WATERED');
+      assert.equal(first.tiles[0].state,'PLANTED');
+      assert.equal(second.tiles[0].state,'PLANTED');
     } finally {for(const socket of sockets)socket.disconnect();}
   } finally {await new Promise(resolve=>server.close(resolve));db.close();}
 });

@@ -126,9 +126,7 @@ export function performFarmAction(db, userId, payload, at = now()) {
       db.prepare('UPDATE farm_soil_tiles SET state=?,updated_at=? WHERE farm_id=? AND tile_x=? AND tile_y=?').run('PLANTED',at,farmId,x,y);
       message=`Đã gieo ${definition.name.toLowerCase()}.`;
     } else if (action==='water') {
-      if (state==='TILLED') {
-        db.prepare('UPDATE farm_soil_tiles SET state=?,updated_at=? WHERE farm_id=? AND tile_x=? AND tile_y=?').run('WATERED',at,farmId,x,y);
-      } else if (state==='PLANTED' && crop && crop.watered_at===null) {
+      if (state==='PLANTED' && crop && crop.watered_at===null && cropProgress({plantedAt:crop.planted_at,durationMs:crop.duration_ms,bonusMs:crop.bonus_ms},at).stage!=='MATURE') {
         db.prepare('UPDATE farm_crops SET watered_at=?,bonus_ms=? WHERE id=? AND watered_at IS NULL').run(at,Math.floor(crop.duration_ms*.1),crop.id);
       } else throw new Error('Ô này không cần tưới thêm.');
       if(crop && db.prepare('SELECT 1 FROM farm_onboarding WHERE farm_id=? AND fast_crop_id=?').get(farmId,crop.id))onboardingEvent(db,farmId,'water',at);

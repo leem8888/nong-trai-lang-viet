@@ -24,10 +24,10 @@ export function traceTiles(a,b) {
 export function validSoilActions(tile,inventory,now) {
   if(!tile||tile.locked)return [];
   if(tile.state==='EMPTY')return ['till'];
-  if(!tile.crop)return tile.state==='TILLED' ? ['plant','water'] : tile.state==='WATERED' ? ['plant'] : [];
+  if(!tile.crop)return ['TILLED','WATERED'].includes(tile.state) ? ['plant'] : [];
   const ready=cropProgress(tile.crop,now).stage==='MATURE';
   return [
-    ...(tile.crop.wateredAt===null?['water']:[]),
+    ...(!ready&&tile.crop.wateredAt===null?['water']:[]),
     ...(ready?['harvest']:[])
   ];
 }
@@ -173,7 +173,7 @@ export class ContextualInteraction {
       const tile=this.farming.tile(target.tile.x,target.tile.y);const actions=validSoilActions(tile,this.farming.state?.inventory||[],this.farming.serverNow());
       if(tile?.locked){const p=this.farming.state.plots,next=target.tile.y*FIELD.columns+target.tile.x===p?.unlocked,canBuy=owner&&next&&p?.nextPrice!==null;this.menu.innerHTML=`<strong>Ô đất chưa mua</strong><small>${!owner?'Chỉ chủ farm được mở ô.':next?`Ô tiếp theo · 48×48 · ${p.nextPrice.toLocaleString('vi-VN')} Đồng Làng`:'Cần mở các ô trước theo thứ tự.'}</small>${canBuy?'<button data-context-open="plots">Mua ô này</button>':''}`;return;}
       const crop=tile?.crop,progress=crop?cropProgress(crop,this.farming.serverNow()):null;
-      html=`<strong>Ô đất ${target.tile.x+1}, ${target.tile.y+1}</strong><small>${crop?`${CROPS[crop.cropId].name} · ${Math.round(progress.progress*100)}%${progress.remainingMs?` · còn ${Math.ceil(progress.remainingMs/60000)} phút`:' · đã chín'}`:tile?.state==='EMPTY'?'Đất trống':tile?.state==='WATERED'?'Đã tưới':'Đã cuốc'}</small>`;
+      html=`<strong>Ô đất ${target.tile.x+1}, ${target.tile.y+1}</strong><small>${crop?`${CROPS[crop.cropId].name} · ${Math.round(progress.progress*100)}%${progress.remainingMs?` · còn ${Math.ceil(progress.remainingMs/60000)} phút`:' · đã chín'}`:tile?.state==='EMPTY'?'Đất trống':'Đã cuốc'}</small>`;
       if(owner&&actions.includes('plant'))html+=`<label>Hạt giống<select id="contextSeed" aria-label="Chọn hạt giống">${CROP_IDS.map(id=>`<option value="${id}" ${id===this.seed?'selected':''}>${CROPS[id].name} (${this.farming.state.inventory.find(i=>i.id===CROPS[id].seed)?.quantity||0})</option>`).join('')}</select></label>`;
       html+=owner?actions.map(action=>{const n=action==='plant'?(this.farming.state.inventory.find(i=>i.id===CROPS[this.seed].seed)?.quantity||0):1;const reason=!n?'Đã hết hạt giống':'';return `<button data-context-action="${action}" ${reason?`disabled title="${reason}"`:''}>${labels[action]}${reason?` · ${reason}`:''}</button>`;}).join(''):'<small>Bạn đang thăm farm. Chỉ chủ farm được thao tác.</small>';
       if(!actions.length&&owner)html+='<small>Ô này chưa có thao tác khả dụng.</small>';
@@ -214,7 +214,7 @@ export class ContextualInteraction {
     const seconds=Math.ceil(p.remainingMs/1000),h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),sec=seconds%60;
     const text=ready?'Có thể thu hoạch':`Thu hoạch sau ${h?`${h} giờ `:''}${m?`${m} phút `:''}${sec} giây`;
     const label=this.menu.querySelector('[data-crop-time]');if(label.textContent!==text)label.textContent=text;
-    this.menu.querySelector('[data-crop-status]').textContent=ready?'Cây đã chín':`${Math.floor(p.progress*100)}% · ${tile.crop.wateredAt===null?'Chưa tưới nước':'Đã tưới nước'}`;
+    this.menu.querySelector('[data-crop-status]').textContent=ready?'Cây đã chín · Đã tưới nước':`${Math.floor(p.progress*100)}% · ${tile.crop.wateredAt===null?'Cần tưới nước':'Đã tưới nước'}`;
     this.menu.querySelector('[data-crop-progress]').value=p.progress;
     this.menu.querySelector('.crop-caption').classList.toggle('is-ready',ready);
   }

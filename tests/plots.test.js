@@ -47,15 +47,14 @@ test('young crop has a dark soil mound and mature crop does not',()=>{
     FarmingUI.prototype.draw.call({drawFieldBorders(){},state:{tiles:[{x:0,y:0,state:'PLANTED',crop:{cropId:'rice',plantedAt:100,durationMs:1000,bonusMs:0,wateredAt:null}}]},isometric:true,serverNow:()=>time,updateInfo(){}},ctx);assert.equal(ellipses,expected);
   }
 });
-test('each untilled owned tile uses the same earth swatch',()=>{
-  const draws=[],image={naturalWidth:1024,naturalHeight:1024},ctx={save(){},beginPath(){},rect(){},fill(){},clip(){},fillRect(){},restore(){},drawImage(...args){draws.push(args);}};
-  FarmingUI.prototype.draw.call({drawFieldBorders(){},state:{tiles:[{x:0,y:0,locked:false,state:'EMPTY',crop:null},{x:1,y:0,locked:false,state:'EMPTY',crop:null}]},isometric:true,terrainArt:image,meadowSource:image,meadowPattern:'grass',grassArt:{naturalWidth:1024},upright(){},serverNow:()=>0,updateInfo(){}},ctx);
-  assert.deepEqual(draws.slice(-2).map(d=>d.slice(0,5)),Array(2).fill([image,0,512,256,256]));
-  assert.deepEqual(draws.slice(-2).map(d=>d.slice(5)),[[FIELD.x,FIELD.y,FIELD.stepX,FIELD.stepY],[FIELD.x+FIELD.stepX,FIELD.y,FIELD.stepX,FIELD.stepY]]);
+test('untilled owned and unbought plots draw distinct visible beds',()=>{
+  const draws=[],tiles=[{x:0,y:0,locked:false,state:'EMPTY',crop:null},{x:1,y:0,locked:true,state:'EMPTY',crop:null}];
+  FarmingUI.prototype.draw.call({state:{tiles,plots:{unlocked:8}},isometric:true,drawEmptyBed(_ctx,r,tile){draws.push({r,locked:tile.locked});},serverNow:()=>0,updateInfo(){}},{});
+  assert.deepEqual(draws,[{r:{x:FIELD.x,y:FIELD.y,w:48,h:48},locked:false},{r:{x:FIELD.x+FIELD.stepX,y:FIELD.y,w:48,h:48},locked:true}]);
 });
-test('unbought plot grass and hover are drawn independently of the field grid',()=>{
+test('unbought plot hover highlights only the selected bed',()=>{
   const marks=[],draws=[];const ctx={save(){},restore(){},strokeRect(...args){marks.push(args);}};
-  const tile={x:0,y:0,locked:true},ui={drawFieldBorders(){},state:{tiles:[tile],plots:{unlocked:8}},grassArt:{naturalWidth:1024},isometric:true,upright:(...args)=>draws.push(args),selected:tile,serverNow:()=>0,updateInfo(){},tile:()=>tile};
+  const tile={x:0,y:0,locked:true,state:'EMPTY',crop:null},ui={state:{tiles:[tile],plots:{unlocked:8}},isometric:true,drawEmptyBed:(_ctx,r,t)=>draws.push(t),selected:tile,serverNow:()=>0,updateInfo(){},tile:()=>tile};
   FarmingUI.prototype.draw.call(ui,ctx);
   assert.equal(draws.length,1);assert.equal(marks.length,0);
   ui.hover=tile;FarmingUI.prototype.draw.call(ui,ctx);

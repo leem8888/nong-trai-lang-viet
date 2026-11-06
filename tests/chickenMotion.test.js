@@ -1,8 +1,17 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {LivingFarmVisual} from '../public/js/livingVisual.js';
+import {LivingFarmVisual,coopNestPoint} from '../public/js/livingVisual.js';
 import {livingLayout,YARD_CANDIDATES} from '../public/js/shared/livingLayout.js';
 import {coopGeometry,worldToCoop,chickenWalkable,insideFloor} from '../public/js/animalMotion.js';
+
+test('ready eggs render over the nesting shelf inside the coop',()=>{
+  const layout=livingLayout(),g=coopGeometry(layout.yard),point=worldToCoop(g,coopNestPoint(layout.yard));
+  assert.ok(point.x>g.width*.1&&point.x<g.width*.2);
+  assert.ok(point.y>g.height*.57&&point.y<g.height*.67);
+  const visual=new LivingFarmVisual();
+  assert.equal(visual.eggLayer(null,{coop:{chickens:[{eggsReady:0}]}},layout),null);
+  assert.ok(visual.eggLayer(null,{coop:{chickens:[{eggsReady:2}]}},layout));
+});
 
 for(const yard of YARD_CANDIDATES)test(`chickens remain inside the artwork rails for ten simulated minutes, yard ${yard.x}`,()=>{
   const visual=new LivingFarmVisual(),layout={...livingLayout(),yard},g=coopGeometry(yard);

@@ -6,6 +6,7 @@ import {openDatabase} from '../server/db.js';
 import {createApp} from '../server/index.js';
 import {Camera} from '../public/js/core/Camera.js';
 import {FIELD} from '../public/js/shared/crops.js';
+import {FARM_WORLD} from '../public/js/shared/farmWorld.js';
 import {openEdge,pause} from './edge-driver.mjs';
 
 const stage=process.argv[2]||'after',output=path.resolve('.qa/plots'),temp=mkdtempSync(path.join(tmpdir(),'plot-visual-'));
@@ -43,7 +44,7 @@ try{
   await edge.navigate(url);
   await edge.waitFor("!document.querySelector('#game').classList.contains('hidden')");
   await pause(800);
-  const camera=new Camera({width:1440,height:1024});camera.isometric=true;camera.resize(1000,700);camera.snap(300,740);
+  const camera=new Camera(FARM_WORLD);camera.isometric=true;camera.resize(1000,700);camera.snap(300,740);
   const point=camera.toScreen(FIELD.x+5*FIELD.stepX+FIELD.width/2,FIELD.y+2*FIELD.stepY+FIELD.height/2);
   await edge.command('Input.dispatchMouseEvent',{type:'mouseMoved',x:900,y:50,button:'none'});
   await edge.screenshot(path.join(output,`${stage}-idle.png`));
@@ -54,7 +55,7 @@ try{
   await edge.command('Input.dispatchMouseEvent',{type:'mousePressed',x:point.x,y:point.y,button:'left',buttons:1,clickCount:1});
   await edge.command('Input.dispatchMouseEvent',{type:'mouseReleased',x:point.x,y:point.y,button:'left',buttons:0,clickCount:1});
   await edge.waitFor("!document.querySelector('#contextMenu').classList.contains('hidden')");
-  assert.match(await edge.evaluate("document.querySelector('#contextMenu').textContent"),/chưa mua/);
+  assert.equal(await edge.evaluate("Boolean(document.querySelector('#contextMenu [data-context-open=plots]'))"),true);
   await edge.screenshot(path.join(output,`${stage}-click.png`));
   await edge.evaluate("document.querySelector('#contextCancel').click()");
   await edge.waitFor("document.querySelector('#contextMenu').classList.contains('hidden')");

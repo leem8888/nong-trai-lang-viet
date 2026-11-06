@@ -4,8 +4,7 @@ import { itemArtwork } from './itemArtwork.js';
 
 const stageNames = { SEED:'Hạt mới gieo', SPROUT:'Nảy mầm', GROWING:'Đang lớn', MATURE:'Đã trưởng thành' };
 export function soilIsDry(tile,time){
-  if(tile.locked||tile.state==='EMPTY'||tile.state==='WATERED'||tile.crop?.wateredAt!=null)return false;
-  return !tile.crop||cropProgress(tile.crop,time).stage!=='MATURE';
+  return !tile.locked&&tile.state==='PLANTED'&&!!tile.crop&&tile.crop.wateredAt==null&&cropProgress(tile.crop,time).stage!=='MATURE';
 }
 export class FarmingUI {
   constructor(api, showError, showNotice, openPanel) {
@@ -63,10 +62,10 @@ export class FarmingUI {
     const target=this.selected ? this.tile(this.selected.x,this.selected.y) : null;
     const info=document.getElementById('cropInfo');
     if(!target){info.textContent='Chọn công cụ rồi nhấp vào ô ruộng.';document.getElementById('cropProgress').value=0;return;}
-    if(!target.crop){info.textContent=`Ô (${target.x+1}, ${target.y+1}) · ${target.state==='EMPTY'?'Chưa cuốc':target.state==='WATERED'?'Đã tưới':'Đã cuốc'}`;document.getElementById('cropProgress').value=0;return;}
+    if(!target.crop){info.textContent=`Ô (${target.x+1}, ${target.y+1}) · ${target.state==='EMPTY'?'Chưa cuốc':'Đã cuốc'}`;document.getElementById('cropProgress').value=0;return;}
     const crop=CROPS[target.crop.cropId], growth=cropProgress(target.crop,this.serverNow());
     const minutes=Math.ceil(growth.remainingMs/60000);
-    info.textContent=`${crop.name} · ${stageNames[growth.stage]}${minutes?` · còn khoảng ${minutes} phút`: ' · có thể thu hoạch'}`;
+    info.textContent=`${crop.name} · ${stageNames[growth.stage]} · ${growth.stage==='MATURE'||target.crop.wateredAt!=null?'Đã tưới nước':'Cần tưới nước'}${minutes?` · còn khoảng ${minutes} phút`: ' · có thể thu hoạch'}`;
     document.getElementById('cropProgress').value=growth.progress;
   }
   showInventory() {
@@ -83,15 +82,10 @@ export class FarmingUI {
   draw(ctx) {
     if(!this.state)return;
     const time=this.serverNow();
-    if(this.isometric&&this.terrainArt?.naturalWidth){
-      if(this.meadowSource!==this.terrainArt){const image=this.terrainArt,c=document.createElement('canvas');c.width=c.height=128;c.getContext('2d').drawImage(image,image.naturalWidth*.75,image.naturalHeight*.25,image.naturalWidth*.25,image.naturalHeight*.25,0,0,128,128);this.meadowPattern=ctx.createPattern(c,'repeat');this.meadowSource=image;}
-      const owned=this.state.tiles.filter(tile=>!tile.locked);ctx.save();ctx.beginPath();for(const tile of owned){const r=tileRect(tile.x,tile.y);ctx.rect(r.x-6,r.y-6,FIELD.stepX+12,FIELD.stepY+12);}ctx.fillStyle='#aa925e';ctx.globalAlpha=.32;ctx.shadowColor='#3a5135';ctx.shadowBlur=12;ctx.fill();ctx.clip();ctx.shadowBlur=0;ctx.globalAlpha=.72;ctx.fillStyle=this.meadowPattern;ctx.fillRect(FIELD.x-10,FIELD.y-10,FIELD.columns*FIELD.stepX+20,FIELD.rows*FIELD.stepY+20);ctx.restore();
-    }
     for(const tile of this.state.tiles) {
       const r=tileRect(tile.x,tile.y);
-      if(this.isometric&&tile.locked&&this.grassArt?.naturalWidth&&this.upright){this.upright(ctx,r.x+FIELD.stepX,r.y+FIELD.stepY,this.grassArt,FIELD.stepX*2*ISO_X,FIELD.stepY*2*ISO_Y,undefined,Boolean((tile.x+tile.y)%2));continue;}
+      if(this.isometric&&tile.state==='EMPTY'&&!tile.crop){this.drawEmptyBed(ctx,r,tile);continue;}
       if(tile.locked)continue;
-      if(this.isometric&&tile.state==='EMPTY'&&!tile.crop&&this.terrainArt?.naturalWidth){const image=this.terrainArt;ctx.drawImage(image,0,image.naturalHeight*.5,image.naturalWidth*.25,image.naturalHeight*.25,r.x,r.y,FIELD.stepX,FIELD.stepY);continue;}
       if(this.isometric&&this.soilArt?.naturalWidth&&this.upright){
         if(tile.state==='EMPTY'&&!tile.crop){ctx.fillStyle='#8e6743';ctx.fillRect(r.x,r.y,r.w,r.h);ctx.fillStyle='#b08a5b';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*12,r.y+13+i%2*11,7,3);ctx.strokeStyle='#d3ad76';ctx.lineWidth=1.5;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);}else{this.drawRaisedBed(ctx,r,tile,time);}
 
@@ -102,28 +96,37 @@ export class FarmingUI {
       ctx.strokeStyle='#a78957';ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);
       if(tile.state==='EMPTY'){ctx.fillStyle='#9b7853';for(let i=0;i<3;i++)ctx.fillRect(r.x+8+i*18,r.y+13+i%2*9,9,2);}
       else {ctx.strokeStyle=tile.state==='WATERED'?'#678d91':'#9d7651';for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(r.x+5,r.y+11+i*9);ctx.lineTo(r.x+r.w-5,r.y+11+i*9);ctx.stroke();}}
-      if(tile.state==='WATERED'||tile.crop?.wateredAt){ctx.fillStyle='#6aa4b2';ctx.fillRect(r.x+4,r.y+4,8,3);ctx.fillRect(r.x+r.w-13,r.y+r.h-8,6,3);}
       if(tile.crop&&cropProgress(tile.crop,time).stage!=='MATURE'){ctx.save();ctx.fillStyle='#332217ed';ctx.shadowColor='#21170ed0';ctx.shadowBlur=3;ctx.beginPath();ctx.ellipse(r.x+r.w/2,r.y+r.h/2,r.w*.34,r.h*.34,0,0,Math.PI*2);ctx.fill();ctx.restore();}
       if(tile.crop&&!this.isometric) this.drawCrop(ctx,r,tile.crop,time);
     }
-    this.drawFieldBorders(ctx);
     const next=this.state.tiles.find(tile=>tile.locked&&tile.y*FIELD.columns+tile.x===this.state.plots?.unlocked);
     if(next){const r=tileRect(next.x,next.y);ctx.save();ctx.translate(r.x+r.w/2,r.y+r.h/2);if(this.isometric)ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.scale(.7,.7);ctx.fillStyle='#76502d';ctx.fillRect(-1.5,-7,3,17);ctx.fillStyle='#a36b3d';ctx.strokeStyle='#e1b77d';ctx.lineWidth=1.3;ctx.beginPath();ctx.roundRect(-27,-22,54,17,2);ctx.fill();ctx.stroke();ctx.strokeStyle='#bd8550';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-23,-18);ctx.lineTo(23,-18);ctx.moveTo(-23,-9);ctx.lineTo(23,-9);ctx.stroke();ctx.fillStyle='#fff0cb';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Mua đất',0,-13);ctx.restore();}
     if(this.preview?.size){ctx.save();ctx.fillStyle='#e8cf7470';ctx.strokeStyle='#fff2a8';ctx.lineWidth=2;for(const tile of this.preview.values()){const r=tileRect(tile.x,tile.y);ctx.fillRect(r.x+2,r.y+2,r.w-4,r.h-4);ctx.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);}ctx.restore();}
     if(this.hover){const r=tileRect(this.hover.x,this.hover.y),locked=this.tile(this.hover.x,this.hover.y)?.locked;ctx.save();ctx.strokeStyle=locked?'#d8e9be':'#fff1a2';ctx.lineWidth=1.5;ctx.strokeRect(r.x+1,r.y+1,r.w-2,r.h-2);ctx.restore();}
     this.updateInfo();
   }
-  drawRaisedBed(ctx,r,tile,time=this.serverNow()) {
+  drawEmptyBed(ctx,r,tile){
+    const artKey=tile.locked?'lockedBedArt':'emptyBedArt';
+    if(!this[artKey]){
+      const canvas=document.createElement('canvas');canvas.width=canvas.height=56;
+      const ground=canvas.getContext('2d');this.drawRaisedBed(ground,{x:4,y:4,w:48,h:48},{locked:true,state:'EMPTY'},0,tile.locked);
+      ground.strokeStyle=tile.locked?'#4f8238':'#78904b';ground.lineWidth=1.4;ground.lineCap='round';
+      for(const [x,y] of [[14,23],[34,17],[21,36],[39,31]]){ground.beginPath();ground.moveTo(x,y+3);ground.lineTo(x-2,y);ground.moveTo(x,y+3);ground.lineTo(x+2,y-1);ground.stroke();}
+      this[artKey]=canvas;
+    }
+    ctx.save();ctx.globalAlpha=.96;ctx.drawImage(this[artKey],r.x-4,r.y-4);ctx.restore();
+  }
+  drawRaisedBed(ctx,r,tile,time=this.serverNow(),green=false) {
     const x=r.x+3,y=r.y+3,w=r.w-6,h=r.h-6;
     const shape=(left,top,width,height,radius)=>{ctx.beginPath();ctx.roundRect(left,top,width,height,radius);};
     ctx.save();
-    ctx.fillStyle='#231a14a0';shape(x-1,y+1,w+3,h+3,13);ctx.fill();
+    ctx.fillStyle=green?'#354923a0':'#231a14a0';shape(x-1,y+1,w+3,h+3,13);ctx.fill();
     // Curved contours gradually rise to the crown instead of outlining a flat lid.
     for(let i=0;i<=24;i++){
       const t=i/24,inset=t*15,lift=Math.sin(t*Math.PI/2)*9;
       const brown=ctx.createLinearGradient(x,y,x+w,y+h),light=Math.round(66+38*Math.sin(t*Math.PI/2));
-      brown.addColorStop(0,`rgb(${light+12},${Math.round(light*.69)},${Math.round(light*.43)})`);
-      brown.addColorStop(1,`rgb(${light-6},${Math.round(light*.55)},${Math.round(light*.33)})`);
+      brown.addColorStop(0,green?`rgb(${light+100},${light+130},${light+10})`:`rgb(${light+12},${Math.round(light*.69)},${Math.round(light*.43)})`);
+      brown.addColorStop(1,green?`rgb(${light+75},${light+110},${light+5})`:`rgb(${light-6},${Math.round(light*.55)},${Math.round(light*.33)})`);
       ctx.fillStyle=brown;
       shape(x+inset-lift,y+inset-lift,w-inset*2,h-inset*2,Math.min(14,(w-inset*2)/2));ctx.fill();
     }
@@ -132,15 +135,11 @@ export class FarmingUI {
       const u=((i*17)%61)/61,v=((i*29+7)%67)/67;
       const crown=Math.max(0,1-((u-.5)*2)**2-((v-.5)*2)**2),lift=Math.sqrt(crown)*9;
       const px=x+3+u*(w-6)-lift,py=y+3+v*(h-6)-lift;
-      ctx.fillStyle=i%3===0?'#ac805147':'#21180e70';
+      ctx.fillStyle=green?(i%3===0?'#e8eea45c':'#416d3560'):(i%3===0?'#ac805147':'#21180e70');
       ctx.beginPath();ctx.ellipse(px,py,.6+i%4*.24,.45+i%3*.16,-.4,0,Math.PI*2);ctx.fill();
-      if(i%7===0){ctx.fillStyle='#bea17d52';ctx.beginPath();ctx.ellipse(px-.3,py-.5,.8,.35,-.4,0,Math.PI*2);ctx.fill();}
+      if(i%7===0){ctx.fillStyle=green?'#f0f4b964':'#bea17d52';ctx.beginPath();ctx.ellipse(px-.3,py-.5,.8,.35,-.4,0,Math.PI*2);ctx.fill();}
     }
     this.drawSoilCracks(ctx,r,tile,time);
-    if(tile.state==='WATERED'||tile.crop?.wateredAt!=null){
-      ctx.strokeStyle='#b8d9d0b3';ctx.lineWidth=1;
-      for(const [dx,dy] of [[9,12],[28,26],[18,32]]){ctx.beginPath();ctx.ellipse(x+dx,y+dy,2.5,1.2,-.4,0,Math.PI*2);ctx.stroke();}
-    }
     ctx.restore();
   }
   drawSoilCracks(ctx,r,tile,time){

@@ -20,9 +20,10 @@ try{browser=await chromium.launch({headless:true,executablePath:process.env.EDGE
  });
  const click=await page.evaluate(async()=>{const {tileCenter}=await import('/js/shared/crops.js');const p=tileCenter(__testTile.x,__testTile.y);return __cropQA.camera.toScreen(p.x,p.y);});
  await page.mouse.click(click.x,click.y);await page.locator('.crop-caption').waitFor();assert.ok(await page.locator('.crop-caption strong').textContent());assert.equal(await page.locator('.crop-caption img').evaluate(e=>e.complete&&e.naturalWidth>0),true);assert.match(await page.locator('[data-crop-time]').textContent(),/Thu hoạch sau/);
+ assert.match(await page.locator('[data-crop-status]').textContent(),/Cần tưới nước/);
  const initial=await page.locator('[data-crop-time]').textContent();await pause(1200);assert.notEqual(await page.locator('[data-crop-time]').textContent(),initial);
  await page.screenshot({path:'.qa/hud/crop-growing.png'});
- await page.locator('[data-crop-time]').filter({hasText:'Có thể thu hoạch'}).waitFor({timeout:10000});await page.locator('[data-context-action=harvest]').waitFor();console.log('PASS real soil click shows image/name/live countdown and becomes harvestable');
+ await page.locator('[data-crop-time]').filter({hasText:'Có thể thu hoạch'}).waitFor({timeout:10000});await page.locator('[data-context-action=harvest]').waitFor();assert.match(await page.locator('[data-crop-status]').textContent(),/Đã tưới nước/);assert.equal(await page.locator('[data-context-action=water]').count(),0);console.log('PASS real soil click shows watering need, live countdown and ripe default');
  await page.setViewportSize({width:390,height:844});await pause(250);const box=await page.locator('#contextMenu').boundingBox();assert.ok(box.x>=0&&box.x+box.width<=391);await page.screenshot({path:'.qa/hud/crop-ripe-mobile.png'});assert.deepEqual(errors,[]);
 }catch(e){console.error(e);if(page)await page.screenshot({path:'.qa/hud/failure.png'});results.push({ok:false,error:e.stack});process.exitCode=1;}
 finally{writeFileSync('.qa/hud/results.json',JSON.stringify({results,errors},null,2));await browser?.close();await new Promise(r=>io.close(r));if(server.listening)await new Promise(r=>server.close(r));db.close();}

@@ -31,6 +31,9 @@ try{
    await pause(i<3?500:700);
  }
  console.log('PASS real browser: four chickens stay inside rails, 50 samples');
+ const fishFrames=[];for(let i=0;i<3;i++){fishFrames.push(await page.evaluate(()=>__animalQA.visual.hits.filter(h=>h.kind==='pond').map(h=>({id:h.entityId,x:h.x,y:h.y}))));await page.screenshot({path:`.qa/animal-motion/fish-${i}.png`});await pause(500);}
+ assert.ok(fishFrames[0].length>0&&fishFrames.some(frame=>Math.hypot(frame[0].x-fishFrames[0][0].x,frame[0].y-fishFrames[0][0].y)>.1),'fish visibly change position');
+ console.log('PASS real browser: fish move across three captured frames');
  for(const [kind,action] of [['coop','feed_chicken'],['pond','feed_fish']]){
    const pos=await page.evaluate(kind=>{const h=__animalQA.visual.hits.find(h=>h.kind===kind);return __animalQA.camera.toScreen(h.x,h.y);},kind);
    await page.mouse.click(pos.x,pos.y);const selector=`[data-context-vac=${action}]`;await page.locator(selector).waitFor();const box=await page.locator(selector).boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await pause(100);const p=await page.locator(selector).boundingBox();await page.mouse.click(p.x+p.width/2,p.y+p.height/2);

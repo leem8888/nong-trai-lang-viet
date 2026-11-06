@@ -1,4 +1,4 @@
-import {coopGeometry,updateChicken} from './animalMotion.js';
+import {coopGeometry,coopToWorld,updateChicken} from './animalMotion.js';
 import {drawSwimmingFish,drawWalkingChicken} from './animalDrawing.js';
 import {livingLayout,pondObstacles} from './shared/livingLayout.js';
 import {ISO_X,ISO_Y} from './core/IsoProjection.js';
@@ -9,6 +9,7 @@ const sourceHalf=(image,right)=>[right?image.naturalWidth/2:0,0,image.naturalWid
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const smooth=n=>{n=clamp(n,0,1);return n*n*(3-2*n);};
 const random=(id,n)=>{const v=Math.sin(id*127.1+n*311.7)*43758.5453;return v-Math.floor(v);};
+export function coopNestPoint(yard){const g=coopGeometry(yard);return g?coopToWorld(g,{x:g.width*.12,y:g.height*.62}):null;}
 export function fishMotion(id,time,pond){
   const period=6+random(id,1)*5,t=time/period+random(id,2)*19,index=Math.floor(t),u=t-index;
   const territory=id*2.3999632297,radius=.28+random(id,6)*.10;
@@ -25,6 +26,7 @@ export class LivingFarmVisual {
   constructor(){this.event=null;this.hits=[];this.releases=new Map();this.chickenMotion=new Map();this.fishHeadings=new Map();}
   animalAt(point){return this.hits.filter(p=>Math.hypot((point.x-p.x)-(point.y-p.y),((point.x-p.x)+(point.y-p.y))*.5)<36).sort((a,b)=>Math.hypot(point.x-a.x,point.y-a.y)-Math.hypot(point.x-b.x,point.y-b.y))[0];}
   onAction(intent,result,before,player,layout){if(result.replayed)return;this.event={kind:intent.action,entityId:intent.entityId||null,at:performance.now(),fishId:before?.pond?.fish.find(f=>f.id===intent.entityId)?.fishId||null,eggs:before?.coop?.chickens.reduce((n,c)=>n+c.eggsReady,0)||0};
+    if(intent.action==='feed_fish'&&layout?.pond){const [o]=pondObstacles(layout.pond);this.event.food={x:o.x+12,y:o.y+12};}
     if(intent.action==='feed_chicken'){const bird=this.chickenMotion.get(intent.entityId);if(bird)bird.next=0;}
     if(intent.action==='stock_fish'&&player&&layout){
       const known=new Set(before?.pond?.fish.map(f=>f.id)||[]),[o]=pondObstacles(layout.pond);
@@ -46,6 +48,7 @@ export class LivingFarmVisual {
       if(release&&age>4.5)this.releases.delete(row.id);
       let x=normal.x,y=normal.y;
       if(release&&!reduced){x=release.x+(x-release.x)*enter;y=release.y+(y-release.y)*enter;}
+      if(!reduced&&this.active('feed_fish')&&this.event.food){const age=(performance.now()-this.event.at)/1000,blend=smooth(age/.7)*(1-smooth((age-1.3)/.9))*.65;x+=(this.event.food.x-x)*blend;y+=(this.event.food.y-y)*blend;}
       const vx=release&&enter<1?normal.x-release.x:ahead.x-normal.x,vy=release&&enter<1?normal.y-release.y:ahead.y-normal.y;
       const speed=Math.hypot(ahead.x-normal.x,ahead.y-normal.y)/.12;
       const tailPhase=time*(4+Math.min(speed,20)*.16)+row.id*2.1;
@@ -95,11 +98,11 @@ export class LivingFarmVisual {
     });
   }
   effectLayers(ctx,art,upright,vac,layout){const event=this.event;if(!event)return [];const elapsed=(performance.now()-event.at)/1000;if(elapsed>2.2)return [];
-    const pond=['stock_fish','feed_fish','harvest_fish'].includes(event.kind),x=pond?(layout.pond.w>300?970:1050):layout.yard?layout.yard.x+layout.yard.w*.6:1165,y=pond?(layout.pond.w>300?630:665):layout.yard?layout.yard.y-180:180;
+    const pond=['stock_fish','feed_fish','harvest_fish'].includes(event.kind),nest=event.kind==='collect_eggs'?coopNestPoint(layout.yard):null,x=event.food?.x??nest?.x??(pond?(layout.pond.w>300?970:1050):layout.yard?layout.yard.x+layout.yard.w*.6:1165),y=event.food?.y??nest?.y??(pond?(layout.pond.w>300?630:665):layout.yard?layout.yard.y-180:180);
     return [{y:2500,draw:()=>{ctx.save();ctx.globalAlpha=1-elapsed/2.2;ctx.lineWidth=2;ctx.strokeStyle=pond?'#d4f4e7':'#f8d989';for(let i=0;i<(pond?3:2);i++){ctx.beginPath();ctx.ellipse(x,y,8+elapsed*25+i*11,3+elapsed*9+i*4,0,0,7);ctx.stroke();}
       if(event.kind==='feed_fish'||event.kind==='feed_chicken'){ctx.fillStyle=pond?'#e6cf83':'#e9c369';for(let i=0;i<9;i++){const scatter=(i*19)%37-18,drop=Math.min(1,elapsed*2+i*.035);ctx.beginPath();ctx.arc(x+scatter,y-35+drop*(28+(i%3)*5),pond?2.1:2.7,0,7);ctx.fill();}}
       if(event.kind==='harvest_fish'&&art.livingAnimals?.naturalWidth){const image=event.fishId==='tilapia'?art.livingAnimals:art.animals;upright(ctx,x,y-elapsed*45,image,48,28,sourceHalf(image,true));}
       if(event.kind==='collect_eggs'&&event.eggs){ctx.fillStyle='#fff1cf';for(let i=0;i<Math.min(3,event.eggs);i++){ctx.beginPath();ctx.ellipse(x+i*14-14,y-12-elapsed*20,5,7,0,0,7);ctx.fill();}}ctx.restore();}}];
   }
-  eggLayer(ctx,vac,layout){const eggs=vac?.coop?.chickens.reduce((n,c)=>n+c.eggsReady,0)||0;if(!eggs||!layout.yard)return null;return {y:1900,draw:()=>{ctx.save();ctx.fillStyle='#fff0cb';ctx.strokeStyle='#a47c4a';for(let i=0;i<Math.min(eggs,3);i++){const x=1230+i*10,y=95-i%2*3;ctx.beginPath();ctx.ellipse(x,y,7,9,0,0,7);ctx.fill();ctx.stroke();}ctx.restore();}};}
+  eggLayer(ctx,vac,layout){const eggs=vac?.coop?.chickens.reduce((n,c)=>n+c.eggsReady,0)||0,nest=coopNestPoint(layout.yard);if(!eggs||!nest)return null;return {y:1900,draw:()=>{ctx.save();ctx.translate(nest.x,nest.y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);ctx.fillStyle='#fff0cb';ctx.strokeStyle='#a47c4a';for(let i=0;i<Math.min(eggs,3);i++){const x=i*11-11,y=i%2*2;ctx.beginPath();ctx.ellipse(x,y,5,7,-.2,0,7);ctx.fill();ctx.stroke();}ctx.restore();}};}
 }

@@ -38,3 +38,13 @@ test('fish turn with continuous velocity and visual caches are removed after har
   visual.fishLayers(null,{},null,{pond:{fish:[]}},livingLayout(),true);
   assert.equal(visual.fishHeadings.size,0);
 });
+test('confirmed fish feeding draws food inside the pond and keeps fish bounded',()=>{
+  const visual=new LivingFarmVisual(),layout=livingLayout(),vac={pond:{fish:[{id:1,progress:.5,fishId:'tilapia'}]}};
+  visual.onAction({action:'feed_fish'}, {state:vac},vac,null,layout);
+  const [o]=pondObstacles(layout.pond),food=visual.event.food;
+  assert.ok(food);
+  const sx=((food.x-o.x-12)-(food.y-o.y-12))*ISO_X,sy=((food.x-o.x-12)+(food.y-o.y-12))*ISO_Y;
+  assert.ok((sx/o.rx)**2+(sy/o.ry)**2<1);
+  visual.fishLayers(null,{},null,vac,layout,false);
+  assert.equal(visual.hits.length,1);
+});
