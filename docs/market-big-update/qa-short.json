@@ -1,0 +1,39 @@
+{
+  "checks": [
+    "market scene visible",
+    "market and preserved stall assets load",
+    "mobile portrait rendered",
+    "mobile landscape rendered",
+    "125 percent pixel ratio rendered",
+    "125 percent browser layout rendered",
+    "desktop wide rendered",
+    "close and wide camera terrain views rendered",
+    "sustained animation samples collected",
+    "mobile touch starts market navigation",
+    "offline trade reports error and does not debit wallet"
+  ],
+  "frames": [
+    "docs/market-big-update/animation-00.png",
+    "docs/market-big-update/animation-01.png",
+    "docs/market-big-update/animation-02.png",
+    "docs/market-big-update/animation-03.png",
+    "docs/market-big-update/animation-04.png",
+    "docs/market-big-update/animation-05.png",
+    "docs/market-big-update/animation-06.png",
+    "docs/market-big-update/animation-07.png"
+  ],
+  "errors": [],
+  "requestsFailed": [
+    "net::ERR_INTERNET_DISCONNECTED",
+    "net::ERR_INTERNET_DISCONNECTED",
+    "net::ERR_INTERNET_DISCONNECTED",
+    "net::ERR_INTERNET_DISCONNECTED"
+  ],
+  "performance": {
+    "samples": 152,
+    "p50Ms": 16.69999999999709,
+    "p95Ms": 16.799999999999272,
+    "heapStart": 2446024,
+    "heapEnd": 2499497
+  }
+}

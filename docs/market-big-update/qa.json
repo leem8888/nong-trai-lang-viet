@@ -1,0 +1,32 @@
+{
+  "checks": [
+    "market scene visible",
+    "market and preserved stall assets load",
+    "mobile portrait rendered",
+    "mobile landscape rendered",
+    "125 percent pixel ratio rendered",
+    "125 percent browser layout rendered",
+    "desktop wide rendered",
+    "close and wide camera terrain views rendered",
+    "sustained animation samples collected"
+  ],
+  "frames": [
+    "docs/market-big-update/animation-00.png",
+    "docs/market-big-update/animation-01.png",
+    "docs/market-big-update/animation-02.png",
+    "docs/market-big-update/animation-03.png",
+    "docs/market-big-update/animation-04.png",
+    "docs/market-big-update/animation-05.png",
+    "docs/market-big-update/animation-06.png",
+    "docs/market-big-update/animation-07.png"
+  ],
+  "errors": [],
+  "requestsFailed": [],
+  "performance": {
+    "samples": 35898,
+    "p50Ms": 16.699999999982538,
+    "p95Ms": 16.70000000006985,
+    "heapStart": 2799042,
+    "heapEnd": 5394719
+  }
+}

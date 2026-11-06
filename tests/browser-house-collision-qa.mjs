@@ -12,7 +12,7 @@ const db=openDatabase(':memory:'),u=register(db,'house_browser','password123'),f
 const {server,io}=createApp(db);await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
 let browser,page;const errors=[],results=[];mkdirSync('.qa/house-collision',{recursive:true});const center=houseToWorld(.5,.77);
 async function pause(ms){await new Promise(r=>setTimeout(r,ms));}
-async function ready(){await page.locator('#status').getByText('Đã kết nối').waitFor();await pause(150);}
+async function ready(){await page.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('Đã kết nối'));await pause(150);}
 async function relocate(p){await page.goto('about:blank');db.prepare("UPDATE player_states SET x=?,y=?,scene='farm' WHERE user_id=?").run(p.x,p.y,u.id);await page.goto(base);await ready();}
 async function position(){return page.evaluate(()=>({x:__houseQA.player.x,y:__houseQA.player.y,moving:!!__houseQA.input.target}));}
 try{browser=await chromium.launch({headless:true,executablePath:process.env.EDGE_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});const context=await browser.newContext({viewport:{width:1366,height:900}});

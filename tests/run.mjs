@@ -24,3 +24,4 @@ import './onboarding.test.js';
 import './mango.test.js';
 
 import './houseCollision.test.js';
+import './marketVisitors.test.js';

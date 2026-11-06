@@ -22,7 +22,7 @@ async function until(check,ms=20000){const end=Date.now()+ms;while(Date.now()<en
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.EDGE_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});const page=await browser.newPage({viewport:{width:1366,height:900}});page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/js/main.js',route=>route.fulfill({contentType:'text/javascript',body:readFileSync('public/js/main.js','utf8')+'\nwindow.__animalQA={get visual(){return livingVisual},get camera(){return camera},get vac(){return vacUi},get village(){return villageUi}};'}));
- await page.goto(base);await page.locator('[name=username]').fill('motion_qa');await page.locator('[name=password]').fill('password123');await page.locator('#authSubmit').click();await page.locator('#status').getByText('Đã kết nối').waitFor();
+ await page.goto(base);await page.locator('[name=username]').fill('motion_qa');await page.locator('[name=password]').fill('password123');await page.locator('#authSubmit').click();await page.waitForFunction(()=>document.querySelector('#status')?.textContent.includes('Đã kết nối'));
  await until(async()=>(await page.evaluate(()=>window.__animalQA?.visual.chickenMotion.size))===4);
  for(let i=0;i<50;i++){
    const birds=await page.evaluate(()=>[...__animalQA.visual.chickenMotion.entries()].map(([id,b])=>({id,sx:b.sx,sy:b.sy,mode:b.mode,moving:b.moving})));
