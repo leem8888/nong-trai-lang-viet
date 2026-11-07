@@ -10,10 +10,9 @@ export class TreeHarvestVisual{
   try{await new Promise(resolve=>setTimeout(resolve,2200));}finally{ui.harvestAt=null;this.event=null;}
  }
  drawActor(ctx,image,x,y,direction,art={}){
-  const event=this.event,age=(performance.now()-event.at)/1000,banana=event.kind==='banana';
-  const beat=banana?Math.sin(clamp((age-.15)/1.8)*Math.PI):Math.max(0,Math.sin(clamp(age/1.9)*Math.PI*3));
+  const event=this.event,age=(performance.now()-event.at)/1000;
   const side=((event.tree.x-x)-(event.tree.y-y))<0?-1:1;
-  if(banana&&art.bananaReach?.naturalWidth){
+  if(art.bananaReach?.naturalWidth){
     const sheet=art.bananaReach,frame=bananaReachFrame(age),w=sheet.naturalWidth/3,h=sheet.naturalHeight/2;
     ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
     if(side>0)ctx.scale(-1,1);
@@ -21,17 +20,14 @@ export class TreeHarvestVisual{
   }
   const row={down:0,up:1,left:2,right:3}[direction]??0,w=image.naturalWidth/4,h=image.naturalHeight/4;
   ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
-  ctx.rotate(side*beat*.035);ctx.drawImage(image.bitmap||image,w,row*h,w,h,-39,-86,78,86);
-  ctx.strokeStyle='#34445b';ctx.lineWidth=5;ctx.lineCap='round';
-  ctx.beginPath();ctx.moveTo(side*9,-50);ctx.quadraticCurveTo(side*(15+beat*4),-45-beat*16,side*21,-38-beat*(banana?51:36));ctx.stroke();
-  ctx.fillStyle='#bb976c';ctx.beginPath();ctx.ellipse(side*21,-38-beat*(banana?51:36),2.6,2.2,-.4,0,7);ctx.fill();ctx.restore();
+  ctx.drawImage(image.bitmap||image,w,row*h,w,h,-39,-86,78,86);ctx.restore();
  }
  drawFruit(ctx,art){
   if(!this.active)return;const e=this.event,age=(performance.now()-e.at)/1000,banana=e.kind==='banana';
   ctx.save();ctx.translate(e.tree.x,e.tree.y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
-  const handX=((e.player.x-e.tree.x)-(e.player.y-e.tree.y))*ISO_X,handY=((e.player.x-e.tree.x)+(e.player.y-e.tree.y))*ISO_Y-(banana?48:36);
+  const handX=((e.player.x-e.tree.x)-(e.player.y-e.tree.y))*ISO_X,handY=((e.player.x-e.tree.x)+(e.player.y-e.tree.y))*ISO_Y-48;
   for(let i=0;i<(banana?1:3);i++){
-   const t=(age-(banana?.9:.24+i*.5))/(banana?.85:.7);if(t<0||t>=1)continue;
+   const t=(age-(banana?.9:.9+i*.22))/(banana?.85:.7);if(t<0||t>=1)continue;
    const blend=ease(t),sx=banana?14:(i-1)*e.size*.15,sy=banana?-80:-e.size*(.65-i*.06);
    ctx.save();ctx.translate(sx+(handX-sx)*blend,sy+(handY-sy)*blend);ctx.rotate(Math.sin(t*Math.PI)*.15);ctx.globalAlpha=1-ease((t-.8)/.2);
    if(banana&&art.bananaBunchRipe?.naturalWidth)ctx.drawImage(art.bananaBunchRipe.bitmap||art.bananaBunchRipe,-12,-18,24,36);

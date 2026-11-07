@@ -39,6 +39,13 @@ try{
  const spots=await page.evaluate(async()=>{const {HOUSE_DOOR}=await import('/js/shared/house.js'),{tileCenter}=await import('/js/shared/crops.js');return [{x:HOUSE_DOOR.x+40,y:HOUSE_DOOR.y+40},tileCenter(0,0),{x:950,y:760}];});
  for(const spot of spots){for(const height of [0,40,72]){const screen=await page.evaluate(({spot,height})=>{const q=window.__gardenQA;q.hitPreview(spot);const p=q.camera.toScreen(spot.x,spot.y);return {x:p.x,y:p.y-height*q.camera.zoom};},{spot,height});await page.mouse.click(screen.x,screen.y);assert.equal(await page.locator('#panel').isVisible(),false);assert.equal(await page.locator('#contextMenu').isVisible(),false);assert.equal(await page.evaluate(()=>window.__gardenQA.input.target),null);}}
  await page.evaluate(()=>{window.__gardenQA.behindHousePreview();window.__gardenQA.render();});assert.equal(await page.evaluate(()=>window.__gardenQA.children.people[0].occluded),true);await page.screenshot({path:'.qa/garden-child-behind-house.png'});
- assert.deepEqual(errors,[]);console.log('PASS garden render, ripe fruit, projected facing, and no browser errors');
+ await page.evaluate(()=>{const q=window.__gardenQA;q.camera.snap(720,680);q.input.setPath([{x:720,y:740}]);q.render();});
+ await page.screenshot({path:'.qa/garden-move-destination.png'});
+ await page.evaluate(()=>window.__gardenQA.input.cancelPath());
+ for(const [name,x,y] of [['east',1980,550],['north',600,-450],['west',-340,650]]){
+  await page.evaluate(({x,y})=>{const q=window.__gardenQA;q.camera.focus=q.camera.focusTarget=1;q.camera.fit();q.camera.snap(x,y);q.render();},{x,y});
+  await page.screenshot({path:`.qa/garden-neighbors-${name}.png`});
+ }
+ assert.deepEqual(errors,[]);console.log('PASS garden render, neighboring yards, ripe fruit, projected facing, and no browser errors');
 }finally{await browser?.close();await new Promise(r=>io.close(r));if(server.listening)await new Promise(r=>server.close(r));db.close();}
 

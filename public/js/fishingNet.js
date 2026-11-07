@@ -18,9 +18,22 @@ export function fishingActorPose(age,side=1){
  const hx=side*12,hy=-8;
  return {lean,crouch,hand:{x:hx*Math.cos(lean)-hy*Math.sin(lean),y:-32+crouch+hx*Math.sin(lean)+hy*Math.cos(lean)}};
 }
-export function drawFishingActor(ctx,image,x,y,direction,age){
+export const FISH_RELEASE_DELAY=.65;
+export const FISH_RELEASE_TRAVEL=.4;
+export function fishReleaseFrame(age){
+ return age<.2?0:age<.4?1:age<FISH_RELEASE_DELAY?2:age<1.05?3:age<1.45?4:age<1.8?2:age<1.95?1:0;
+}
+export function drawFishReleaseActor(ctx,image,x,y,direction,age){
  if(!image?.naturalWidth)return;
- const side=direction==='left'?-1:1,pose=fishingActorPose(age,side);
+ const frame=fishReleaseFrame(age),w=image.naturalWidth/3,h=image.naturalHeight/2;
+ ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
+ if(direction==='right')ctx.scale(-1,1);
+ ctx.drawImage(image,frame%3*w,Math.floor(frame/3)*h,w,h,-42,-82,84,84);
+ ctx.restore();
+}
+export function drawFishingActor(ctx,image,x,y,direction,age,bodyPose){
+ if(!image?.naturalWidth)return;
+ const side=direction==='left'?-1:1,pose=bodyPose||fishingActorPose(age,side);
  const row={down:0,up:1,left:2,right:3}[direction]??0,w=image.naturalWidth/4,h=image.naturalHeight/4;
  ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
  ctx.fillStyle='#2430202b';ctx.beginPath();ctx.ellipse(0,1,15,3.2,0,0,Math.PI*2);ctx.fill();

@@ -4,7 +4,7 @@ import {livingLayout,pondObstacles} from './shared/livingLayout.js';
 import {ISO_X,ISO_Y} from './core/IsoProjection.js';
 import {COOP_HOUSE_OFFSET} from './shared/coopPlacement.js';
 import {movementFacing} from './entities/Player.js';
-import {drawFishingNet} from './fishingNet.js';
+import {drawFishingNet,fishingPose,FISH_RELEASE_DELAY,FISH_RELEASE_TRAVEL} from './fishingNet.js';
 
 // Pond water and fish stay below actors sorted by their world-space feet.
 const POND_GROUND_DEPTH=-10000;
@@ -45,9 +45,12 @@ export class LivingFarmVisual {
   animalAt(point){return this.hits.filter(p=>Math.hypot((point.x-p.x)-(point.y-p.y),((point.x-p.x)+(point.y-p.y))*.5)<36).sort((a,b)=>Math.hypot(point.x-a.x,point.y-a.y)-Math.hypot(point.x-b.x,point.y-b.y))[0];}
   onAction(intent,result,before,player,layout){if(result.replayed)return;this.event={kind:intent.action,entityId:intent.entityId||null,at:performance.now(),fishId:before?.pond?.fish.find(f=>f.id===intent.entityId)?.fishId||null,eggs:before?.coop?.chickens.reduce((n,c)=>n+c.eggsReady,0)||0};
     if(intent.action==='harvest_fish'&&layout?.pond&&player){
+      this.event.harvestFish=before?.pond?.fish.find(f=>f.id===intent.entityId);
       const [o]=pondObstacles(layout.pond),sx=((player.x-o.x)-(player.y-o.y))*ISO_X,sy=((player.x-o.x)+(player.y-o.y))*ISO_Y;
       const norm=Math.hypot(sx/o.rx,sy/o.ry)||1,dx=sx/norm*.70,dy=sy/norm*.70;
       this.event.catchPoint={x:o.x+(dx/ISO_X+dy/ISO_Y)/2,y:o.y+(dy/ISO_Y-dx/ISO_X)/2};
+      const position=this.fishPositions.get(intent.entityId);
+      if(position)this.event.catchPoint={x:position.x,y:position.y};
       this.event.throwFrom={x:player.x,y:player.y};
       player.direction=movementFacing(this.event.catchPoint.x-player.x,this.event.catchPoint.y-player.y,player.direction);
     }
@@ -69,6 +72,8 @@ export class LivingFarmVisual {
       const sx=((player.x-o.x)-(player.y-o.y))*ISO_X,sy=((player.x-o.x)+(player.y-o.y))*ISO_Y;
       const norm=Math.hypot(sx/o.rx,sy/o.ry)||1,dx=sx/norm*.87,dy=sy/norm*.87;
       let index=0;for(const fish of result.state.pond.fish)if(!known.has(fish.id))this.releases.set(fish.id,{at:performance.now()+index++*280,x:o.x+12+(dx/ISO_X+dy/ISO_Y)/2,y:o.y+12+(dy/ISO_Y-dx/ISO_X)/2});
+      this.event.releaseHold=Math.max(0,index-1)*.28;
+      this.event.duration=2100+this.event.releaseHold*1000;
       this.event.throwFrom={x:player.x,y:player.y};
       player.direction=movementFacing(o.x-player.x,o.y-player.y,player.direction);
     }
@@ -96,13 +101,20 @@ export class LivingFarmVisual {
   active(kind){return this.event?.kind===kind&&performance.now()-this.event.at<2200;}
   pondLayer(ctx,art,upright,layout){const large=layout.pond.w>300,cx=large?1195:1250;// Water and its painted rim are ground, not a foreground occluder.
     return {y:POND_GROUND_DEPTH,draw:()=>upright(ctx,cx,large?720:705,art.livingPond||art.pond,large?480:335,large?260:223)};}
-  fishLayers(ctx,art,upright,vac,layout,reduced){const fish=vac?.pond?.fish||[],time=reduced?0:performance.now()/1000;
+  visibleFish(vac,now=performance.now()){
+    const fish=vac?.pond?.fish||[],event=this.event;
+    if(event?.kind!=='harvest_fish'||!event.harvestFish||fishingPose((now-event.at)/1000).caught||fish.some(f=>f.id===event.entityId))return fish;
+    return [...fish,event.harvestFish];
+  }
+  fishLayers(ctx,art,upright,vac,layout,reduced){const fish=this.visibleFish(vac),time=reduced?0:performance.now()/1000;
     const activeIds=new Set(fish.map(f=>f.id));for(const id of this.releases.keys())if(!activeIds.has(id))this.releases.delete(id);
     for(const id of this.fishHeadings.keys())if(!activeIds.has(id))this.fishHeadings.delete(id);
     for(const id of this.fishPositions.keys())if(!activeIds.has(id))this.fishPositions.delete(id);
     return fish.map(row=>{
-      const normal=fishMotion(row.id,time,layout.pond),ahead=fishMotion(row.id,time+.12,layout.pond),release=this.releases.get(row.id);
-      const age=release?(performance.now()-release.at)/1000:10,enter=reduced?1:smooth((age-.65)/3.6);
+      const harvesting=this.event?.kind==='harvest_fish'&&this.event.entityId===row.id&&this.event.catchPoint;
+      const normal=harvesting?this.event.catchPoint:fishMotion(row.id,time,layout.pond),ahead=fishMotion(row.id,time+.12,layout.pond),release=this.releases.get(row.id);
+      const landing=FISH_RELEASE_DELAY+FISH_RELEASE_TRAVEL;
+      const age=release?(performance.now()-release.at)/1000:10,enter=reduced?1:smooth((age-landing)/3.6);
       if(release&&age>4.5)this.releases.delete(row.id);
       let x=normal.x,y=normal.y;
       if(release&&!reduced){x=release.x+(x-release.x)*enter;y=release.y+(y-release.y)*enter;}
@@ -138,8 +150,8 @@ export class LivingFarmVisual {
       heading.turn+=(heading.facing-heading.turn)*(1-Math.exp(-dt*8));
       heading.tilt=fishTilt(heading.angle);
       const mirror=heading.turn<0;
-      this.hits.push({kind:'pond',entityId:row.id,x,y});
-      return {y:POND_GROUND_DEPTH+1,draw:()=>{if(!art.livingAnimals?.naturalWidth||!art.animals?.naturalWidth||age<(reduced?0:.65))return;
+      if(!harvesting)this.hits.push({kind:'pond',entityId:row.id,x,y});
+      return {y:POND_GROUND_DEPTH+1,draw:()=>{if(!art.livingAnimals?.naturalWidth||!art.animals?.naturalWidth||age<(reduced?0:landing))return;
         ctx.save();
         const harvestable=row.remainingMs===0||row.progress>=1;
         // Mature fish stay bright even with reduced effects; young fish remain below the water tint.
@@ -154,8 +166,8 @@ export class LivingFarmVisual {
           ctx.lineWidth=.8;ctx.strokeStyle='#c5efe58a';
           for(let i=0;i<2;i++){const phase=(time*.35+row.id*.37+i*.5)%1;ctx.globalAlpha=(1-phase)*.10;ctx.beginPath();ctx.ellipse((mirror?1:-1)*(size*.25+phase*12),-size*.25,4+phase*9,1.5+phase*3,0,0,Math.PI*2);ctx.stroke();}
           ctx.restore();
-          if(release&&age>=.65&&age<2.15){
-            const splash=age-.65;ctx.save();ctx.translate(release.x,release.y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
+          if(release&&age>=landing&&age<landing+1.5){
+            const splash=age-landing;ctx.save();ctx.translate(release.x,release.y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
             for(let i=0;i<2;i++){const t=splash-i*.14;if(t<0)continue;ctx.globalAlpha=Math.max(0,1-t/1.25)*.48;ctx.strokeStyle='#c3e6db';ctx.lineWidth=.8;ctx.beginPath();ctx.ellipse(0,0,3+t*17,1+t*6,0,0,Math.PI*2);ctx.stroke();}
             if(splash<.42)for(let i=0;i<5;i++){const a=i*2.399;ctx.globalAlpha=(1-splash/.42)*.6;ctx.fillStyle='#d0ece3';ctx.beginPath();ctx.ellipse(Math.cos(a)*splash*17,-Math.sin(splash/.42*Math.PI)*5+Math.sin(a)*splash*5,.7,.9,0,0,7);ctx.fill();}ctx.restore();
           }
@@ -188,11 +200,12 @@ export class LivingFarmVisual {
     if(event.kind==='harvest_fish'&&event.catchPoint&&event.throwFrom)return elapsed<3.8?[{y:2100,draw:()=>drawFishingNet(ctx,event,elapsed,art)}]:[];
     if(event.kind==='stock_fish'&&event.throwFrom){
       return [...this.releases.entries()].map(([id,release])=>({y:2100,draw:()=>{
-        const t=(performance.now()-release.at)/650;if(t<0||t>=1)return;
+        const t=((performance.now()-release.at)/1000-FISH_RELEASE_DELAY)/FISH_RELEASE_TRAVEL;if(t<0||t>=1)return;
         const row=vac?.pond?.fish.find(f=>f.id===id);if(!row)return;
-        const from=event.throwFrom,handY=-31*(1-t);
-        const x=from.x+(release.x-from.x)*t+handY/(2*ISO_Y),y=from.y+(release.y-from.y)*t+handY/(2*ISO_Y);
+        const from=event.throwFrom;
         const right=((release.x-from.x)-(release.y-from.y))>0;
+        const handX=(right?1:-1)*16*(1-t),handY=-12*(1-t);
+        const x=from.x+(release.x-from.x)*t+(handX/ISO_X+handY/ISO_Y)/2,y=from.y+(release.y-from.y)*t+(handY/ISO_Y-handX/ISO_X)/2;
         ctx.save();ctx.globalAlpha=1-t*.25;
         drawSwimmingFish(ctx,row.fishId==='tilapia'?art.livingAnimals:art.carpFish,row.fishId,x,y,14,right?1:-1,.18,t*3,false);ctx.restore();
       }}));

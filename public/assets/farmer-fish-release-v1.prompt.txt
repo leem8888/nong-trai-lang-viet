@@ -1,0 +1,5 @@
+Built-in image_gen, transparent sprite sheet, 3 columns x 2 rows.
+Reference: farmer-plant-v2.png for Vietnamese farmer character identity and painterly style.
+Conical hat, indigo shirt, brown cropped trousers, sandals. Face left.
+Six full-body poses: stand holding cupped hands; bend knees and lean; bend deeper with hands below knees; deep crouch with open hands at ankle height; remain crouched with open hands; stand again.
+Keep feet aligned, normal arm lengths and coherent anatomy. No fish, tools, basket, water, scenery, grid or text. Transparent padding in every cell.

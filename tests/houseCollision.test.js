@@ -22,7 +22,7 @@ test('visible house foundation blocks both client and server while front ground 
 });
 test('keyboard movement and long frame substeps cannot tunnel through any side of house',()=>{
  const c=new CollisionSystem(FARM_WORLD);
- for(const start of [houseToWorld(-.12,.78),houseToWorld(1.12,.78),houseToWorld(.5,.35),houseToWorld(.5,1.2)]){
+ for(const start of [houseToWorld(-.12,.78),houseToWorld(1.12,.78),houseToWorld(.5,.42),houseToWorld(.5,1.2)]){
    assert.equal(c.blocked(start.x,start.y),false);
    for(const distance of [9,180,800]){const p={...start};for(let i=0;i<100;i++){const d=Math.hypot(center.x-p.x,center.y-p.y)||1;const old={...p};c.move(p,(center.x-p.x)/d*distance,(center.y-p.y)/d*distance);assert.equal(insidePolygon(p,HOUSE_COLLIDER.points),false);assert.equal(c.blocked(p.x,p.y),false);if(Math.hypot(p.x-old.x,p.y-old.y)<.01)break;}}
  }

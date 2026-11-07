@@ -1,5 +1,7 @@
 ## Cập nhật hiện tại — 07/11/2026
 
+Điều chỉnh mới nhất: nhà v7 cùng va chạm/điểm cửa mới, lối sân và khuôn viên hàng xóm, dấu đích di chuyển, tư thế hái xoài toàn thân và hoạt ảnh thả/thu hoạch cá đồng bộ. Kiểm thử lại: `npm test` 131/131 đạt; browser garden visual QA đạt trên Edge headless, không có lỗi JavaScript. Chưa chạy lại toàn bộ browser QA hoặc nghiệm thu đầy đủ chuyển động/zoom 125%. Đoạn bên dưới ghi trạng thái trước các điều chỉnh này; xem [báo cáo cập nhật](UI_GAMEPLAY_UPDATES_2026-11-07.md).
+
 Đã bổ sung chuối chu kỳ bốn giờ, schema v12–v13, đất cần cuốc lại sau thu hoạch, sức chứa ao/chuồng 10 con, hoạt ảnh nhân vật/cá/gà và nhà v5 cùng va chạm. Bỏ giới hạn chọn 25 ô; xử lý tuần tự toàn bộ ô hợp lệ đã mở. `npm test`: 129/129 đạt. Chưa chạy lại browser QA cho bộ thay đổi này. Xem [báo cáo cập nhật 07/11](UI_GAMEPLAY_UPDATES_2026-11-07.md) để biết chi tiết và giới hạn kiểm thử. Nội dung phía dưới là lịch sử khi khác với báo cáo mới.
 
 # Tiến độ hiện tại — 2026-11-05

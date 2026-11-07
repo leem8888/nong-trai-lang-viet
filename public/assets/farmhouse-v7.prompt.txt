@@ -1,0 +1,4 @@
+Built-in image_gen; edit target/reference farmhouse-v5.png.
+Rebuild the Vietnamese farmhouse from a more elevated orthographic isometric camera. Square transparent sprite. Front facade and foundation slope down right about 30 degrees; right wall edges slope up right. Columns stay vertical. No image shear or vanishing points.
+Preserve terracotta roof, cream plaster, three wooden facade bays, open central door, brick veranda, three stone steps, jars, hanging woven lamps and yellow flower pot. Show more roof and veranda floor. Full building with transparent margins, true alpha background, no halo, ground or scenery.
+House is rendered at 450 x 360; shared house anchor moves from (790,160) to (740,110), shifting it 39 screen pixels rearward at unit zoom. Foundation polygon and walkable doorstep are traced for the new artwork.

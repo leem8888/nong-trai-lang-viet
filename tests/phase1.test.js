@@ -5,6 +5,7 @@ import { createApp } from '../server/index.js';
 import { openDatabase } from '../server/db.js';
 import { elapsedSeconds } from '../server/time.js';
 import { validPosition, validMovement, inRange } from '../server/world.js';
+import {houseToWorld} from '../public/js/shared/house.js';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -71,7 +72,8 @@ test('database, auth, ownership, persistence and socket access',async()=>{
 
 test('movement, collision, range and time rules',()=>{
   assert.equal(validPosition(720,650),true);
-  assert.equal(validPosition(700,190),false);
+  const foundation=houseToWorld(.5,.77);
+  assert.equal(validPosition(foundation.x,foundation.y),false);
   assert.equal(validPosition(650,100),false);
   assert.equal(validPosition(400,-130),true);
   assert.equal(validPosition(700,-230),false);

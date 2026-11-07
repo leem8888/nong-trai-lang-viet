@@ -1,6 +1,6 @@
 // Decorative art never changes collision, interaction points or buildable tiles.
 import {DECORATIONS,TILE_SIZE} from './shared/phase5.js';
-import {houseToWorld,HOUSE_COLLIDER} from './shared/house.js';
+import {houseToWorld,HOUSE_COLLIDER,HOUSE_DOOR} from './shared/house.js';
 import {overlaps} from './systems/CollisionSystem.js';
 const decorationIds=Object.keys(DECORATIONS);
 const farmCart=houseToWorld(.88,1.13);
@@ -14,7 +14,7 @@ export function shrubClusters(scene){
 }
 const shrubs={farm:shrubClusters('farm'),market:shrubClusters('market')};
 function onFarmPath(x,y){
-  const routes=[[[760,180],[700,470],[697,590],[720,740],[720,980]],[[700,610],[615,625]],[[713,720],[815,685],[945,690]],[[697,524],[865,420],[1065,240]]];
+  const routes=[[[HOUSE_DOOR.x,HOUSE_DOOR.y],[700,470],[701,646],[727,812],[720,980]],[[701,646],[568,650]],[[727,812],[830,760],[915,736]],[[695,476],[865,420],[1065,240]]];
   return routes.some(points=>points.slice(1).some((b,i)=>{const a=points[i],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy)<55;}));
 }
 export const depth=(x,y)=>x+y;

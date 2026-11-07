@@ -1,6 +1,6 @@
 # Nông Trại Làng Việt
 
-Cập nhật 07/11/2026: chuối, hoạt ảnh, nhà v5, schema v13 và bỏ giới hạn chọn 25 ô. Xem [báo cáo thay đổi và kiểm thử](docs/UI_GAMEPLAY_UPDATES_2026-11-07.md).
+Cập nhật 07/11/2026: chuối, hoạt ảnh cá/hái xoài, nhà v7, khuôn viên hàng xóm, dấu đích di chuyển, schema v13 và bỏ giới hạn chọn 25 ô. Kiểm thử Node 131/131 và browser garden visual QA đạt. Xem [báo cáo thay đổi và kiểm thử](docs/UI_GAMEPLAY_UPDATES_2026-11-07.md).
 
 > Đợt Terrain/Land/Fence/Gate và Living Farm hiện **INCOMPLETE** và được chia sẻ để review theo yêu cầu. Xem [bàn giao hiện tại](docs/HANDOFF.md), [QA địa hình](docs/TERRAIN_LAND_FENCE_QA_REPORT.md) và [QA ao/sân gà](docs/LIVING_FARM_VISUAL_QA.md) trước khi đánh giá hoặc phát hành.
 

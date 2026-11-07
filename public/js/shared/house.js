@@ -1,12 +1,12 @@
 import {ISO_X,ISO_Y} from '../core/IsoProjection.js';
 // Rendering and collision share the same upright image anchor and dimensions.
-export const FARM_HOUSE=Object.freeze({x:790,y:160,width:450,height:330});
+export const FARM_HOUSE=Object.freeze({x:740,y:110,width:450,height:360});
 // The artwork now contains the perspective; do not stretch the facade to turn it.
 export const HOUSE_SHEAR=0;
 export function houseToWorld(u,v){const sx=(u-.5)*FARM_HOUSE.width,sy=(v-1)*FARM_HOUSE.height+sx*HOUSE_SHEAR;return {x:FARM_HOUSE.x+(sx/ISO_X+sy/ISO_Y)/2,y:FARM_HOUSE.y+(sy/ISO_Y-sx/ISO_X)/2};}
-export const HOUSE_DOOR=Object.freeze({...houseToWorld(.31,1.025)});
+export const HOUSE_DOOR=Object.freeze({...houseToWorld(.24,.925)});
 // Trace the foundation/porch footprint, not the roof silhouette or an old Cartesian box.
-const points=[[.05,.73],[.34,.55],[.945,.73],[.945,.79],[.69,.975],[.48,.92],[.45,.98],[.17,.90],[.18,.84],[.05,.79]].map(([u,v])=>Object.freeze(houseToWorld(u,v)));
+const points=[[.035,.635],[.34,.47],[.95,.73],[.95,.78],[.63,.995],[.41,.89],[.36,.94],[.14,.81],[.18,.76],[.035,.68]].map(([u,v])=>Object.freeze(houseToWorld(u,v)));
 const minX=Math.min(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y));
 export const HOUSE_COLLIDER=Object.freeze({shape:'polygon',points:Object.freeze(points),x:minX,y:minY,w:Math.max(...points.map(p=>p.x))-minX,h:Math.max(...points.map(p=>p.y))-minY});
 export const HOUSE_DEPTH=Math.max(...points.map(p=>p.x+p.y));
