@@ -16,14 +16,14 @@ test('visible house foundation blocks both client and server while front ground 
  const c=new CollisionSystem(FARM_WORLD);
  for(const [u,v] of [[.25,.78],[.5,.77],[.77,.76],[.55,.9]]){const p=houseToWorld(u,v);assert.equal(c.blocked(p.x,p.y),true,`foundation ${u},${v}`);assert.equal(validPosition(p.x,p.y),false);}
  assert.equal(c.blocked(HOUSE_DOOR.x,HOUSE_DOOR.y),false,'door interaction remains on walkable porch approach');
- const front=houseToWorld(.5,1.12);assert.equal(c.blocked(front.x,front.y),false);assert.ok(front.x+front.y>HOUSE_DEPTH,'front ground lies beyond porch');
+ const front=houseToWorld(.5,1.12);assert.equal(c.blocked(front.x,front.y),false);assert.ok(houseActorDepth(front.x,front.y)>HOUSE_DEPTH,'front ground is painted above porch');
  const corner=houseToWorld(.12,.89);assert.equal(c.blocked(corner.x,corner.y),false);assert.ok(corner.x+corner.y<HOUSE_DEPTH);assert.ok(houseActorDepth(corner.x,corner.y)>HOUSE_DEPTH,'front-corner actor is drawn above opaque facade');
  for(let x=450;x<=900;x+=15)for(let y=-160;y<=340;y+=15)assert.equal(c.blocked(x,y),!validPosition(x,y));
 });
 test('keyboard movement and long frame substeps cannot tunnel through any side of house',()=>{
  const c=new CollisionSystem(FARM_WORLD);
- for(const [dx,dy] of [[-230,0],[230,0],[0,-230],[0,230]]){
-   const start={x:center.x+dx,y:center.y+dy};assert.equal(c.blocked(start.x,start.y),false);
+ for(const start of [houseToWorld(-.12,.78),houseToWorld(1.12,.78),houseToWorld(.5,.35),houseToWorld(.5,1.2)]){
+   assert.equal(c.blocked(start.x,start.y),false);
    for(const distance of [9,180,800]){const p={...start};for(let i=0;i<100;i++){const d=Math.hypot(center.x-p.x,center.y-p.y)||1;const old={...p};c.move(p,(center.x-p.x)/d*distance,(center.y-p.y)/d*distance);assert.equal(insidePolygon(p,HOUSE_COLLIDER.points),false);assert.equal(c.blocked(p.x,p.y),false);if(Math.hypot(p.x-old.x,p.y-old.y)<.01)break;}}
  }
  const near=houseToWorld(.22,.91),inside=houseToWorld(.29,.79);assert.ok(Math.hypot(near.x-inside.x,near.y-inside.y)<102);assert.equal(validMovement(near,inside.x,inside.y,500),false);

@@ -41,12 +41,14 @@ function activeCrop(db, farmId, x, y) {
   return db.prepare('SELECT * FROM farm_crops WHERE farm_id=? AND tile_x=? AND tile_y=? AND harvested_at IS NULL').get(farmId,x,y);
 }
 function tileState(db, farmId, x, y) {
+  if(db.prepare('SELECT 1 FROM farm_spent_soil WHERE farm_id=? AND tile_x=? AND tile_y=?').get(farmId,x,y))return 'EMPTY';
   return db.prepare('SELECT state FROM farm_soil_tiles WHERE farm_id=? AND tile_x=? AND tile_y=?').get(farmId,x,y)?.state || 'EMPTY';
 }
 export function farmingState(db, userId, at = now()) {
   const farmId=farmOf(db,userId);
   if (!farmId) return null;
   const soil=new Map(db.prepare('SELECT tile_x,tile_y,state FROM farm_soil_tiles WHERE farm_id=?').all(farmId).map(row=>[`${row.tile_x}:${row.tile_y}`,row.state]));
+  for(const row of db.prepare('SELECT tile_x,tile_y FROM farm_spent_soil WHERE farm_id=?').all(farmId))soil.set(`${row.tile_x}:${row.tile_y}`,'EMPTY');
   const crops=new Map(db.prepare('SELECT * FROM farm_crops WHERE farm_id=? AND harvested_at IS NULL').all(farmId).map(row=>[`${row.tile_x}:${row.tile_y}`,row]));
   const plots=plotState(db,farmId),tiles=[];
   for(let y=0;y<FIELD.rows;y++) for(let x=0;x<FIELD.columns;x++) {
@@ -78,6 +80,8 @@ export function performFarmAction(db, userId, payload, at = now()) {
       if(!paid.changes)throw Error('Không đủ Đồng Làng để mở ô ruộng.');
       db.prepare('INSERT OR IGNORE INTO farm_plot_expansions VALUES (?,?,0,?)').run(farmId,STARTER_PLOTS,at);
       db.prepare('UPDATE farm_plot_expansions SET unlocked_count=unlocked_count+1,purchased_count=purchased_count+1,updated_at=? WHERE farm_id=?').run(at,farmId);
+      const newX=plots.unlocked%FIELD.columns,newY=Math.floor(plots.unlocked/FIELD.columns);
+      db.prepare('INSERT INTO farm_soil_tiles VALUES (?,?,?,?,?) ON CONFLICT(farm_id,tile_x,tile_y) DO UPDATE SET state=excluded.state,updated_at=excluded.updated_at').run(farmId,newX,newY,'TILLED',at);
       const balance=db.prepare('SELECT balance FROM wallets WHERE user_id=?').get(userId).balance;
       const transaction=db.prepare("INSERT INTO economy_transactions(user_id,farm_id,kind,item_id,quantity,unit_price,delta,balance_after,request_key,created_at) VALUES (?,?,'buy','farm_plot',1,?,?,?,?,?)")
         .run(userId,farmId,plots.nextPrice,-plots.nextPrice,balance,'plot:'+payload.requestId,at);
@@ -104,7 +108,8 @@ export function performFarmAction(db, userId, payload, at = now()) {
     let message='';
     if (action==='till') {
       if (state!=='EMPTY') throw new Error('Ô đất đã được chuẩn bị.');
-      db.prepare('INSERT INTO farm_soil_tiles VALUES (?,?,?,?,?)').run(farmId,x,y,'TILLED',at);
+      db.prepare('INSERT INTO farm_soil_tiles VALUES (?,?,?,?,?) ON CONFLICT(farm_id,tile_x,tile_y) DO UPDATE SET state=excluded.state,updated_at=excluded.updated_at').run(farmId,x,y,'TILLED',at);
+      db.prepare('DELETE FROM farm_spent_soil WHERE farm_id=? AND tile_x=? AND tile_y=?').run(farmId,x,y);
       onboardingEvent(db,farmId,'till',at);
       message='Đã cuốc đất.';
     } else if (action==='plant') {
@@ -144,6 +149,7 @@ export function performFarmAction(db, userId, payload, at = now()) {
         db.prepare("UPDATE farm_onboarding SET step=4,updated_at=? WHERE farm_id=? AND status='ACTIVE' AND step IN (2,3)").run(at,farmId);
       }
       db.prepare('UPDATE farm_soil_tiles SET state=?,updated_at=? WHERE farm_id=? AND tile_x=? AND tile_y=?').run('TILLED',at,farmId,x,y);
+      db.prepare('INSERT INTO farm_spent_soil(farm_id,tile_x,tile_y) VALUES (?,?,?)').run(farmId,x,y);
       message=`Thu hoạch ${crop.yield_quantity} ${CROPS[crop.crop_id].name.toLowerCase()}.`;
     }
     return {message,state:farmingState(db,userId,at)};

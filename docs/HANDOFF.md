@@ -1,3 +1,7 @@
+## Cập nhật hiện tại — 07/11/2026
+
+Đã bổ sung chuối chu kỳ bốn giờ, schema v12–v13, đất cần cuốc lại sau thu hoạch, sức chứa ao/chuồng 10 con, hoạt ảnh nhân vật/cá/gà và nhà v5 cùng va chạm. Bỏ giới hạn chọn 25 ô; xử lý tuần tự toàn bộ ô hợp lệ đã mở. `npm test`: 129/129 đạt. Chưa chạy lại browser QA cho bộ thay đổi này. Xem [báo cáo cập nhật 07/11](UI_GAMEPLAY_UPDATES_2026-11-07.md) để biết chi tiết và giới hạn kiểm thử. Nội dung phía dưới là lịch sử khi khác với báo cáo mới.
+
 # Handoff hiện tại — 2026-11-05
 
 ## Trạng thái bổ sung — 06/11/2026

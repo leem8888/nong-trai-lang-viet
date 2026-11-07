@@ -128,7 +128,7 @@ test('migration from Phase 2 preserves inventory, wallet and scene after reopen'
     assert.equal(db.prepare('SELECT balance FROM wallets WHERE user_id=?').get('u').balance,200);
     assert.equal(db.prepare('SELECT scene FROM player_states WHERE user_id=?').get('u').scene,'farm');
     db.close();db=null;db=openDatabase(file);
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,11);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,13);
     assert.equal(db.prepare('SELECT balance FROM wallets WHERE user_id=?').get('u').balance,200);
   } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });

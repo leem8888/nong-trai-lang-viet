@@ -56,12 +56,14 @@ test('soil rules, six crops, offline stages, watering and idempotent harvest',()
     assert.equal(outcomes.filter(outcome=>outcome.ok).length,1);
     assert.match(outcomes.find(outcome=>!outcome.ok).error.message,/chưa có cây/);
     assert.equal(farmingState(db,user.id,start+2*3600000).inventory.find(i=>i.id==='rice').quantity,3);
-    assert.equal(farmingState(db,user.id,start+2*3600000).tiles[0].state,'TILLED');
+    assert.equal(farmingState(db,user.id,start+2*3600000).tiles[0].state,'EMPTY');
+    assert.throws(()=>act('plant',0,0,{cropId:'mustard'},start+2*3600000+1),/đã cuốc/);
+    act('till',0,0,{},start+2*3600000+1);
     act('plant',0,0,{cropId:'mustard'},start+2*3600000+1);
     assert.equal(farmingState(db,user.id,start+2*3600000+1).tiles[0].crop.cropId,'mustard');
     assert.throws(()=>act('water',0,0,{},start+2*3600000+1+CROPS.mustard.durationMs),/không cần tưới/);
     for(let i=1;i<CROP_IDS.length;i++) {
-      const x=i,y=0;if(i===5)performFarmAction(db,user.id,{farmId:farm.id,action:'unlock_plot',requestId:crypto.randomUUID()},start+2*3600000+1);move(x,y);act('till',x,y,{},start+2*3600000+1);act('plant',x,y,{cropId:CROP_IDS[i]},start+2*3600000+1);
+      const x=i,y=0;if(i===5)performFarmAction(db,user.id,{farmId:farm.id,action:'unlock_plot',requestId:crypto.randomUUID()},start+2*3600000+1);move(x,y);if(i!==5)act('till',x,y,{},start+2*3600000+1);act('plant',x,y,{cropId:CROP_IDS[i]},start+2*3600000+1);
       assert.equal(farmingState(db,user.id,start+2*3600000+1).tiles.find(t=>t.x===x&&t.y===y).crop.cropId,CROP_IDS[i]);
     }
     assert.equal(db.prepare('SELECT count(*) n FROM farm_crops WHERE farm_id=? AND harvested_at IS NOT NULL').get(farm.id).n,1);
@@ -105,7 +107,7 @@ test('migration from v1 preserves farm and starter has no user data',()=>{
     old.close();
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT name FROM farms WHERE id=?').get('f').name,'Old farm');
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,11);
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n,13);
     assert.equal(db.prepare('SELECT count(*) n FROM inventory_items WHERE farm_id=?').get('f').n,6);
     db.close();db=null;
     db=openDatabase(file);

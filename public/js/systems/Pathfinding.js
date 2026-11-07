@@ -1,7 +1,15 @@
 // A* uses the same live collision instance as movement, including player buildings.
 export function clearSegment(collision,a,b){
-  const steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/7));
-  for(let i=1;i<=steps;i++)if(collision.blocked(a.x+(b.x-a.x)*i/steps,a.y+(b.y-a.y)*i/steps,17))return false;
+  const distance=Math.hypot(b.x-a.x,b.y-a.y);
+  const steps=Math.max(1,Math.ceil(distance/7));
+  const tightStart=collision.blocked(a.x,a.y,17),tightEnd=collision.blocked(b.x,b.y,17);
+  for(let i=1;i<=steps;i++){
+    const t=i/steps;
+    // Movement uses radius 14. Let a farmer standing close to a fence step away
+    // before restoring the route's extra clearance, rather than rejecting every exit.
+    const radius=Math.min(17,tightStart?14+distance*t/6:17,tightEnd?14+distance*(1-t)/6:17);
+    if(collision.blocked(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t,radius))return false;
+  }
   return true;
 }
 export function findReachablePath(collision,start,goal,range=0){
@@ -17,6 +25,11 @@ export function findReachablePath(collision,start,goal,range=0){
   const shortlist=candidates.slice(0,24);
   for(const step of [24,12])for(const p of shortlist){const route=findPath(collision,start,p,step);if(route)return route;}
   return null;
+}
+export function findApproachPath(collision,start,goal,range){
+  // Candidate endpoints must fit inside the interaction's actual arrival radius.
+  // In particular, a close-range action must not use the 12-unit candidate ring.
+  return findReachablePath(collision,start,goal,Math.max(1,range-8));
 }
 export function findPath(collision,start,goal,step=24){
   if(collision.blocked(goal.x,goal.y))return null;

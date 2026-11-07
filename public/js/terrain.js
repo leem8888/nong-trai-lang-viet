@@ -20,14 +20,31 @@ export class FarmTerrain {
   }
   draw(ctx,image){if(!image?.naturalWidth)return false;if(this.source!==image||!this.canvas)this.build(image);ctx.drawImage(this.canvas,0,-300);return true;}
   build(image){this.source=image;const out=document.createElement('canvas');out.width=1740;out.height=1324;const g=out.getContext('2d');g.translate(0,300);
-    const earth=document.createElement('canvas');earth.width=earth.height=128;const soil=earth.getContext('2d');soil.fillStyle='#b58e5e';soil.fillRect(0,0,128,128);for(let i=0;i<2200;i++){const n=hash(i,31);soil.fillStyle=i%3?'#dcc19a66':'#76563355';soil.fillRect(n%128,(n>>>8)%128,1+n%3,1);}const pattern=g.createPattern(earth,'repeat');
+    const earth=document.createElement('canvas');earth.width=earth.height=128;const soil=earth.getContext('2d');soil.fillStyle='#c4a471';soil.fillRect(0,0,128,128);for(let i=0;i<1600;i++){const n=hash(i,31);soil.fillStyle=i%3?'#eddbb333':'#80613d26';soil.fillRect(n%128,(n>>>8)%128,1+n%2,1);}const pattern=g.createPattern(earth,'repeat');
     const trail=(points,width)=>{g.save();g.lineCap='round';g.lineJoin='round';g.beginPath();g.moveTo(...points[0]);for(let i=1;i<points.length;i++)g.lineTo(...points[i]);g.strokeStyle=pattern;g.lineWidth=width+20;g.globalAlpha=.18;g.stroke();g.lineWidth=width+10;g.globalAlpha=.36;g.stroke();g.globalAlpha=.92;g.lineWidth=width;g.stroke();g.restore();};
     // Narrow curved footpaths connect the real porch and gate without a large crossroads.
-    const curvedTrail=(draw,width)=>{g.save();g.lineCap='round';g.lineJoin='round';g.beginPath();draw(g);g.strokeStyle=pattern;for(const [extra,alpha] of [[16,.12],[8,.3],[0,.97]]){g.lineWidth=width+extra;g.globalAlpha=alpha;g.stroke();}g.globalAlpha=.8;g.lineWidth=width-6;for(let i=0;i<1100;i++){const n=hash(i,width),x=n%1740,y=((n>>>11)%1324)-300;if(!g.isPointInStroke(x,y))continue;g.fillStyle=i%4?'#765333':'#e4cba2';g.beginPath();g.ellipse(x,y,1+i%3*.5,.5+i%2*.4,n%6,0,Math.PI*2);g.fill();}g.restore();};
-    curvedTrail(p=>{p.moveTo(HOUSE_DOOR.x-12,HOUSE_DOOR.y-18);p.quadraticCurveTo(720,360,700,470);p.quadraticCurveTo(685,590,720,740);p.lineTo(720,905);},44);
-    curvedTrail(p=>{p.moveTo(703,610);p.quadraticCurveTo(660,610,615,625);},30);
-    curvedTrail(p=>{p.moveTo(713,705);p.quadraticCurveTo(815,675,945,690);},30);
-    curvedTrail(p=>{p.moveTo(697,500);p.bezierCurveTo(810,480,945,390,1040,285);},28);
+    const paths=[];
+    const curvedTrail=(draw,width)=>{const path=new Path2D();draw(path);paths.push({path,width});};
+    curvedTrail(p=>{p.moveTo(HOUSE_DOOR.x-12,HOUSE_DOOR.y-18);p.quadraticCurveTo(720,360,700,470);p.quadraticCurveTo(685,590,720,740);p.bezierCurveTo(726,800,720,850,720,905);},44);
+    curvedTrail(p=>{p.moveTo(701,588);p.bezierCurveTo(696,612,650,612,615,625);},30);
+    curvedTrail(p=>{p.moveTo(713,730);p.bezierCurveTo(718,697,815,675,945,690);},30);
+    curvedTrail(p=>{p.moveTo(696,524);p.bezierCurveTo(735,482,972,376,1065,240);},28);
+    // Draw all soft shoulders first so branch edges never stripe across the main path.
+    g.save();g.lineCap='round';g.lineJoin='round';g.strokeStyle=pattern;
+    for(const [extra,alpha] of [[12,.1],[6,.24],[0,1]]){
+      g.globalAlpha=alpha;for(const {path,width} of paths){g.lineWidth=width+extra;g.stroke(path);}
+    }
+    // One continuous, gently flared approach. Its end merges into the village
+    // road's light center instead of leaving a rounded dark cap on top of it.
+    const junction=new Path2D();junction.moveTo(698,850);junction.lineTo(698,936);junction.bezierCurveTo(698,959,690,978,671,990);junction.quadraticCurveTo(720,1005,769,990);junction.bezierCurveTo(750,978,742,959,742,936);junction.lineTo(742,850);junction.closePath();
+    const gateBlend=g.createLinearGradient(0,850,0,1000);gateBlend.addColorStop(0,'#c4a47100');gateBlend.addColorStop(.3,'#c4a471');gateBlend.addColorStop(.7,'#d7ba8b');gateBlend.addColorStop(1,'#e0c494');
+    g.globalAlpha=1;g.fillStyle=gateBlend;g.fill(junction);
+    for(let i=0;i<9000;i++){
+      const n=hash(i,44),x=n%1740,y=((n>>>11)%1324)-300;
+      if(!paths.some(({path,width})=>{g.lineWidth=width-8;return g.isPointInStroke(path,x,y);}))continue;
+      g.fillStyle=i%4?'#76533332':'#fff0ce66';g.beginPath();g.ellipse(x,y,.6+i%3*.25,.35+i%2*.2,n%6,0,Math.PI*2);g.fill();
+    }
+    g.restore();
     // Keep the junction the same dirt surface as the connecting paths.
     // Fade only the property edge into the older village surroundings.
     g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='destination-in';let mask=g.createLinearGradient(0,0,out.width,0);mask.addColorStop(0,'#fff0');mask.addColorStop(.05,'#fff');mask.addColorStop(.95,'#fff');mask.addColorStop(1,'#fff0');g.fillStyle=mask;g.fillRect(0,0,out.width,out.height);mask=g.createLinearGradient(0,0,0,out.height);mask.addColorStop(0,'#fff0');mask.addColorStop(.06,'#fff');mask.addColorStop(.94,'#fff');mask.addColorStop(1,'#fff0');g.fillStyle=mask;g.fillRect(0,0,out.width,out.height);g.globalCompositeOperation='source-over';

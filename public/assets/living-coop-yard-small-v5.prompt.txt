@@ -1,0 +1,4 @@
+Built-in image_gen edit, transparent background.
+Reference: living-coop-yard-small-v4.png.
+Prompt: Preserve the canvas and fenced exercise yard, gate, grass floor, feeder and water bowl in their original positions. Move only the wooden red-roof chicken house, stairs, base and lantern up and right by approximately 15% of canvas width and 14% of canvas height, without resizing or rotating. Remove the old house and restore matching grass and connecting bamboo fence. Same illustrated Vietnamese farm game style, no chickens or people, transparent background.
+Integration: Fixed yard placement and chicken roaming geometry; the new house footprint, click outline and nesting shelf have their own local offset.

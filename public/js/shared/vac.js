@@ -4,7 +4,7 @@ export const FISH = Object.freeze({
   carp: {name:'Cá chép', fingerling:'fingerling_carp', produce:'carp', durationMs:150*60000, yield:2, color:'#ef9e62'}
 });
 export const CHICKEN = Object.freeze({name:'Gà con',item:'chick',growthMs:120*60000,eggMs:45*60000,maxEggs:3});
-export const VAC_POINTS = Object.freeze({pond:{x:950,y:690,label:'Ao cá'},coop:{x:1040,y:255,label:'Chuồng gà'}});
+export const VAC_POINTS = Object.freeze({pond:{x:950,y:690,label:'Ao cá'},coop:{x:1033,y:224,label:'Chuồng gà'}});
 export const VAC_RECIPES = Object.freeze({
   corn_feed:{name:'Ngô → thức ăn gà',input:'corn',output:'chicken_feed',yield:2},
   rice_feed:{name:'Lúa → thức ăn gà',input:'rice',output:'chicken_feed',yield:2},

@@ -1,5 +1,7 @@
 # Nông Trại Làng Việt
 
+Cập nhật 07/11/2026: chuối, hoạt ảnh, nhà v5, schema v13 và bỏ giới hạn chọn 25 ô. Xem [báo cáo thay đổi và kiểm thử](docs/UI_GAMEPLAY_UPDATES_2026-11-07.md).
+
 > Đợt Terrain/Land/Fence/Gate và Living Farm hiện **INCOMPLETE** và được chia sẻ để review theo yêu cầu. Xem [bàn giao hiện tại](docs/HANDOFF.md), [QA địa hình](docs/TERRAIN_LAND_FENCE_QA_REPORT.md) và [QA ao/sân gà](docs/LIVING_FARM_VISUAL_QA.md) trước khi đánh giá hoặc phát hành.
 
 Game nông trại web 2.5D isometric đang được hoàn thiện. Phase 1–3 có tài khoản/farm riêng, trồng cây và chợ NPC; Phase 4 thêm VAC, Phase 5 thêm chế biến/xây dựng, Phase 6 thêm NPC, nhiệm vụ và nhịp sống làng. Xem [tiến độ remake](docs/ISOMETRIC_REMAKE_REPORT.md) trước khi đánh giá trạng thái nghiệm thu đồ họa.

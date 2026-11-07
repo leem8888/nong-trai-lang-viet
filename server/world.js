@@ -25,7 +25,7 @@ export function validMovement(from,x,y,elapsedMs,scene='farm',db=null,farmId=nul
   for(let i=1;i<=steps;i++) if(!validPosition(from.x+(x-from.x)*i/steps,from.y+(y-from.y)*i/steps,scene,db,farmId)) return false;
   return true;
 }
-export const interactions = { board: { x: 570, y: 430 }, door: { ...HOUSE_DOOR }, lamp: { x: 920, y: 300 }, farmGate: FARM_GATE, ...VAC_POINTS };
+export const interactions = { board: { x: 570, y: 430 }, door: { ...HOUSE_DOOR }, lamp: { x: 744, y: 650 }, farmGate: FARM_GATE, ...VAC_POINTS };
 export function inRange(player,objectId,layout) {
   if(player.scene==='farm'&&['pond','coop'].includes(objectId))return animalAccess(objectId,player,layout).distance<=110;
   const o = player.scene==='market' ? MARKET_POINTS[objectId] : interactions[objectId];

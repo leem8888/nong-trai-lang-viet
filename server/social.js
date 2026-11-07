@@ -1,4 +1,5 @@
 import { mangoStateForFarm } from './mango.js';
+import { bananaStateForFarm } from './banana.js';
 import { randomUUID } from 'node:crypto';
 import {plotState,farmingState} from './crops.js';
 
@@ -33,7 +34,7 @@ export function visitorSnapshot(db, farmId) {
   if (!farm) throw Error('Không tìm thấy nông trại.');
   return {
     farm: { id: farm.id, name: farm.name, ownerName: farm.owner_name },
-    mango:mangoStateForFarm(db,farmId),
+    mango:mangoStateForFarm(db,farmId),banana:bananaStateForFarm(db,farmId),
     objects: db.prepare('SELECT object_id AS objectId,state FROM farm_objects WHERE farm_id=?').all(farmId),
     plots:plotState(db,farmId),
     tiles:farmingState(db,farm.owner_id).tiles.map(t=>({x:t.x,y:t.y,locked:t.locked,state:t.state,cropId:t.crop?.cropId??null,plantedAt:t.crop?.plantedAt,durationMs:t.crop?.durationMs,bonusMs:t.crop?.bonusMs,wateredAt:t.crop?.wateredAt})),

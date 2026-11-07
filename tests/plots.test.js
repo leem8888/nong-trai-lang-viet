@@ -13,13 +13,30 @@ import {FIELD,tileCenter} from '../public/js/shared/crops.js';
 import {npcsForScene} from '../public/js/shared/npcs.js';
 import {FarmingUI} from '../public/js/farming.js';
 function setup(db){const u=register(db,'plot_test','strong-pass-123'),f=createFarm(db,u.id,'Ô vuông');return {u,f,unlock:(requestId=randomUUID())=>performFarmAction(db,u.id,{action:'unlock_plot',farmId:f.id,requestId})};}
+
+test('purchased plot can be planted immediately; harvest needs tilling and purchase retry preserves it',()=>{
+ const db=openDatabase(':memory:');try{
+  const {u,f,unlock}=setup(db),key=randomUUID(),at=Date.now();
+  const bought=unlock(key).state.tiles.find(t=>t.x===5&&t.y===0);assert.equal(bought.state,'TILLED');assert.equal(bought.crop,null);
+  const p=tileCenter(5,0);db.prepare('UPDATE player_states SET x=?,y=? WHERE user_id=?').run(p.x,p.y,u.id);
+  const action=(kind,extra={},time=at)=>performFarmAction(db,u.id,{action:kind,farmId:f.id,x:5,y:0,...extra},time);
+  const planted=action('plant',{cropId:'mustard'}).state.tiles.find(t=>t.x===5&&t.y===0);
+  assert.equal(planted.state,'PLANTED');assert.ok(planted.crop);
+  const readyAt=at+planted.crop.durationMs+1;
+  assert.equal(action('harvest',{},readyAt).state.tiles.find(t=>t.x===5&&t.y===0).state,'EMPTY');
+  assert.equal(unlock(key).state.tiles.find(t=>t.x===5&&t.y===0).state,'EMPTY');
+  assert.throws(()=>action('plant',{cropId:'mustard'},readyAt));
+  assert.equal(action('till',{},readyAt).state.tiles.find(t=>t.x===5&&t.y===0).state,'TILLED');
+  assert.equal(action('plant',{cropId:'mustard'},readyAt).state.tiles.find(t=>t.x===5&&t.y===0).state,'PLANTED');
+ }finally{db.close();}
+});
 test('five starter squares, escalating prices, idempotent debit and all 32 plots work',()=>{
   const db=openDatabase(':memory:');try{const {u,f,unlock}=setup(db);credit(db,u.id,1000000);const initial=balance(db,u.id),state=farmingState(db,u.id);assert.equal(FIELD.width,FIELD.height);assert.equal(state.tiles.length,32);assert.equal(state.tiles.filter(t=>!t.locked).length,5);
     assert.throws(()=>performFarmAction(db,u.id,{farmId:f.id,action:'till',x:5,y:0}),/chưa mở/);
     const key=randomUUID();assert.equal(unlock(key).state.plots.unlocked,6);assert.equal(balance(db,u.id),initial-100);assert.equal(unlock(key).replayed,true);assert.equal(balance(db,u.id),initial-100);
     assert.equal(unlock().state.plots.nextPrice,300);assert.equal(balance(db,u.id),initial-275);
     for(let i=7;i<32;i++)unlock();assert.equal(farmingState(db,u.id).plots.nextPrice,null);const after=balance(db,u.id);assert.throws(()=>unlock(),/toàn bộ/);assert.equal(balance(db,u.id),after);
-    const p=tileCenter(7,3);db.prepare('UPDATE player_states SET x=?,y=? WHERE user_id=?').run(p.x,p.y,u.id);performFarmAction(db,u.id,{farmId:f.id,action:'till',x:7,y:3});assert.equal(db.prepare('SELECT state FROM farm_soil_tiles WHERE farm_id=? AND tile_x=7 AND tile_y=3').get(f.id).state,'TILLED');
+    const p=tileCenter(7,3);db.prepare('UPDATE player_states SET x=?,y=? WHERE user_id=?').run(p.x,p.y,u.id);assert.equal(db.prepare('SELECT state FROM farm_soil_tiles WHERE farm_id=? AND tile_x=7 AND tile_y=3').get(f.id).state,'TILLED');
     const ledger=db.prepare("SELECT SUM(-delta) amount,COUNT(*) n FROM economy_transactions WHERE user_id=? AND item_id='farm_plot'").get(u.id);assert.equal(ledger.n,27);assert.equal(ledger.amount,initial-after);assert.equal(db.pragma('foreign_key_check').length,0);
   }finally{db.close();}
 });

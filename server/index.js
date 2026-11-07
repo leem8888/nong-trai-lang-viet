@@ -1,5 +1,6 @@
 import { onboardingState, skipOnboarding } from './onboarding.js';
 import { mangoState, harvestMango } from './mango.js';
+import { bananaState, harvestBanana } from './banana.js';
 import http from 'node:http';
 import path from 'node:path';
 import express from 'express';
@@ -41,6 +42,15 @@ export function createApp(db = openDatabase(),{worldNow=Date.now,questNow=Date.n
   app.post('/api/mango/action',guard,csrf,ownerAction,(req,res)=>{
     try{const result=harvestMango(db,req.auth.user_id,req.body);
       io.to(`farm:${result.state.farmId}`).emit('farm:mango',result.state);
+      io.to(`farm:${result.state.farmId}`).emit('farm:farming',farmingState(db,req.auth.user_id));
+      io.to(`farm:${result.state.farmId}`).emit('farm:market',marketState(db,req.auth.user_id));
+      social.broadcastFarm(result.state.farmId);res.json({ok:true,...result});
+    }catch(error){fail(res,error);}
+  });
+  app.get('/api/banana',guard,(req,res)=>{const state=bananaState(db,req.auth.user_id);return state?res.json(state):res.status(404).json({error:'Chưa tạo nông trại.'});});
+  app.post('/api/banana/action',guard,csrf,ownerAction,(req,res)=>{
+    try{const result=harvestBanana(db,req.auth.user_id,req.body);
+      io.to(`farm:${result.state.farmId}`).emit('farm:banana',result.state);
       io.to(`farm:${result.state.farmId}`).emit('farm:farming',farmingState(db,req.auth.user_id));
       io.to(`farm:${result.state.farmId}`).emit('farm:market',marketState(db,req.auth.user_id));
       social.broadcastFarm(result.state.farmId);res.json({ok:true,...result});

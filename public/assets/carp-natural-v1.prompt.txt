@@ -1,0 +1,4 @@
+Tool: built-in image_gen (imagegen skill), edit mode, transparent background.
+Reference: farm-animals.webp.
+Prompt: Preserve the animal atlas layout and illustrated game style. Change only the right-facing orange and white koi into a natural common carp (ca chep), with continuous bronze olive brown scales, a dark back, muted golden tan sides, pale beige belly, smoky brown fins and short barbels. No orange or white patches, text or background. Keep the fish in its original atlas position for the existing swimming animation.
+Integration: Only the carp uses this new atlas; chickens retain farm-animals.webp. The generated canvas is 1774 by 887, so the carp source rectangle is adjusted to [925,228,780,435].

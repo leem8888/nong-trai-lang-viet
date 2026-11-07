@@ -1,0 +1,3 @@
+Tool: built-in image_gen, transparent background.
+Prompt: A Vietnamese banana clump for an isometric hand-painted farm game, three pseudostems of different heights, broad slightly torn green leaves, warm detailed painterly style, earthy fibrous trunks, slight top-down three-quarter view. No flowers, fruit, pots, ground patch, carpet, text, frame or background haze. Clear central front stem and open space under upper-right leaves for runtime flower and fruit overlays. Complete plant, centered feet at bottom, isolated on transparent background.
+Integration: Fixed-size corner plant. Flower, small green fruit, large green fruit and ripe yellow fruit overlays follow authoritative hourly progress, with no upgrade levels.

@@ -18,11 +18,11 @@ function fitName(ctx,name){
   if(layouts.size>=64)layouts.delete(layouts.keys().next().value);layouts.set(name,result);return result;
 }
 export function drawFarmSign(ctx,image,upright,name){
-  const x=570,y=430,width=105.4,height=89.9;
+  const x=570,y=430,width=84.32,height=71.92;
   upright(ctx,x,y,image,width,height,[index*128,0,128,128]);
   if(!image?.naturalWidth||image.failed)return;
   ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
-  ctx.scale(.62,.62);
+  ctx.scale(.496,.496);
   // Follow the sloped face of the original wooden plank, keeping the two posts clear.
   ctx.translate(10,-71);ctx.transform(1,-.15,0,1,0,0);
   ctx.beginPath();ctx.rect(-46,-24,92,48);ctx.clip();

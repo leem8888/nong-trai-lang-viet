@@ -8,6 +8,7 @@ import {addItem} from '../server/crops.js';
 import {Camera} from '../public/js/core/Camera.js';
 import {FARM_WORLD} from '../public/js/shared/farmWorld.js';
 import {livingLayout,pondObstacles} from '../public/js/shared/livingLayout.js';
+import {coopGeometry,coopToWorld} from '../public/js/animalMotion.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const dir=mkdtempSync(path.join(tmpdir(),'vac-fixed-')),db=openDatabase(path.join(dir,'qa.sqlite'));
 const {server,io}=createApp(db);await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
@@ -19,7 +20,7 @@ async function openChicken(){await page.waitForTimeout(200);const p=await page.e
 async function openFish(){await page.waitForTimeout(200);const point=await page.evaluate(()=>{const q=window.__vacQA,h=q.visual.hits.find(h=>h.kind==='pond');if(!h)throw Error('No fish hit target');return q.camera.toScreen(h.x,h.y);});await page.mouse.click(point.x,point.y);}
 async function ready(){await page.locator('#status').getByText('Đã kết nối').waitFor();await page.waitForTimeout(300);}
 async function relocate(x,y){await page.goto('about:blank');db.prepare("UPDATE player_states SET x=?,y=?,scene='farm' WHERE user_id=?").run(x,y,user.id);await page.goto(base);await ready();}
-async function open(kind){const pos=db.prepare('SELECT x,y FROM player_states WHERE user_id=?').get(user.id),cam=new Camera(FARM_WORLD);cam.isometric=true;cam.resize(1366,768);cam.snap(pos.x,pos.y);const layout=livingLayout(),p=kind==='pond'?pondObstacles(layout.pond)[0]:{x:layout.yard.x+20,y:layout.yard.y+20};const screen=cam.toScreen(p.x,p.y);await page.mouse.click(screen.x,screen.y);}
+async function open(kind){const pos=db.prepare('SELECT x,y FROM player_states WHERE user_id=?').get(user.id),cam=new Camera(FARM_WORLD);cam.isometric=true;cam.resize(1366,768);cam.snap(pos.x,pos.y);const layout=livingLayout(),p=kind==='pond'?pondObstacles(layout.pond)[0]:coopToWorld(coopGeometry(layout.yard),{x:510*.55,y:321*.7});const screen=cam.toScreen(p.x,p.y);await page.mouse.click(screen.x,screen.y);}
 try{
  browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});page=await browser.newPage({viewport:{width:1366,height:768}});page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/js/main.js',route=>route.fulfill({contentType:'text/javascript',body:readFileSync('public/js/main.js','utf8')+'\nwindow.__vacQA={get visual(){return livingVisual},get camera(){return camera}};'}));

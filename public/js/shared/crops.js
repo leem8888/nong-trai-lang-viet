@@ -1,4 +1,5 @@
 import { MANGO_ITEM } from './mango.js';
+import { BANANA_ITEM } from './banana.js';
 import { VAC_ITEMS } from './vac.js';
 import { PHASE5_ITEMS } from './phase5.js';
 // Phase 2 trial values. Existing plantings retain their duration snapshot.
@@ -17,7 +18,7 @@ export const ITEMS = Object.freeze({...Object.fromEntries(CROP_IDS.flatMap(id =>
     [crop.seed, { name: `Hạt ${crop.name.toLowerCase()}`, category: 'seed', stackLimit: 999, description: `Gieo ${crop.name.toLowerCase()} trên đất đã cuốc.`, color: crop.color }],
     [crop.produce, { name: crop.name, category: 'produce', stackLimit: 999, description: crop.description, color: crop.color }]
   ];
-})),...VAC_ITEMS,...PHASE5_ITEMS,...MANGO_ITEM});
+})),...VAC_ITEMS,...PHASE5_ITEMS,...MANGO_ITEM,...BANANA_ITEM});
 export const FIELD = Object.freeze({ x: 160, y: 540, columns: 8, rows: 4, stepX: 50, stepY: 50, width: 48, height: 48 });
 export const STARTER_PLOTS=5;
 export const MAX_PLOTS=FIELD.columns*FIELD.rows;

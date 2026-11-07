@@ -1,0 +1,3 @@
+Built-in image_gen edit. Reference: farmer-actions.webp.
+Prompt: Preserve the 2172x724 four-column atlas, farmer poses, scale, clothing, hat, face, sandals and tools. Remove all ground patches, dirt, stones, grass, seedlings, loose seeds and harvested crop piles. Retain hoe, seed bowl, watering can with a short water stream, and sickle. Transparent alpha outside farmer and tools. No repositioning, redesign or added background.
+Integration: Existing four action indices. Character-only frames avoid painted crops appearing on real farm tiles. Watering approaches the side of the target tile.

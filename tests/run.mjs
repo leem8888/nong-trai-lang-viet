@@ -6,6 +6,7 @@ import './phase5.test.js';
 import './phase6.test.js';
 import './phase7.test.js';
 import './contextual.test.js';
+import './farmHitTest.test.js';
 import './isometric.test.js';
 import './adminSeed.test.js';
 import './villageLife.test.js';
@@ -15,13 +16,24 @@ import './animalAccess.test.js';
 import './pondCollision.test.js';
 import './reachablePath.test.js';
 import './fishMotion.test.js';
+import './fishingNet.test.js';
+import './fish-feeding.test.js';
 import './chickenMotion.test.js';
 import './soilEffects.test.js';
+import './hoeMotion.test.js';
+import './soilMotion.test.js';
 import './terrainCoverage.test.js';
 
 import './onboarding.test.js';
 
 import './mango.test.js';
+import './banana.test.js';
+import './bananaReach.test.js';
 
 import './houseCollision.test.js';
+import './farmBoundary.test.js';
+import './playerFacing.test.js';
+import './avatarMotion.test.js';
+import './coopDepth.test.js';
 import './marketVisitors.test.js';
+import './villageChildren.test.js';

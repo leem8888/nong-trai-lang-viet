@@ -1,0 +1,5 @@
+Tool: built-in image_gen, reference-based generation followed by transparent background cleanup.
+References: farm-animals.webp (adult appearance) and chicken-poses-v1.png (fluffy chick).
+Prompt: Six columns by two rows of registered right-facing chickens. Top row fluffy baby chick, bottom row original golden brown adult hen. Frames progress from upright through four intermediate neck-lowering poses to beak touching ground. Preserve body, feet baseline, tail and scale across each row. Whole silhouettes, no text, fish, backgrounds or shadows. Hand-painted Vietnamese farm game style.
+Cleanup prompt: Remove white, cream, gray and shadows between silhouettes to fully transparent alpha, preserving all twelve chickens and the six by two grid.
+Runtime: Six-second feeding cycle, one opaque pose at a time, with ground-contact hold and upright pause. Full poses replace cut-out head rotation and opacity blending.

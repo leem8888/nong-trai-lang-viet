@@ -25,7 +25,7 @@ const connect=(base,cookie)=>new Promise((resolve,reject)=>{const socket=client(
 test('database, auth, ownership, persistence and socket access',async()=>{
   const f=await fixture();
   try {
-    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,11);
+    assert.equal(f.db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,13);
     assert.equal((await request(f.base,'/health')).status,200);
     assert.equal((await request(f.base,'/farm')).status,401);
     const a=await request(f.base,'/register',{username:'farmer_a',password:'strong-pass-123'});
@@ -46,10 +46,12 @@ test('database, auth, ownership, persistence and socket access',async()=>{
       assert.equal((await emit(sa,'farm:join',{farmId:fb.data.farm.id})).ok,false);
       assert.equal((await emit(sa,'farm:join',{farmId:fa.data.farm.id})).ok,true);
       assert.equal((await emit(sb,'farm:join',{farmId:fb.data.farm.id})).ok,true);
+      f.db.prepare('UPDATE player_states SET x=900,y=340 WHERE user_id=?').run(a.data.user.id);
       assert.equal((await emit(sa,'farm:interact',{objectId:'lamp'})).ok,false);
+      f.db.prepare('UPDATE player_states SET x=720,y=650 WHERE user_id=?').run(a.data.user.id);
       assert.equal((await emit(sa,'player:move',{x:1000,y:1000,direction:'down'})).ok,false);
       assert.equal((await emit(sa,'player:move',{x:730,y:650,direction:'right'})).ok,true);
-      f.db.prepare('UPDATE player_states SET x=900,y=340 WHERE user_id=?').run(a.data.user.id);
+      f.db.prepare('UPDATE player_states SET x=744,y=650 WHERE user_id=?').run(a.data.user.id);
       assert.equal((await emit(sa,'farm:interact',{objectId:'lamp'})).state,1);
       assert.equal((await request(f.base,'/farm',undefined,a.cookie)).data.objects[0].state,1);
       assert.equal((await emit(sa,'farm:leave',{})).ok,true);
@@ -62,21 +64,21 @@ test('database, auth, ownership, persistence and socket access',async()=>{
     } finally {resumed.disconnect();}
     assert.equal((await request(f.base,'/logout',{},a.cookie,a.data.csrf)).status,200);
     assert.equal((await request(f.base,'/me',undefined,a.cookie)).status,401);
-    assert.equal(f.db.prepare('SELECT x FROM player_states WHERE user_id=?').get(a.data.user.id).x,900);
+    assert.equal(f.db.prepare('SELECT x FROM player_states WHERE user_id=?').get(a.data.user.id).x,744);
     assert.equal(f.db.prepare('SELECT count(*) AS n FROM farms').get().n,2);
   } finally {await f.close();}
 });
 
 test('movement, collision, range and time rules',()=>{
   assert.equal(validPosition(720,650),true);
-  assert.equal(validPosition(700,190),true);
+  assert.equal(validPosition(700,190),false);
   assert.equal(validPosition(650,100),false);
   assert.equal(validPosition(400,-130),true);
   assert.equal(validPosition(700,-230),false);
   assert.equal(validMovement({x:720,y:650},730,650,200),true);
   assert.equal(validMovement({x:720,y:650},900,650,200),false);
-  assert.equal(inRange({x:900,y:340},'lamp'),true);
-  assert.equal(inRange({x:720,y:650},'lamp'),false);
+  assert.equal(inRange({x:720,y:650},'lamp'),true);
+  assert.equal(inRange({x:900,y:340},'lamp'),false);
   assert.equal(elapsedSeconds(1000,3500),2.5);
   assert.throws(()=>elapsedSeconds(4000,3500));
 });
@@ -90,7 +92,7 @@ test('SQLite survives reopen and migration is idempotent',()=>{
     db.close(); db=null;
     db=openDatabase(file);
     assert.equal(db.prepare('SELECT username FROM users WHERE id=?').get('u').username,'test_user');
-    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,11);
+    assert.equal(db.prepare('SELECT count(*) AS n FROM schema_migrations').get().n,13);
   } finally {db?.close();rmSync(dir,{recursive:true,force:true,maxRetries:5,retryDelay:100});}
 });
 

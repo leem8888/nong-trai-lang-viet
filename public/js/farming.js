@@ -6,6 +6,22 @@ const stageNames = { SEED:'Hạt mới gieo', SPROUT:'Nảy mầm', GROWING:'Đa
 export function soilIsDry(tile,time){
   return !tile.locked&&tile.state==='PLANTED'&&!!tile.crop&&tile.crop.wateredAt==null&&cropProgress(tile.crop,time).stage!=='MATURE';
 }
+export function drawWitheredPlant(ctx,x,y){
+  ctx.save();ctx.translate(x,y);ctx.transform(1/(2*ISO_X),-1/(2*ISO_X),1/(2*ISO_Y),1/(2*ISO_Y),0,0);
+  ctx.scale(1.4,.56);
+  ctx.fillStyle='#281b126b';ctx.beginPath();ctx.ellipse(0,0,11,3,0,0,Math.PI*2);ctx.fill();
+  ctx.lineCap='round';
+  const stems=()=>{ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(-1,-7,3,-15,0,-21);ctx.quadraticCurveTo(-3,-25,-5,-20);ctx.moveTo(-2,0);ctx.quadraticCurveTo(-12,-11,-9,-17);ctx.quadraticCurveTo(-7,-21,-5,-16);ctx.moveTo(2,0);ctx.quadraticCurveTo(11,-8,10,-15);ctx.quadraticCurveTo(9,-20,7,-16);ctx.moveTo(1,-10);ctx.quadraticCurveTo(7,-17,10,-12);ctx.moveTo(0,-6);ctx.quadraticCurveTo(-7,-14,-10,-10);};
+  ctx.strokeStyle='#5c3b22';ctx.lineWidth=3.1;stems();ctx.stroke();
+  ctx.strokeStyle='#b49161';ctx.lineWidth=1.6;stems();ctx.stroke();
+  for(const [lx,ly,flip] of [[-8,-12,-1],[7,-15,1],[-3,-22,-1],[2,-7,1],[-5,-6,-1],[6,-5,1],[-8,-17,-1],[3,-14,1]]){
+    ctx.save();ctx.translate(lx,ly);ctx.scale(flip,1);
+    const leaf=ctx.createLinearGradient(0,-1,5,9);leaf.addColorStop(0,'#c2aa7b');leaf.addColorStop(.5,'#a48757');leaf.addColorStop(1,'#795c3b');ctx.fillStyle=leaf;ctx.strokeStyle='#6e4829';ctx.lineWidth=.65;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(6,-3,10,3,5,10);ctx.quadraticCurveTo(6,4,0,0);ctx.fill();ctx.stroke();
+    ctx.strokeStyle='#d0b889';ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(1,1);ctx.quadraticCurveTo(6,3,5,7);ctx.stroke();ctx.restore();
+  }
+  ctx.restore();
+}
 export class FarmingUI {
   constructor(api, showError, showNotice, openPanel) {
     this.api=api; this.showError=showError; this.showNotice=showNotice; this.openPanel=openPanel;
@@ -111,13 +127,14 @@ export class FarmingUI {
       const canvas=document.createElement('canvas');canvas.width=canvas.height=56;
       const ground=canvas.getContext('2d');this.drawRaisedBed(ground,{x:4,y:4,w:48,h:48},{locked:true,state:'EMPTY'},0,tile.locked);
       ground.strokeStyle=tile.locked?'#4f8238':'#78904b';ground.lineWidth=1.4;ground.lineCap='round';
-      for(const [x,y] of [[14,23],[34,17],[21,36],[39,31]]){ground.beginPath();ground.moveTo(x,y+3);ground.lineTo(x-2,y);ground.moveTo(x,y+3);ground.lineTo(x+2,y-1);ground.stroke();}
+      if(tile.locked)for(const [x,y] of [[14,23],[34,17],[21,36],[39,31]]){ground.beginPath();ground.moveTo(x,y+3);ground.lineTo(x-2,y);ground.moveTo(x,y+3);ground.lineTo(x+2,y-1);ground.stroke();}
       this[artKey]=canvas;
     }
     ctx.save();ctx.globalAlpha=.96;ctx.drawImage(this[artKey],r.x-4,r.y-4);ctx.restore();
   }
   drawRaisedBed(ctx,r,tile,time=this.serverNow(),green=false) {
     const x=r.x+3,y=r.y+3,w=r.w-6,h=r.h-6;
+    const dry=!green&&soilIsDry(tile,time);
     const shape=(left,top,width,height,radius)=>{ctx.beginPath();ctx.roundRect(left,top,width,height,radius);};
     ctx.save();
     ctx.fillStyle=green?'#354923a0':'#231a14a0';shape(x-1,y+1,w+3,h+3,13);ctx.fill();
@@ -125,17 +142,17 @@ export class FarmingUI {
     for(let i=0;i<=24;i++){
       const t=i/24,inset=t*15,lift=Math.sin(t*Math.PI/2)*9;
       const brown=ctx.createLinearGradient(x,y,x+w,y+h),light=Math.round(66+38*Math.sin(t*Math.PI/2));
-      brown.addColorStop(0,green?`rgb(${light+100},${light+130},${light+10})`:`rgb(${light+12},${Math.round(light*.69)},${Math.round(light*.43)})`);
-      brown.addColorStop(1,green?`rgb(${light+75},${light+110},${light+5})`:`rgb(${light-6},${Math.round(light*.55)},${Math.round(light*.33)})`);
+      brown.addColorStop(0,green?`rgb(${light+100},${light+130},${light+10})`:dry?`rgb(${light+101},${light+57},${Math.round(light*.42)+29})`:`rgb(${light+12},${Math.round(light*.69)},${Math.round(light*.43)})`);
+      brown.addColorStop(1,green?`rgb(${light+75},${light+110},${light+5})`:dry?`rgb(${light+70},${light+30},${Math.round(light*.28)+24})`:`rgb(${light-6},${Math.round(light*.55)},${Math.round(light*.33)})`);
       ctx.fillStyle=brown;
       shape(x+inset-lift,y+inset-lift,w-inset*2,h-inset*2,Math.min(14,(w-inset*2)/2));ctx.fill();
     }
-    // Moist clods follow the mound's curved surface; every bed uses the same texture.
+    // Soil grains follow the mound's curved surface; dry beds look dusty and pale.
     for(let i=0;i<65;i++){
       const u=((i*17)%61)/61,v=((i*29+7)%67)/67;
       const crown=Math.max(0,1-((u-.5)*2)**2-((v-.5)*2)**2),lift=Math.sqrt(crown)*9;
       const px=x+3+u*(w-6)-lift,py=y+3+v*(h-6)-lift;
-      ctx.fillStyle=green?(i%3===0?'#e8eea45c':'#416d3560'):(i%3===0?'#ac805147':'#21180e70');
+      ctx.fillStyle=green?(i%3===0?'#e8eea45c':'#416d3560'):dry?(i%3===0?'#f1cc8075':'#91532345'):(i%3===0?'#ac805147':'#21180e70');
       ctx.beginPath();ctx.ellipse(px,py,.6+i%4*.24,.45+i%3*.16,-.4,0,Math.PI*2);ctx.fill();
       if(i%7===0){ctx.fillStyle=green?'#f0f4b964':'#bea17d52';ctx.beginPath();ctx.ellipse(px-.3,py-.5,.8,.35,-.4,0,Math.PI*2);ctx.fill();}
     }
@@ -145,11 +162,33 @@ export class FarmingUI {
   drawSoilCracks(ctx,r,tile,time){
     const x=r.x+3,y=r.y+3,w=r.w-6,h=r.h-6;
     if(soilIsDry(tile,time)){
-      const cracks=[[[4,17],[8,13],[12,15],[13,9]],[[8,13],[7,8]],[[27,7],[30,12],[35,13],[37,18]],[[30,12],[27,17]],[[6,28],[10,31],[9,36]],[[10,31],[17,33],[18,37]],[[26,34],[30,30],[35,31],[38,27]],[[30,30],[28,25]]];
-      const surface=([px,py])=>{const u=px/w,v=py/h,lift=Math.sqrt(Math.max(0,1-((u-.5)*2)**2-((v-.5)*2)**2))*9;return [x+px-lift,y+py-lift];};
-      ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
-      for(const [color,width,offset] of [['#dbb57b9c',3.2,1],['#20130eef',1.9,0]]){
-        ctx.beginPath();for(const crack of cracks)crack.forEach((p,i)=>{const [px,py]=surface(p);if(i)ctx.lineTo(px,py+offset);else ctx.moveTo(px,py+offset);});ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+      // Fissures radiate from beneath the seed cluster along the curved soil surface.
+      const patterns=[
+        [[[0,0],[-4,-1],[-6,-4],[-9,-3],[-12,-6]],[[1,1],[4,4],[3,7],[7,9],[8,12]],[[2,0],[5,-2],[8,-1],[10,-3]]],
+        [[[0,1],[-3,4],[-6,3],[-8,6],[-11,7]],[[1,0],[4,-3],[3,-6],[7,-8],[8,-11]],[[2,2],[5,3],[6,6],[9,7]]],
+        [[[0,0],[-3,-3],[-6,-2],[-8,-5],[-11,-6]],[[0,1],[2,5],[5,6],[4,9],[7,12]],[[2,0],[5,-1],[7,1],[11,0]]]
+      ];
+      const cracks=patterns[Math.abs((tile.x||0)*7+(tile.y||0)*11)%patterns.length];
+      const surface=([dx,dy])=>{
+        dx*=1.45;dy*=1.45;
+        const lift=Math.sqrt(Math.max(0,1-(dx*2/w)**2-(dy*2/h)**2))*9;
+        return [r.x+r.w/2-5+dx+9-lift,r.y+r.h/2-5+dy+9-lift];
+      };
+      ctx.save();ctx.lineJoin='bevel';
+      for(const crack of cracks){
+        const points=crack.map(surface),left=[],right=[];
+        for(let i=0;i<points.length;i++){
+          const before=points[Math.max(0,i-1)],after=points[Math.min(points.length-1,i+1)];
+          const dx=after[0]-before[0],dy=after[1]-before[1],length=Math.hypot(dx,dy)||1;
+          const width=i===points.length-1?0:2.2*(1-i/(points.length-1));
+          left.push([points[i][0]-dy/length*width,points[i][1]+dx/length*width]);
+          right.push([points[i][0]+dy/length*width,points[i][1]-dx/length*width]);
+        }
+        const outline=[...left,...right.reverse()];
+        // A warm lower lip gives the fissure depth without a heavy drawn outline.
+        for(const [color,offset] of [['#f2cf8655',.6],['#56351dc4',0]]){
+          ctx.fillStyle=color;ctx.beginPath();outline.forEach(([px,py],i)=>{if(i)ctx.lineTo(px,py+offset);else ctx.moveTo(px,py+offset);});ctx.closePath();ctx.fill();
+        }
       }
       ctx.restore();
     }
@@ -184,10 +223,25 @@ export class FarmingUI {
     stroke(outside,'#50351f',2.5);
     ctx.restore();
   }
+  drawSeedBed(ctx,r,crop) {
+    const cx=r.x+r.w/2-5,cy=r.y+r.h/2-5;
+    ctx.save();
+    // A small cluster of seeds rests on the crown of the bed.
+    for(const [dx,dy] of [[-3,-2],[3,-1],[0,3]]){
+      const sx=cx+dx,sy=cy+dy;
+      const sheen=ctx.createRadialGradient(sx-1.4,sy-1.3,.2,sx,sy,4.6);
+      sheen.addColorStop(0,'#78503a');
+      sheen.addColorStop(.35,'#3a2014');
+      sheen.addColorStop(1,'#140c08');
+      ctx.fillStyle=sheen;ctx.beginPath();ctx.ellipse(sx,sy,4.5,3.5,-.4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#d0ad859e';ctx.beginPath();ctx.ellipse(sx-1.4,sy-1.4,1.3,.65,-.4,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+  }
   drawCrop(ctx,r,crop,time) {
     const definition=CROPS[crop.cropId], growth=cropProgress(crop,time);
     const cx=r.x+r.w/2,cy=r.y+r.h/2;
-    if(growth.stage==='SEED'){ctx.fillStyle=definition.color;ctx.fillRect(cx-4,cy-3,8,6);return;}
+    if(growth.stage==='SEED'){this.drawSeedBed(ctx,r,crop);return;}
     const height=growth.stage==='SPROUT'?12:growth.stage==='GROWING'?24:31;
     ctx.fillStyle='#3b783e';ctx.fillRect(cx-2,cy+13-height,4,height);
     ctx.beginPath();ctx.ellipse(cx-9,cy+7-height*.55,10,5,-.5,0,7);ctx.ellipse(cx+9,cy+7-height*.55,10,5,.5,0,7);ctx.fill();

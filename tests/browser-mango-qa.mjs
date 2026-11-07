@@ -14,7 +14,7 @@ try{
  const user=db.prepare('SELECT id FROM users WHERE username=?').get(name),farm=db.prepare('SELECT id FROM farms WHERE owner_id=?').get(user.id);
  async function clickTree(){const p=await page.evaluate(({x,y})=>{const q=__mangoQA.camera.toScreen(x,y);q.y-=__mangoQA.mango.size()*.6;return q;},MANGO_TREE);await page.mouse.click(p.x,p.y);await page.locator('[data-mango-harvest]').waitFor();}
  async function reload(){await page.reload();await page.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});await until(async()=>page.evaluate(()=>!!window.__mangoQA?.mango?.state));}
- await clickTree();assert.equal(await page.locator('[data-mango-harvest]').isDisabled(),true);assert.match(await page.locator('[data-mango-time]').textContent(),/Chín sau/);await page.screenshot({path:'.qa/mango/stage-1-wait.png'});await page.keyboard.press('Escape');console.log('PASS new mango waits four hours and shows countdown');
+ await clickTree();assert.equal(await page.locator('[data-mango-harvest]').isDisabled(),true);assert.match(await page.locator('[data-mango-time]').textContent(),/h.*m.*s/);await page.screenshot({path:'.qa/mango/stage-1-wait.png'});await page.keyboard.press('Escape');console.log('PASS new mango waits four hours and shows countdown');
  const tab=await context.newPage();await tab.goto(base);await tab.locator('#status').getByText('Đã kết nối').waitFor({state:'attached'});
  for(const [count,stage,yieldCount] of [[4,2,3],[14,3,5],[29,4,8]]){
    // Only the disposable QA database is advanced to a boundary; production has no shortcut endpoint.

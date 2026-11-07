@@ -61,3 +61,32 @@
 #contextMenu .crop-caption progress{grid-column:1/-1;width:100%;height:6px;border:0;border-radius:6px;overflow:hidden;accent-color:#719455}
 #contextMenu .crop-caption progress::-webkit-progress-bar{background:#e4d6b8}#contextMenu .crop-caption progress::-webkit-progress-value{background:#719455}
 #contextMenu .crop-caption.is-ready span{color:#417b38;font-weight:700}
+/* Small labels and a separate harvest button anchored beside fruit trees. */
+#contextMenu.tree-tools{display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 24px);padding:0;background:transparent;border:0;box-shadow:none;overflow:visible}
+#contextMenu.tree-tools .tree-caption{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #bda474;border-radius:10px;background:#fff7e8ed;box-shadow:0 2px 7px #24351c25;pointer-events:none}
+#contextMenu.tree-tools .tree-caption img{width:30px;height:30px;object-fit:contain}
+#contextMenu.tree-tools .tree-caption div{display:grid;gap:3px}
+#contextMenu.tree-tools .tree-caption strong{font-size:12px;color:#345337;white-space:nowrap}
+#contextMenu.tree-tools .tree-caption span{font-size:11px;color:#756039;white-space:nowrap}
+#contextMenu.tree-tools button.tree-harvest{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:5px;border:1px solid #967442;border-radius:50%;background:#fff1c8;box-shadow:0 2px 5px #24351c33;cursor:pointer}
+#contextMenu.tree-tools button.tree-harvest svg{display:block;width:32px;height:32px}
+#contextMenu.tree-tools button.tree-harvest:disabled{opacity:.35;filter:grayscale(.75);cursor:default;box-shadow:none}
+#contextMenu.tree-tools button.tree-harvest:not(:disabled):hover{background:#ffe5a4;transform:translateY(-1px)}
+#contextMenu.tree-tools button.tree-harvest{order:-1}
+#contextMenu.tree-tools .tree-level-progress{width:100%;height:5px;margin-top:2px;border:0;border-radius:5px;overflow:hidden;accent-color:#719455;background:#dfd4b5}
+#contextMenu.tree-tools .tree-level-progress::-webkit-progress-bar{background:#dfd4b5;border-radius:5px}
+#contextMenu.tree-tools .tree-level-progress::-webkit-progress-value{background:#719455;border-radius:5px}
+#contextMenu.tree-tools .tree-level-progress::-moz-progress-bar{background:#719455;border-radius:5px}
+#contextMenu.tree-tools [data-mango-level]{font-size:10px;color:#756039;white-space:nowrap}
+/* Information above the canopy; independent action at the right of the tree. */
+#contextMenu.tree-tools{position:fixed;left:0;top:0;display:block;width:0;height:0;max-width:none;overflow:visible;pointer-events:none}
+#contextMenu.tree-tools .tree-caption{position:fixed;max-width:calc(100vw - 24px);font-family:system-ui,"Segoe UI",Arial,sans-serif}
+#contextMenu.tree-tools .tree-caption strong{font:650 12px/1.4 system-ui,"Segoe UI",Arial,sans-serif;letter-spacing:normal}
+#contextMenu.tree-tools .tree-caption span{font:11px/1.4 system-ui,"Segoe UI",Arial,sans-serif}
+#contextMenu.tree-tools .tree-caption [hidden]{display:none}
+#contextMenu.tree-tools button.tree-harvest{position:fixed;pointer-events:auto;margin:0;order:initial}
+/* Light tool buttons let the illustrated tools carry the visual emphasis. */
+#contextMenu.soil-tools:not(:has(.crop-caption)){padding:5px;gap:7px;border-radius:13px;background:#f8efd9e8;border:1px solid #c3aa7b;box-shadow:0 3px 9px #24351c30}
+#contextMenu.soil-tools .soil-tool[data-context-action="till"],#contextMenu.soil-tools .soil-tool[data-context-action="harvest"]{width:62px;min-height:66px;padding:2px 3px 17px;border:1px solid #c3a477;border-radius:10px;background:linear-gradient(#fff7e6,#e9d5af);box-shadow:inset 0 1px #fffaf0,0 1px 2px #49321b26}
+#contextMenu.soil-tools .soil-tool-symbol img{width:47px;height:45px;margin:auto;filter:drop-shadow(0 1px 1px #4b371c26)}
+#contextMenu.soil-tools .soil-tool .tool-label{font:600 10px/1.3 system-ui,"Segoe UI",sans-serif;color:#59452c;bottom:5px}

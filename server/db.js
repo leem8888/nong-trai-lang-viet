@@ -296,6 +296,27 @@ export function openDatabase(file = process.env.DB_FILE || path.resolve('data/fa
     db.prepare('INSERT INTO farm_mango_trees(farm_id,ready_at,updated_at) SELECT id,?,? FROM farms').run(at+MANGO_CYCLE_MS,at);
     db.prepare('INSERT INTO schema_migrations VALUES (11, ?, ?)').run('four-hour mango tree growth and harvests',at);
   })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 12').get()) db.transaction(() => {
+    db.exec(`CREATE TABLE farm_banana_clumps (
+      farm_id TEXT PRIMARY KEY REFERENCES farms(id) ON DELETE CASCADE,
+      started_at INTEGER NOT NULL,updated_at INTEGER NOT NULL);
+      CREATE TABLE banana_receipts (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      request_key TEXT NOT NULL,farm_id TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+      quantity INTEGER NOT NULL CHECK(quantity>0),created_at INTEGER NOT NULL,
+      PRIMARY KEY(user_id,request_key));`);
+    const at=Date.now();
+    db.prepare('INSERT INTO farm_banana_clumps(farm_id,started_at,updated_at) SELECT id,?,? FROM farms').run(at,at);
+    db.prepare('INSERT INTO schema_migrations VALUES (12, ?, ?)').run('four-hour banana clump with hourly flowering and fruit phases',at);
+  })();
+  if (!db.prepare('SELECT 1 FROM schema_migrations WHERE version = 13').get()) db.transaction(() => {
+    // Keep crop history attached to the soil row while requiring a fresh till.
+    db.exec(`CREATE TABLE farm_spent_soil (
+      farm_id TEXT NOT NULL,tile_x INTEGER NOT NULL,tile_y INTEGER NOT NULL,
+      PRIMARY KEY(farm_id,tile_x,tile_y),
+      FOREIGN KEY(farm_id,tile_x,tile_y) REFERENCES farm_soil_tiles(farm_id,tile_x,tile_y) ON DELETE CASCADE);`);
+    db.prepare('INSERT INTO schema_migrations VALUES (13, ?, ?)').run('require tilling after crop harvest',Date.now());
+  })();
   if (file !== ':memory:' && path.resolve(file) !== path.resolve('data/starter.sqlite') &&
       db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='farm_objects'").get()) seedAdmin(db);
   return db;

@@ -39,6 +39,7 @@ test('one short crop, persisted progress, retry-safe trades and normal replant',
  db.prepare('UPDATE player_states SET x=300 WHERE user_id=?').run(u.id);
  const buy={...sell,action:'buy',requestId:randomUUID(),itemId:'seed_mustard'};performMarketAction(db,u.id,buy,time);performMarketAction(db,u.id,buy,time);assert.equal(onboardingState(db,u.id).step,6);
  db.prepare("UPDATE player_states SET x=?,y=?,scene='farm' WHERE user_id=?").run(p.x,p.y,u.id);
+ performFarmAction(db,u.id,{action:'till',farmId:f.id,x:0,y:0},time+46000);
  performFarmAction(db,u.id,{action:'plant',farmId:f.id,x:0,y:0,cropId:'mustard'},time+46000);
  assert.equal(onboardingState(db,u.id).status,'DONE');assert.equal(db.prepare('SELECT duration_ms FROM farm_crops ORDER BY id DESC').get().duration_ms,900000);
  assert.equal(db.pragma('foreign_key_check').length,0);

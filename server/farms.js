@@ -34,6 +34,7 @@ export function createFarm(db, userId, name) {
     db.prepare('INSERT INTO player_states(user_id,farm_id,x,y,direction,updated_at) VALUES (?,?,?,?,?,?)').run(userId,id,720,650,'down',time);
     db.prepare('INSERT INTO farm_objects VALUES (?,?,0)').run(id,'lamp');
     seedFarmInventory(db,id);
+    db.prepare('INSERT INTO farm_banana_clumps(farm_id,started_at,updated_at) VALUES (?,?,?)').run(id,time,time);
     db.prepare('INSERT INTO farm_mango_trees(farm_id,ready_at,updated_at) VALUES (?,?,?)').run(id,time+MANGO_CYCLE_MS,time);
     db.prepare('INSERT INTO farm_onboarding(farm_id,updated_at) VALUES (?,?)').run(id,time);
     db.prepare('INSERT INTO farm_ponds VALUES (?)').run(id);

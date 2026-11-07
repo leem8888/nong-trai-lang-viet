@@ -5,7 +5,7 @@ import { inRange } from './world.js';
 import {livingLayout} from '../public/js/shared/livingLayout.js';
 import { now } from './time.js';
 
-const POND_CAPACITY=6, COOP_CAPACITY=4;
+const POND_CAPACITY=10, COOP_CAPACITY=10;
 const farmOf=(db,userId)=>db.prepare('SELECT id FROM farms WHERE owner_id=?').get(userId)?.id;
 const eggsReady=(row,at)=>row.feed_started_at===null?0:Math.min(row.max_eggs,Math.max(0,Math.floor((at-row.feed_started_at)/row.egg_ms)));
 export function vacState(db,userId,at=now()) {
